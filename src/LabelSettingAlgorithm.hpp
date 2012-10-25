@@ -48,6 +48,9 @@ private:
 
 public:
 
+	typedef typename LabelSet<Label>::iterator iterator;
+	typedef typename LabelSet<Label>::iterator const_iterator;
+
 	LabelSettingAlgorithm(const graph_slot& graph_):
 		heap((NodeID)graph_.numberOfNodes()),
 		labels(graph_.numberOfNodes()),
@@ -61,14 +64,15 @@ public:
 			const NodeID current_node = heap.getMin();
 			const Label& current_label =  heap.getUserData(current_node); //  use addresses here?
 
-			labels[current_node].markBestLabelAsUsed();
+		/*	labels[current_node].markBestLabelAsUsed();
 			// Current label is consumed. Update the current node for its next best label
 			if (labels[current_node].hasUnprocessedLabels()) {
-				heap.increaseKey(current_node, labels[current_node].getBestPriority());
+				heap.increaseKey(current_node, labels[current_node].getPriorityOfBestLabel());
 				heap.getUserData(current_node) = labels[current_node].getBestLabel();
 			} else {
 				heap.deleteMin();
-			}
+			}*/
+			heap.deleteMin();
 
 			FORALL_EDGES(graph, current_node, eid) {
 				const Edge& edge = graph.getEdge(eid);
@@ -90,6 +94,11 @@ public:
 			}
 		}
 	}
+
+	iterator begin(NodeID node) { return labels[node].begin(); }
+	const_iterator begin(NodeID node) const { return labels[node].begin(); }
+	iterator end(NodeID node) { return labels[node].end(); }
+	const_iterator end(NodeID node) const { return labels[node].end(); }
 };
 
 #endif 
