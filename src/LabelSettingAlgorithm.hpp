@@ -3,8 +3,8 @@
  *  
  * Author: Stephan Erb
  */
-#ifndef LABELSET_H_
-#define LABELSET_H_
+#ifndef LABELSETTING_ALGO_H_
+#define LABELSETTING_ALGO_H_
 
 
 //Graph, Node and Edges
@@ -19,10 +19,11 @@
 
 #include <iostream>
 #include <vector>
+#include "LabelSet.hpp"
 
 
 template<typename graph_slot>
-class LabelSet {
+class LabelSettingAlgorithm {
 private:
 
 	typedef typename graph_slot::NodeID NodeID;
@@ -47,10 +48,10 @@ private:
 
 public:
 
-	LabelSet(const graph_slot& graph_):
-		graph(graph_),
-		heap(graph_.numberOfNodes()),
-		labels(graph_.numberOfNodes())
+	LabelSettingAlgorithm(const graph_slot& graph_):
+		heap((NodeID)graph_.numberOfNodes()),
+		labels(graph_.numberOfNodes()),
+		graph(graph_)
 	 {}
 
 	void run() {
@@ -60,7 +61,7 @@ public:
 			const NodeID current_node = heap.getMin();
 			const Label& current_label =  heap.getUserData(current_node); //  use addresses here?
 
-			labels[current_node].markUsed(current_label); // TODO: Use a handle for performance reasons
+			labels[current_node].markBestLabelAsUsed();
 			// Current label is consumed. Update the current node for its next best label
 			if (labels[current_node].hasUnprocessedLabels()) {
 				heap.increaseKey(current_node, labels[current_node].getBestPriority());
