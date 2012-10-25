@@ -48,8 +48,8 @@ protected:
 public:
 
 	LabelSet() {
-		typename label_type::value_type min = std::numeric_limits<typename label_type::value_type>::min();
-		typename label_type::value_type max = std::numeric_limits<typename label_type::value_type>::max();
+		typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
+		typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 		// add sentinals
 		labels.push_back(label_type(min, max));
 		labels.push_back(label_type(max, min));

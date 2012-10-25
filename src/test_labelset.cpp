@@ -4,9 +4,9 @@
 
 struct Label {
 	Label(int first, int second): first_weight(first), second_weight(second) {};
-	typedef unsigned int value_type;
-	value_type first_weight;
-	value_type second_weight;
+	typedef unsigned int weight_type;
+	weight_type first_weight;
+	weight_type second_weight;
 	bool operator==(const Label& other ) const {
 		return first_weight == other.first_weight && second_weight == other.second_weight;
 	}
