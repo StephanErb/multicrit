@@ -3,7 +3,6 @@
  *  
  * Author: Stephan Erb
  */
-
 #ifndef LABELSET_H_
 #define LABELSET_H_
 
@@ -56,7 +55,7 @@ public:
 		labels.push_back(label_type(max, min));
 	}
 
-	bool add(const label_type& new_label){
+	bool add(const label_type& new_label) {
 		iterator iter = x_predecessor(labels.begin(), new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {
