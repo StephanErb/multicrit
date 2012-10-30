@@ -23,7 +23,7 @@ bool contains(const LabelSet<Label> set, const Label label) {
 	return std::find(set.begin(), set.end(), label) != set.end();
 }
 
-int main() {
+void testSimpleInsertion() {
 	LabelSet<Label> set;
 	assertTrue(set.size() == 0, "Should be empty");
 
@@ -63,43 +63,37 @@ int main() {
 	assertTrue(contains(set, Label(4,3)), "Label should have remained");
 	assertTrue(contains(set, Label(10,1)), "Label should have remained");
 	assertTrue(contains(set, Label(1,10)), "Label should have remained");
+}
 
-
-
-	set = LabelSet<Label>();
+void testAdditionForBorderlineCases() {
+	LabelSet<Label> set = LabelSet<Label>();
 	assertTrue(set.size() == 0, "Should be empty");
-
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
-
 	set.add(Label(5,5));
 	assertTrue(set.size() == 1, "Should have removed dominated label with x-coord conflict");
 	assertTrue(contains(set, Label(5,5)), "Label should have remained");
 
-
-
 	set = LabelSet<Label>();
 	assertTrue(set.size() == 0, "Should be empty");
-
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
-
 	set.add(Label(4,6));
 	assertTrue(set.size() == 1, "Should have removed dominated label with y-coord conflict");
 	assertTrue(contains(set, Label(4,6)), "Label should have remained");
 
-
-
 	set = LabelSet<Label>();
 	assertTrue(set.size() == 0, "Should be empty");
-
 	set.add(Label(4,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
-
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should not have added dominated label with y-coord conflict");
 	assertTrue(contains(set, Label(4,6)), "Original label should have remained");
+}
 
+int main() {
+	testSimpleInsertion();
+	testAdditionForBorderlineCases();
 
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;
