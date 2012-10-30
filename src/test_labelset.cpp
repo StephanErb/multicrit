@@ -3,7 +3,7 @@
 #include <algorithm>
 
 struct Label {
-	Label(int first, int second): first_weight(first), second_weight(second) {};
+	Label(int first=0, int second=0): first_weight(first), second_weight(second) {};
 	typedef unsigned int weight_type;
 	weight_type first_weight;
 	weight_type second_weight;

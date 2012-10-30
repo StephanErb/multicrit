@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "LabelSettingAlgorithm.hpp"
+#include "GraphGenerator.hpp"
 
 
 typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
@@ -43,7 +44,8 @@ void createGrid(Graph& graph) {
 }
  
 int main() {
-	Graph graph;
+	GraphGenerator<Graph> generator;
+	Graph graph = generator.generateRandomGridGraph(3,3);
 	createGrid(graph);
 
 	LabelSettingAlgorithm<Graph> algo(graph);
@@ -56,6 +58,8 @@ int main() {
 		}
 		std::cout << std::endl;
 	}
+	std::cout << "Tests passed successfully." << std::endl;
+
 
 	return 0;
 }
