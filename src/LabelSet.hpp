@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <limits>
+#include <algorithm>
 
 
 template<typename label_type_slot>
@@ -21,20 +22,22 @@ protected:
 	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
 	std::vector<label_type> labels;
 
-	/** First label where the x-coord is truely smaller */
-	iterator x_predecessor(iterator iter, const label_type& new_label) {
-		while (iter->first_weight < new_label.first_weight) {
-			++iter;
-		}
-		return --iter;
+	static bool firstWeightLess(const label_type& i, const label_type& j) {
+		return i.first_weight < j.first_weight;
 	}
 
-	/** First label where the y-coord is truely smaller */
+	static bool secondWeightGreaterOrEquals(const label_type& i, const label_type& j) {
+		return i.second_weight >= j.second_weight;
+	}
+
+	/** First label where the x-coord is truly smaller */
+	iterator x_predecessor(iterator iter, const label_type& new_label) {
+		return std::lower_bound(labels.begin(), labels.end(), new_label, firstWeightLess)-1;
+	}
+
+	/** First label where the y-coord is truly smaller */
 	iterator y_predecessor(iterator iter, const label_type& new_label) {
-		while (iter->second_weight >= new_label.second_weight) {
-			++iter;
-		}
-		return iter;
+		return std::lower_bound(iter, labels.end(), new_label, secondWeightGreaterOrEquals);
 	}
 
 	void printLabels() {
