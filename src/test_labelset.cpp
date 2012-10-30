@@ -7,7 +7,7 @@ struct Label {
 	typedef unsigned int weight_type;
 	weight_type first_weight;
 	weight_type second_weight;
-	bool operator==(const Label& other ) const {
+	bool operator==(const Label& other) const {
 		return first_weight == other.first_weight && second_weight == other.second_weight;
 	}
 };
@@ -91,9 +91,33 @@ void testAdditionForBorderlineCases() {
 	assertTrue(contains(set, Label(4,6)), "Original label should have remained");
 }
 
+void testBestLabelInteraction() {
+	LabelSet<Label> set = LabelSet<Label>();
+
+	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
+
+	set.add(Label(3,5));
+	assertTrue(set.hasTemporaryLabels(), "Should not be empty");
+	assertTrue(set.getBestTemporaryLabel() == Label(3,5), "Should find initial best label");
+
+	set.add(Label(2,4));
+	assertTrue(set.getBestTemporaryLabel() == Label(2,4), "Should handle if old best label is dominated");
+
+	set.add(Label(3,1));
+	assertTrue(set.hasTemporaryLabels(), "");
+	assertTrue(set.getBestTemporaryLabel() == Label(3,1), "Use better label");
+	set.markBestLabelAsPermantent();
+	assertTrue(set.hasTemporaryLabels(), "");
+	assertTrue(set.getBestTemporaryLabel() == Label(2,4), "Use next best temporary");
+	set.markBestLabelAsPermantent();
+
+	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
+}
+
 int main() {
 	testSimpleInsertion();
 	testAdditionForBorderlineCases();
+	testBestLabelInteraction();
 
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;

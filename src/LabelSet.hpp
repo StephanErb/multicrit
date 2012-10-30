@@ -69,13 +69,13 @@ protected:
 
 	void updateBestLabelIfNeeded(const label_type& label) {
 		Priority priority = computePriority(label);
-		if (priority >= best_label_priority) {
+		if (priority <= best_label_priority) {
 			best_label_priority = priority;
 			best_label = label;
 		}
 	}
 
-	void printLabels() {
+	void printLabels() const {
 		std::cout << "All labels:";
 		for (iterator i=labels.begin(); i != labels.end(); ++i) {
 			std::cout << " (" <<  i->first_weight << "," << i->second_weight << ")";
@@ -96,7 +96,7 @@ public:
 		labels.push_back(label_type(min, max, /*permanent*/ true));
 		labels.push_back(label_type(max, min, /*permanent*/ true));
 
-		best_label = label_type(max, min, /*permanent*/ true); // one of the sentinals
+		best_label = labels[0]; // one of the sentinals
 		best_label_priority = computePriority(best_label);
 
 		perm_label_counter = 2; // sentinals
@@ -135,9 +135,11 @@ public:
 	// FIXME: The following implementations is very naive and thus horribly slow
 	void markBestLabelAsPermantent() {		
 		label_type old_best_label = best_label;
+		best_label_priority = computePriority(labels[0]); // prio of sentinal
 
 		// Scan all labels: Find new best label and mark the old one as permanent.
 		for (iterator i = labels.begin(); i != labels.end(); ++i) {
+
 			if (i->permanent) {
 				continue;
 			}
@@ -154,11 +156,11 @@ public:
 		return labels.size() > perm_label_counter;
 	}
 
-	Priority getPriorityOfBestTemporaryLabel() {
+	Priority getPriorityOfBestTemporaryLabel() const {
 		return best_label_priority;
 	}
 
-	label_type getBestTemporaryLabel() {
+	label_type getBestTemporaryLabel() const {
 		return best_label;
 	}
 
