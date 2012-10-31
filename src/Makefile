@@ -27,8 +27,8 @@ TARGETS = $(TESTS)
 PARALLEL =
 
 CXXFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID
-CXXFLAGS = -O3 -DNDEBUG -mtune=native
-CXXPFLAGS = -fopenmp -mtune=native -O3 -DNDEBUG
+CXXFLAGS = -O3 -DNDEBUG -mtune=native -march=native
+CXXPFLAGS = -fopenmp -mtune=native -march=native -O3 -DNDEBUG
 CXXPFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp
 
 CXXLIBS= -lrt
