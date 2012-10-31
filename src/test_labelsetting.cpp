@@ -89,32 +89,6 @@ int main() {
 	testGridSimple();
 	testGridExponential();
 
-	GraphGenerator<Graph> generator;
-	Graph graph;
-	generator.generateRandomGridGraph(graph, 200, 200);
-
-	LabelSettingAlgorithm<Graph> algo(graph);
-
-	utility::tool::TimeOfDayTimer timer;
-
-	timer.start();
-	algo.run(NodeID(0));
-	timer.stop();
-	
-
-	std::cout << timer.getTimeInSeconds()  << " [s]" << std::endl;
-
-	NodeID node = NodeID(1);
-	std::cout << "Size: " << algo.size(node) << std::endl;
-
-	//FORALL_NODES(graph, node) {
-		std::cout << "Node " << node << ":"; 
-		for (LabelSettingAlgorithm<Graph>::const_iterator i = algo.begin(node); i!=algo.end(node); ++i) {
-			std::cout << " (" << i->first_weight << ", " << i->second_weight << ")";
-		}
-		std::cout << std::endl;
-	//}
-	
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;
 }

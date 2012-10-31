@@ -20,7 +20,7 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=Dijkstra
+CODE=Dijkstra time_labelsetting
 TESTS=test_labelset test_labelsetting
 
 #list of all normal / parallel targets
@@ -99,6 +99,6 @@ SHELL = /bin/bash
 
 all: $(TARGETS) $(PARALLEL_TARGETS)
 
-test: $(TESTS)
+test: all
 	cd $(BINDIR); $(foreach test,$(TESTS),./$(test);)
 

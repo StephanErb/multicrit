@@ -165,7 +165,7 @@ public:
 	}
 
 	static Priority computePriority(const label_type& label) {
-		return label.first_weight + label.second_weight;
+		return std::max(label.first_weight, label.second_weight);
 	}
 
 	/* Subtraction used to hide the sentinals */
