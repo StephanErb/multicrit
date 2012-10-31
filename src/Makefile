@@ -98,3 +98,7 @@ SHELL = /bin/bash
 -include settings.mk
 
 all: $(TARGETS) $(PARALLEL_TARGETS)
+
+test: $(TESTS)
+	cd $(BINDIR); $(foreach test,$(TESTS),./$(test);)
+
