@@ -59,7 +59,7 @@ protected:
 
 	/** First label where the x-coord is truly smaller */
 	iterator x_predecessor(iterator iter, const label_type& new_label) {
-		return std::lower_bound(labels.begin(), labels.end(), new_label, firstWeightLess)-1;
+		return std::lower_bound(iter, labels.end(), new_label, firstWeightLess)-1;
 	}
 
 	/** First label where the y-coord is truly smaller */
