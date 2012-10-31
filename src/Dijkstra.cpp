@@ -70,7 +70,5 @@ int main() {
 	FORALL_NODES(graph, node) {
 		std::cout << "Node " << node << " Cost " << heap.getKey(node) << std::endl;
 	}
-
 	return 0;
 }
-

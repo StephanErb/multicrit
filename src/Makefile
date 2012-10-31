@@ -20,10 +20,11 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
+CODE=Dijkstra
 TESTS=test_labelset test_labelsetting
 
 #list of all normal / parallel targets
-TARGETS = $(TESTS)
+TARGETS = $(TESTS) $(CODE)
 PARALLEL =
 
 CXXFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID
