@@ -14,7 +14,6 @@
 #include <boost/random/uniform_int_distribution.hpp>
 
 #include <iostream>
-#include <map>
 
 template<typename graph_slot>
 class GraphGenerator {
@@ -39,12 +38,9 @@ public:
 	/**
 	 * Generate grid graphs as used by [Raith, Ehrgott 2009]
 	 */
-	Graph generateRandomGridGraph(int height, int width) {
+	void generateRandomGridGraph(Graph& graph, int height, int width) {
 		const int maxCostRange = 10;
-		typedef std::pair<int, int> Pos;
-		std::map<Pos, NodeID> nodes;
-
-		Graph graph;
+		NodeID nodes[width][height];
 
 		graph.addNode();
 		const NodeID START = NodeID(0);
@@ -57,33 +53,33 @@ public:
 		for (int i=0; i<width; ++i) {
 			for (int j=0; j<height; ++j) {
 				graph.addNode();
-				nodes[Pos(i,j)] = NodeID(node_count++);
+				nodes[i][j] = NodeID(node_count++);
 			}	
 		}
 
 		// Link START node to the left column
 		for (int j=0; j<height; ++j) {		
-			graph.addEdge(START, Edge(nodes[Pos(0,j)], randomWeight(maxCostRange))); 
+			graph.addEdge(START, Edge(nodes[0][j], randomWeight(maxCostRange))); 
 		}
 
 		// Link right column to the END node
 		for (int j=0; j<height; ++j) {		
-			graph.addEdge(nodes[Pos(width-1,j)], Edge(END, randomWeight(maxCostRange))); 
+			graph.addEdge(nodes[width-1][j], Edge(END, randomWeight(maxCostRange))); 
 		}
 
 		// Link adjacent nodes
 		for (int i=0; i<width; ++i) {
 			for (int j=0; j<height; ++j) {
-				NodeID current = nodes[Pos(i, j)];
+				NodeID current = nodes[i][j];
 				
-				if (i+1 < width)  graph.addEdge(current, Edge(nodes[Pos(i+1,j)], randomWeight(maxCostRange))); 
-				if (i-1 >= 0)     graph.addEdge(current, Edge(nodes[Pos(i-1,j)], randomWeight(maxCostRange))); 
-				if (j+1 < height) graph.addEdge(current, Edge(nodes[Pos(i,j+1)], randomWeight(maxCostRange))); 
-				if (j-1 >= 0)     graph.addEdge(current, Edge(nodes[Pos(i,j-1)], randomWeight(maxCostRange))); 
+				if (i+1 < width)  graph.addEdge(current, Edge(nodes[i+1][j], randomWeight(maxCostRange))); 
+				if (i-1 >= 0)     graph.addEdge(current, Edge(nodes[i-1][j], randomWeight(maxCostRange))); 
+				if (j+1 < height) graph.addEdge(current, Edge(nodes[i][j+1], randomWeight(maxCostRange))); 
+				if (j-1 >= 0)     graph.addEdge(current, Edge(nodes[i][j-1], randomWeight(maxCostRange))); 
 			}	
 		}
 		graph.finalize();
-		return graph;
+		//printGraph(graph);
 	}
 
 
