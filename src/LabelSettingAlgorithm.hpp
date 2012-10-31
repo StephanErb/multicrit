@@ -52,12 +52,15 @@ public:
 		graph(graph_)
 	 {}
 
-	void run() {
-		heap.push(NodeID(0), (Priority) 0, Label(0,0));
+	void run(NodeID node) {
+		heap.push(node, (Priority) 0, Label(0,0));
 
 		while (!heap.empty()) {
 			const NodeID current_node = heap.getMin();
-			const Label& current_label =  heap.getUserData(current_node); //  use addresses here?
+			const Label current_label =  heap.getUserData(current_node);
+
+			//std::cout << "Selecting node " << current_node  << " via label (" << 
+			//	current_label.first_weight << "," << current_label.second_weight << "):"<< std::endl;
 
 			labels[current_node].markBestLabelAsPermantent();
 			if (labels[current_node].hasTemporaryLabels()) {
@@ -71,7 +74,10 @@ public:
 				const Edge& edge = graph.getEdge(eid);
 				Label new_label = createNewLabel(current_label, edge);
 
+				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
+
 				if (labels[edge.target].add(new_label)) {
+					//std::cout << "Label added." << std::endl;
 					// label is non-dominated and has been added to the label set
 					Priority priority = LabelSet<Label>::computePriority(new_label);
 
@@ -83,10 +89,14 @@ public:
 						heap.decreaseKey(edge.target, priority); 
 						heap.getUserData(edge.target) = new_label;
 					}
+				} else {
+					//std::cout << "Label DOMINATED." << std::endl;
 				}
 			}
 		}
 	}
+
+	size_t size(NodeID node) {return labels[node].size(); }
 
 	iterator begin(NodeID node) { return labels[node].begin(); }
 	const_iterator begin(NodeID node) const { return labels[node].begin(); }
