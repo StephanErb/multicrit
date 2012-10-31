@@ -69,13 +69,13 @@ protected:
 
 	void updateBestLabelIfNeeded(const label_type& label) {
 		Priority priority = computePriority(label);
-		if (priority <= best_label_priority) {
+		if (priority < best_label_priority) {
 			best_label_priority = priority;
 			best_label = label;
 		}
 	}
 
-	void printLabels() const {
+	void printLabels() {
 		std::cout << "All labels:";
 		for (iterator i=labels.begin(); i != labels.end(); ++i) {
 			std::cout << " (" <<  i->first_weight << "," << i->second_weight << ")";
@@ -133,7 +133,7 @@ public:
 	}
 
 	// FIXME: The following implementations is very naive and thus horribly slow
-	void markBestLabelAsPermantent() {		
+	void markBestLabelAsPermantent() {
 		label_type old_best_label = best_label;
 		best_label_priority = computePriority(labels[0]); // prio of sentinal
 
