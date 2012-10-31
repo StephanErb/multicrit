@@ -77,13 +77,23 @@ public:
 				NodeID current = nodes[Pos(i, j)];
 				
 				if (i+1 < width)  graph.addEdge(current, Edge(nodes[Pos(i+1,j)], randomWeight(maxCostRange))); 
-				if (i-1 > 0)      graph.addEdge(current, Edge(nodes[Pos(i-1,j)], randomWeight(maxCostRange))); 
+				if (i-1 >= 0)     graph.addEdge(current, Edge(nodes[Pos(i-1,j)], randomWeight(maxCostRange))); 
 				if (j+1 < height) graph.addEdge(current, Edge(nodes[Pos(i,j+1)], randomWeight(maxCostRange))); 
-				if (j-1 < 0)      graph.addEdge(current, Edge(nodes[Pos(i,j-1)], randomWeight(maxCostRange))); 
+				if (j-1 >= 0)     graph.addEdge(current, Edge(nodes[Pos(i,j-1)], randomWeight(maxCostRange))); 
 			}	
 		}
 		graph.finalize();
 		return graph;
+	}
+
+
+	void printGraph(Graph& graph) {
+		FORALL_NODES(graph, node) {
+			FORALL_EDGES(graph, node, eid) {
+				const Edge& edge = graph.getEdge(eid);
+				std::cout << node << " ---(" << edge.first_weight << ", " << edge.second_weight << ")--> " << edge.target << std::endl;
+			}
+		}
 	}
 
 };
