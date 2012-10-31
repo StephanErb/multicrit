@@ -83,6 +83,38 @@ public:
 	}
 
 
+	/**
+	 * Simple graph with exponential number of labels. Idea taken from the paper 
+	 * 		"Pareto Shortest Paths is Often Feasible in Practice" (see Fig 1.)
+	 */
+	void generateExponentialGraph(Graph& graph, int node_count) {
+		graph.addNode();
+		const NodeID START = NodeID(0);
+		NodeID previous_top = START;
+
+		int i = 0;
+		int first_weight = 2;
+		int second_weight = 1;
+
+		while (i < node_count) {
+			graph.addNode();
+			NodeID bottom = NodeID(++i);
+			graph.addNode();
+			NodeID top = NodeID(++i);
+
+			graph.addEdge(previous_top, Edge(bottom, Weight(first_weight, second_weight)));
+			graph.addEdge(previous_top, Edge(top, Weight(first_weight, 2*first_weight)));
+			graph.addEdge(bottom, Edge(top, Weight(first_weight, second_weight)));
+
+			first_weight = 2 * first_weight;
+			second_weight = 2 * second_weight;
+			previous_top = top;
+		}
+		graph.finalize();
+		//printGraph(graph);
+	}
+
+
 	void printGraph(Graph& graph) {
 		FORALL_NODES(graph, node) {
 			FORALL_EDGES(graph, node, eid) {

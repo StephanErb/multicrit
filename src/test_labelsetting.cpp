@@ -15,6 +15,8 @@
 #include "LabelSettingAlgorithm.hpp"
 #include "GraphGenerator.hpp"
 
+#include "utility/tool/timer.h"
+
 typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
 typedef utility::datastructure::KGraph<Edge> Graph;
 typedef utility::datastructure::NodeID NodeID;
@@ -59,28 +61,59 @@ void testGridSimple() {
 	createGridSimple(graph);
 
 	LabelSettingAlgorithm<Graph> algo(graph);
-	algo.run();
+	algo.run(NodeID(0));
 
 	assertTrue(contains(algo, NodeID(1), Label(2,3)), "");
 	assertTrue(contains(algo, NodeID(1), Label(3,2)), "");
 }
+
+void testGridExponential() {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateExponentialGraph(graph, 20);
+
+	LabelSettingAlgorithm<Graph> algo(graph);
+	algo.run(NodeID(0));
+
+	assertTrue(algo.size(NodeID(0)) == 0, "Start node should have no labels");
+	assertTrue(algo.size(NodeID(1)) == 1, "Second node should have one labels");
+
+	int label_count = 2;
+	for (int i=2; i<graph.numberOfNodes(); i=i+2) {
+		assertTrue(algo.size(NodeID(i)) == label_count, "Expect exponential num of labels");
+		label_count = 2 * label_count;
+	}
+}
  
 int main() {
 	testGridSimple();
+	testGridExponential();
 
 	GraphGenerator<Graph> generator;
-	Graph graph = generator.generateRandomGridGraph(3,3);
+	Graph graph;
+	generator.generateRandomGridGraph(graph, 200, 200);
 
 	LabelSettingAlgorithm<Graph> algo(graph);
-	algo.run();
 
-	FORALL_NODES(graph, node) {
+	utility::tool::TimeOfDayTimer timer;
+
+	timer.start();
+	algo.run(NodeID(0));
+	timer.stop();
+	
+
+	std::cout << timer.getTimeInSeconds()  << " [s]" << std::endl;
+
+	NodeID node = NodeID(1);
+	std::cout << "Size: " << algo.size(node) << std::endl;
+
+	//FORALL_NODES(graph, node) {
 		std::cout << "Node " << node << ":"; 
 		for (LabelSettingAlgorithm<Graph>::const_iterator i = algo.begin(node); i!=algo.end(node); ++i) {
 			std::cout << " (" << i->first_weight << ", " << i->second_weight << ")";
 		}
 		std::cout << std::endl;
-	}
+	//}
 	
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;
