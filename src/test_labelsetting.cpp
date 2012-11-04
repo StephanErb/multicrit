@@ -78,8 +78,8 @@ void testGridExponential() {
 	assertTrue(algo.size(NodeID(0)) == 0, "Start node should have no labels");
 	assertTrue(algo.size(NodeID(1)) == 1, "Second node should have one labels");
 
-	int label_count = 2;
-	for (int i=2; i<graph.numberOfNodes(); i=i+2) {
+	unsigned int label_count = 2;
+	for (unsigned int i=2; i<graph.numberOfNodes(); i=i+2) {
 		assertTrue(algo.size(NodeID(i)) == label_count, "Expect exponential num of labels");
 		label_count = 2 * label_count;
 	}
