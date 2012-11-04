@@ -101,10 +101,9 @@ public:
 					//std::cout << "Label DOMINATED." << std::endl;
 				}
 			}
-		}
-		printStatistics();
-		
+		}		
 	}
+	
 	void printStatistics() {
 		std::cout << stats.toString() << std::endl;
 	}
