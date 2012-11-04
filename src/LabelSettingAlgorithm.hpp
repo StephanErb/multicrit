@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 #include "LabelSet.hpp"
+#include "LabelSettingStatistics.hpp"
 
 
 template<typename graph_slot>
@@ -36,6 +37,7 @@ private:
 	BinaryHeap heap;
 	std::vector<LabelSet<Label> > labels;
 	graph_slot graph;
+	LabelSettingStatistics stats;
 
 	static Label createNewLabel(const Label& current_label, const Edge& edge) {
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
@@ -49,7 +51,8 @@ public:
 	LabelSettingAlgorithm(const graph_slot& graph_):
 		heap((NodeID)graph_.numberOfNodes()),
 		labels(graph_.numberOfNodes()),
-		graph(graph_)
+		graph(graph_),
+		stats(graph.numberOfNodes())
 	 {}
 
 	void run(NodeID node) {
@@ -58,6 +61,7 @@ public:
 		while (!heap.empty()) {
 			const NodeID current_node = heap.getMin();
 			const Label current_label =  heap.getUserData(current_node);
+			stats.report(BEST_NODE, current_node);
 
 			//std::cout << "Selecting node " << current_node  << " via label (" << 
 			//	current_label.first_weight << "," << current_label.second_weight << "):"<< std::endl;
@@ -77,6 +81,8 @@ public:
 				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
 
 				if (labels[edge.target].add(new_label)) {
+					stats.report(NEW_LABEL_NONDOMINATED, edge.target, labels[edge.target].size());
+
 					//std::cout << "Label added." << std::endl;
 					// label is non-dominated and has been added to the label set
 					Priority priority = LabelSet<Label>::computePriority(new_label);
@@ -88,12 +94,19 @@ public:
 						// new label represents the new best label / best known path to the target
 						heap.decreaseKey(edge.target, priority); 
 						heap.getUserData(edge.target) = new_label;
+						stats.report(NEW_BEST_LABEL, edge.target);
 					}
 				} else {
+					stats.report(NEW_LABEL_DOMINATED, edge.target, labels[edge.target].size());
 					//std::cout << "Label DOMINATED." << std::endl;
 				}
 			}
 		}
+		printStatistics();
+		
+	}
+	void printStatistics() {
+		std::cout << stats.toString() << std::endl;
 	}
 
 	size_t size(NodeID node) {return labels[node].size(); }
