@@ -19,7 +19,7 @@ void assertTrue(bool cond, std::string msg) {
 	}
 }
 
-bool contains(const LabelSet<Label> set, const Label label) {
+bool contains(const LabelSet<Label>& set, const Label label) {
 	return std::find(set.begin(), set.end(), label) != set.end();
 }
 
@@ -65,24 +65,28 @@ void testSimpleInsertion() {
 	assertTrue(contains(set, Label(1,10)), "Label should have remained");
 }
 
-void testAdditionForBorderlineCases() {
-	LabelSet<Label> set = LabelSet<Label>();
+void testAdditionForBorderlineCase1() {
+	LabelSet<Label> set;
 	assertTrue(set.size() == 0, "Should be empty");
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
 	set.add(Label(5,5));
 	assertTrue(set.size() == 1, "Should have removed dominated label with x-coord conflict");
 	assertTrue(contains(set, Label(5,5)), "Label should have remained");
+}
 
-	set = LabelSet<Label>();
+void testAdditionForBorderlineCase2() {
+	LabelSet<Label> set;
 	assertTrue(set.size() == 0, "Should be empty");
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
 	set.add(Label(4,6));
 	assertTrue(set.size() == 1, "Should have removed dominated label with y-coord conflict");
 	assertTrue(contains(set, Label(4,6)), "Label should have remained");
+}
 
-	set = LabelSet<Label>();
+void testAdditionForBorderlineCase3() {
+	LabelSet<Label> set;
 	assertTrue(set.size() == 0, "Should be empty");
 	set.add(Label(4,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
@@ -92,7 +96,7 @@ void testAdditionForBorderlineCases() {
 }
 
 void testBestLabelInteraction() {
-	LabelSet<Label> set = LabelSet<Label>();
+	LabelSet<Label> set;
 
 	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
 
@@ -116,7 +120,9 @@ void testBestLabelInteraction() {
 
 int main() {
 	testSimpleInsertion();
-	testAdditionForBorderlineCases();
+	testAdditionForBorderlineCase1();
+	testAdditionForBorderlineCase2();
+	testAdditionForBorderlineCase3();
 	testBestLabelInteraction();
 
 	std::cout << "Tests passed successfully." << std::endl;
