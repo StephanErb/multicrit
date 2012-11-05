@@ -5,6 +5,7 @@
 #include "utility/datastructure/graph/GraphTypes.hpp"
 #include "utility/datastructure/graph/GraphMacros.h"
 
+#include <unistd.h>
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -19,8 +20,7 @@ typedef utility::datastructure::KGraph<Edge> Graph;
 typedef utility::datastructure::NodeID NodeID;
 typedef Edge::edge_data Label;
 
-
-void benchmark(Graph& graph, NodeID start, NodeID target) {
+void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 	LabelSettingAlgorithm<Graph> algo(graph);
 
 	utility::tool::TimeOfDayTimer timer;
@@ -28,49 +28,73 @@ void benchmark(Graph& graph, NodeID start, NodeID target) {
 	algo.run(start);
 	timer.stop();
 
-	NodeID node = NodeID(graph.numberOfNodes()-1);
-	std::cout << "  Target node label count: " << algo.size(node) << std::endl;
-
-	std::cout << "  " << timer.getTimeInSeconds()  << " [s]" << std::endl << std::endl;
+	if (verbose) {
+		algo.printStatistics();
+		NodeID node = NodeID(graph.numberOfNodes()-1);
+		std::cout << "Target node label count: " << algo.size(node) << std::endl;
+	}
+	std::cout << timer.getTimeInSeconds()  << " # time in [s]" << std::endl << std::endl;
 }
 
-void timeGrid() {
-	std::cout << "Raith & Ehrgott Grid (hard): " << std::endl;
+void timeGrid(int width, int height, bool verbose) {
+	std::cout << "# Raith & Ehrgott Grid (hard): " << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
-	generator.generateRandomGridGraph(graph, 200, 200);
-	benchmark(graph, NodeID(0), NodeID(1));
+	generator.generateRandomGridGraph(graph, width, height);
+	benchmark(graph, NodeID(0), NodeID(1), verbose);
 }
 
-void timeCorrelatedGrid1() {
-	std::cout << "Machuca Grid Correlated (simple): " << std::endl;
+void timeCorrelatedGrid1(int width, int height, bool verbose) {
+	double p = 0.4;
+	std::cout << "# Machuca Grid Correlated (p=" << p << "): " << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
-	generator.generateRandomGridGraphWithCostCorrleation(graph, 200, 200, 0.4);
-	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1));
+	generator.generateRandomGridGraphWithCostCorrleation(graph, width, height, p);
+	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
 }
 
-void timeCorrelatedGrid2() {
-	std::cout << "Machuca Grid Correlated (difficult): " << std::endl;
+void timeCorrelatedGrid2(int width, int height, bool verbose) {
+	double p = -0.4;
+	std::cout << "# Machuca Grid Correlated (p=" << p << "): " << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
-	generator.generateRandomGridGraphWithCostCorrleation(graph, 200, 200, -0.4);
-	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1));
+	generator.generateRandomGridGraphWithCostCorrleation(graph, width, height, p);
+	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
 }
 
-void timeExponentialGraph() {
-	std::cout << "Exponential Graph: " << std::endl;
+void timeExponentialGraph(bool verbose) {
+	std::cout << "# Exponential Graph: " << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
-	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1));
+	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
 }
 
 int main(int argc, char ** args) {
-	timeExponentialGraph();
-	timeGrid();
-	timeCorrelatedGrid1();
-	timeCorrelatedGrid2();
+	int width = 50;
+	int height = 50;
+	bool verbose = false;
+
+	int c;
+	while( (c = getopt( argc, args, "w:h:v") ) != -1  ){
+		switch(c){
+		case 'w':
+			width = atoi(optarg);
+			break;
+		case 'h':
+			height = atoi(optarg);
+			break;
+		case 'v':
+			verbose = true;
+			break;
+		case '?':
+            std::cout << "Unrecognized option: " <<  optopt << std::endl;
+		}
+	}
+	timeExponentialGraph(verbose);
+	timeGrid(width, height, verbose);
+	timeCorrelatedGrid1(width, height, verbose);
+	timeCorrelatedGrid2(width, height, verbose);
 	return 0;
 }
 

@@ -92,7 +92,7 @@ public:
 		unsigned int max_depletion_run = *std::max_element(depletion_sequences.begin(), depletion_sequences.end());
 		out_stream << "markBestLabelAsPermantent without insert into set:" << "\n";
 		out_stream << "  avg" << ": " << avg_depletion_run << "\n";
-		out_stream << "  max" << ": " << max_depletion_run << "\n";
+		out_stream << "  max" << ": " << max_depletion_run << "";
 		return out_stream.str();
 	}
 };
