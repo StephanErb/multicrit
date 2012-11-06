@@ -27,6 +27,20 @@ Machuca Grid Correlated (difficult):
   Target node label count: 880
   39.0188 [s]
 
+## Array (scanning with binary search shortcut)
+Exponential Graph: 
+0.006154 # time in [s]
+
+Raith & Ehrgott Grid (hard): 
+8.83218 # time in [s]
+
+Machuca Grid Correlated (p=0.4): 
+4.98369 # time in [s]
+
+Machuca Grid Correlated (p=-0.4): 
+36.7179 # time in [s]
+
+
 ## Array + Heap LabelSet Implementation
 Exponential Graph: 
   Target node label count: 1024
@@ -79,4 +93,4 @@ Machuca Grid Correlated (simple):
 
 Machuca Grid Correlated (difficult): 
   Target node label count: 880
-  28.6798 [s
+  28.6798 [s]
