@@ -6,7 +6,7 @@
 #ifndef LABELSET_H_
 #define LABELSET_H_
 
-//#define TREE_SET
+#include "options.hpp"
 #ifdef TREE_SET
 	#include <set>
 #else
@@ -27,7 +27,15 @@ public:
 	typedef unsigned int Priority;
 
 	static Priority computePriority(const label_type_slot& label) {
-		return label.first_weight + label.second_weight;
+		#ifdef PRIORITY_SUM
+			return label.first_weight + label.second_weight;
+		#endif
+		#ifdef PRIORITY_LEX
+			return label.first_weight * MAX_COST + label.second_weight;
+		#endif
+		#ifdef PRIORITY_MAX
+			return std::max(label.first_weight, label.second_weight);
+		#endif
 	}
 
 #ifdef TREE_SET
@@ -346,6 +354,6 @@ public:
 
 
 template<typename label_type_slot>
-class LabelSet : public NaiveLabelSet<label_type_slot> {};
+class LabelSet : public LABEL_SET<label_type_slot> {};
 
 #endif 
