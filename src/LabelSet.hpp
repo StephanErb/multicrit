@@ -6,7 +6,12 @@
 #ifndef LABELSET_H_
 #define LABELSET_H_
 
-#include <vector>
+#ifdef TREE_SET
+	#include <set>
+#else
+ 	#include <vector>
+#endif
+
 #include <iostream>
 #include <limits>
 #include <algorithm>
@@ -24,7 +29,17 @@ public:
 		return label.first_weight  + label.second_weight;
 	}
 
+#ifdef TREE_SET
+	struct SetOrderer {
+  		bool operator() (const label_type_slot& i, const label_type_slot& j) const {
+  			return i.first_weight < j.first_weight;
+  		}
+	};
+	typedef std::set<label_type_slot, SetOrderer> Set;
+#else
 	typedef std::vector<label_type_slot> Set;
+#endif
+
 	typedef typename Set::iterator iterator;
 	typedef typename Set::const_iterator const_iterator;
 
@@ -38,8 +53,14 @@ protected:
 	}
 
 	/** First label where the x-coord is truly smaller */
-	static iterator x_predecessor(const iterator begin, const iterator end, const label_type_slot& new_label) {
-		return std::lower_bound(begin, end, new_label, firstWeightLess)-1;
+	static iterator x_predecessor(Set& labels, const label_type_slot& new_label) {
+#ifdef TREE_SET
+		iterator iter = labels.lower_bound(new_label);
+		--iter;
+		return iter;
+#else
+		return std::lower_bound(labels.begin(), labels.end(), new_label, firstWeightLess)-1;
+#endif	
 	}
 
 	/** First label where the y-coord is truly smaller */
@@ -63,7 +84,7 @@ protected:
 	}
 
 	static bool isDominated(Set& labels, const label_type_slot& new_label, iterator& iter) {
-		iter = x_predecessor(labels.begin(), labels.end(), new_label);
+		iter = x_predecessor(labels, new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {
 			return true; // new label is dominated
@@ -95,7 +116,7 @@ public:
 		label_type_slot(first, second),
 		permanent(permanent_)
 	{}
-    bool permanent;
+    bool mutable permanent;
 };
 
 
@@ -131,11 +152,12 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
-		labels.push_back(label_type(min, max, /*permanent*/ true));
-		labels.push_back(label_type(max, min, /*permanent*/ true));
+		labels.insert(labels.begin(), label_type(min, max, /*permanent*/ true));
+		labels.insert(labels.end(), label_type(max, min, /*permanent*/ true));
 
-		best_label = labels[0]; // one of the sentinals
+		best_label = *labels.begin(); // one of the sentinals
 		best_label_priority = B::computePriority(best_label);
+
 
 		perm_label_counter = 2; // sentinals
 	}
@@ -153,9 +175,14 @@ public:
 			// delete range is empty, so just insert
 			labels.insert(first_nondominated, new_label);
 		} else {
-			// replace first dominated label and remove the rest
-			*iter = new_label;
-			labels.erase(++iter, first_nondominated);
+#ifdef TREE_SET
+		labels.erase(iter, first_nondominated);
+		labels.insert(--iter, new_label);
+#else
+		// replace first dominated label and remove the rest
+		*iter = new_label;
+		labels.erase(++iter, first_nondominated);
+#endif
 		}
 		updateBestLabelIfNeeded(new_label);
 		return true;
@@ -164,7 +191,7 @@ public:
 	// FIXME: The following implementations is very naive and thus horribly slow
 	void markBestLabelAsPermantent() {
 		label_type old_best_label = best_label;
-		best_label_priority = B::computePriority(labels[0]); // prio of sentinal
+		best_label_priority = B::computePriority(*labels.begin()); // prio of sentinal
 
 		// Scan all labels: Find new best label and mark the old one as permanent.
 		for (typename B::iterator i = labels.begin(); i != labels.end(); ++i) {
@@ -196,10 +223,10 @@ public:
 	/* Subtraction used to hide the sentinals */
 	std::size_t size() const { return labels.size()-2; }
 
-	typename B::iterator begin() { return labels.begin()+1; }
-	typename B::const_iterator begin() const { return labels.begin()+1; }
-	typename B::iterator end() { return labels.end()-1; }
-	typename B::const_iterator end() const { return labels.end()-1; }
+	typename B::iterator begin() { return labels.begin(); }
+	typename B::const_iterator begin() const { return labels.begin(); }
+	typename B::iterator end() { return labels.end(); }
+	typename B::const_iterator end() const { return labels.end(); }
 };
 
 
