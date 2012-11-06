@@ -12,72 +12,44 @@
 #include <algorithm>
 
 
+/**
+ * Common functions & types shared by all label set implementations.
+ */
 template<typename label_type_slot>
-class LabelSet {
-public: 
-
-	// Extend label type with flag to mark if the label is still 
-	// tentative/temporary or already permanent.
-	class label_type : public label_type_slot {
-	public:
-
-		label_type() {}
-
-		label_type(const label_type_slot& label):
-			label_type_slot(label.first_weight, label.second_weight),
-			permanent(false)
-		{}
-
-		label_type(const typename label_type::weight_type first, const typename label_type::weight_type second, const bool permanent_):
-			label_type_slot(first, second),
-			permanent(permanent_)
-		{}
-
-	    bool permanent;
-	};
-	typedef typename std::vector<label_type>::iterator iterator;
-	typedef typename std::vector<label_type>::const_iterator const_iterator;
+class LabelSetBase {
+public:
 	typedef unsigned int Priority;
 
+	static Priority computePriority(const label_type_slot& label) {
+		return label.first_weight  + label.second_weight;
+	}
+
+	typedef std::vector<label_type_slot> Set;
+	typedef typename Set::iterator iterator;
+	typedef typename Set::const_iterator const_iterator;
+
 protected:
-
-	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
-	std::vector<label_type> labels;
-
-	size_t perm_label_counter;
-
-	label_type best_label;
-	Priority best_label_priority; 
-
-	static bool firstWeightLess(const label_type& i, const label_type& j) {
+	static bool firstWeightLess(const label_type_slot& i, const label_type_slot& j)  {
 		return i.first_weight < j.first_weight;
 	}
 
-	static bool secondWeightGreaterOrEquals(const label_type& i, const label_type& j) {
+	static bool secondWeightGreaterOrEquals(const label_type_slot& i, const label_type_slot& j) {
 		return i.second_weight >= j.second_weight;
 	}
 
 	/** First label where the x-coord is truly smaller */
-	iterator x_predecessor(iterator iter, const label_type& new_label) {
-		return std::lower_bound(iter, labels.end(), new_label, firstWeightLess)-1;
+	static iterator x_predecessor(const iterator begin, const iterator end, const label_type_slot& new_label) {
+		return std::lower_bound(begin, end, new_label, firstWeightLess)-1;
 	}
 
 	/** First label where the y-coord is truly smaller */
-	iterator y_predecessor(iterator iter, const label_type& new_label) {
-		return std::lower_bound(iter, labels.end(), new_label, secondWeightGreaterOrEquals);
+	static iterator y_predecessor(const iterator begin, const iterator end, const label_type_slot& new_label) {
+		return std::lower_bound(begin, end, new_label, secondWeightGreaterOrEquals);
 	}
 
-	void updateBestLabelIfNeeded(const label_type& label) {
-		Priority priority = computePriority(label);
-		if (priority < best_label_priority) {
-			best_label_priority = priority;
-			best_label = label;
-		}
-	}
-
-	void printLabels() {
+	static void printLabels(iterator begin, iterator end) {
 		std::cout << "All labels:";
-		for (iterator i=labels.begin(); i != labels.end(); ++i) {
+		for (iterator i = begin; i != end; ++i) {
 			std::cout << " (" <<  i->first_weight << "," << i->second_weight << ")";
 			if (!i->permanent) {
 				std::cout << "?";
@@ -86,9 +58,71 @@ protected:
 		std::cout << std::endl;
 	}
 
-public:
+	static bool isDominated(Set& labels, const label_type_slot& new_label, iterator& iter) {
+		iter = x_predecessor(labels.begin(), labels.end(), new_label);
 
-	LabelSet() {
+		if (iter->second_weight <= new_label.second_weight) {
+			return true; // new label is dominated
+		}
+		++iter; // move to element with greater or equal x-coordinate
+
+		if (iter->first_weight == new_label.first_weight && 
+			iter->second_weight <= new_label.second_weight) {
+			// new label is dominated by the (single) pre-existing element with the same
+			// x-coordinate.
+			return true; 
+		}
+		return false;
+	}
+};
+
+
+// Extend label type with a flag to mark if the label is still 
+// tentative/temporary or already permanent.
+template<typename label_type_slot>
+class LabelWithFlag : public label_type_slot {
+public:
+	LabelWithFlag() {}
+	LabelWithFlag(const label_type_slot& label):
+		label_type_slot(label.first_weight, label.second_weight),
+		permanent(false)
+	{}
+	LabelWithFlag(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const bool permanent_):
+		label_type_slot(first, second),
+		permanent(permanent_)
+	{}
+    bool permanent;
+};
+
+
+/**
+  * Naive implementation: Find the next best label of this node by scanning all labels.
+  */
+template<typename label_type_slot>
+class NaiveLabelSet : public LabelSetBase<LabelWithFlag<label_type_slot> > {
+public: 
+	typedef LabelWithFlag<label_type_slot> label_type;
+
+protected:
+	typedef LabelSetBase<label_type> B;
+
+	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
+	typename B::Set labels;
+	size_t perm_label_counter;
+
+	label_type best_label;
+	typename B::Priority best_label_priority; 
+
+	void updateBestLabelIfNeeded(const label_type& label) {
+		typename B::Priority priority = B::computePriority(label);
+		if (priority < best_label_priority) {
+			best_label_priority = priority;
+			best_label = label;
+		}
+	}
+
+public:
+	NaiveLabelSet() {
 		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
@@ -97,7 +131,7 @@ public:
 		labels.push_back(label_type(max, min, /*permanent*/ true));
 
 		best_label = labels[0]; // one of the sentinals
-		best_label_priority = computePriority(best_label);
+		best_label_priority = B::computePriority(best_label);
 
 		perm_label_counter = 2; // sentinals
 	}
@@ -105,20 +139,11 @@ public:
 	// Return true if the new_label is non-dominated and has been added
 	// as a temporary label to this label set. 
 	bool add(const label_type& new_label) {
-		iterator iter = x_predecessor(labels.begin(), new_label);
-
-		if (iter->second_weight <= new_label.second_weight) {
-			return false; // new label is dominated
+		typename B::iterator iter;
+		if (B::isDominated(labels, new_label, iter)) {
+			return false;
 		}
-		++iter; // move to element with greater or equal x-coordinate
-
-		if (iter->first_weight == new_label.first_weight && 
-			iter->second_weight <= new_label.second_weight) {
-			// new label is dominated by the (single) pre-existing element with the same
-			// x-coordinate.
-			return false; 
-		}
-		iterator first_nondominated = y_predecessor(iter, new_label);
+		typename B::iterator first_nondominated = B::y_predecessor(iter, labels.end(), new_label);
 
 		if (iter == first_nondominated) {
 			// delete range is empty, so just insert
@@ -135,10 +160,10 @@ public:
 	// FIXME: The following implementations is very naive and thus horribly slow
 	void markBestLabelAsPermantent() {
 		label_type old_best_label = best_label;
-		best_label_priority = computePriority(labels[0]); // prio of sentinal
+		best_label_priority = B::computePriority(labels[0]); // prio of sentinal
 
 		// Scan all labels: Find new best label and mark the old one as permanent.
-		for (iterator i = labels.begin(); i != labels.end(); ++i) {
+		for (typename B::iterator i = labels.begin(); i != labels.end(); ++i) {
 
 			if (i->permanent) {
 				continue;
@@ -156,7 +181,7 @@ public:
 		return labels.size() > perm_label_counter;
 	}
 
-	Priority getPriorityOfBestTemporaryLabel() const {
+	typename B::Priority getPriorityOfBestTemporaryLabel() const {
 		return best_label_priority;
 	}
 
@@ -164,18 +189,17 @@ public:
 		return best_label;
 	}
 
-	static Priority computePriority(const label_type& label) {
-		return label.first_weight * 1000 + label.second_weight;
-	}
-
 	/* Subtraction used to hide the sentinals */
 	std::size_t size() const { return labels.size()-2; }
 
-	iterator begin() { return labels.begin()+1; }
-	const_iterator begin() const { return labels.begin()+1; }
-	iterator end() { return labels.end()-1; }
-	const_iterator end() const { return labels.end()-1; }
-
+	typename B::iterator begin() { return labels.begin()+1; }
+	typename B::const_iterator begin() const { return labels.begin()+1; }
+	typename B::iterator end() { return labels.end()-1; }
+	typename B::const_iterator end() const { return labels.end()-1; }
 };
+
+
+template<typename label_type_slot>
+class LabelSet : public NaiveLabelSet<label_type_slot> {};
 
 #endif 
