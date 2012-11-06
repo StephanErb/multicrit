@@ -6,6 +6,7 @@
 #ifndef LABELSET_H_
 #define LABELSET_H_
 
+//#define TREE_SET
 #ifdef TREE_SET
 	#include <set>
 #else
@@ -171,19 +172,19 @@ public:
 		}
 		typename B::iterator first_nondominated = B::y_predecessor(iter, labels.end(), new_label);
 
-		if (iter == first_nondominated) {
-			// delete range is empty, so just insert
-			labels.insert(first_nondominated, new_label);
-		} else {
 #ifdef TREE_SET
 		labels.erase(iter, first_nondominated);
-		labels.insert(--iter, new_label);
+		labels.insert(new_label);
 #else
-		// replace first dominated label and remove the rest
-		*iter = new_label;
-		labels.erase(++iter, first_nondominated);
-#endif
+		if (iter == first_nondominated) {
+			// delete range is empty, so just insert
+			labels.insert(new_label);
+		} else {
+			// replace first dominated label and remove the rest
+			*iter = new_label;
+			labels.erase(++iter, first_nondominated);
 		}
+#endif
 		updateBestLabelIfNeeded(new_label);
 		return true;
 	}
