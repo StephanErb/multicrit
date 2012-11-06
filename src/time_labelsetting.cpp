@@ -30,7 +30,7 @@ void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 
 	if (verbose) {
 		algo.printStatistics();
-		NodeID node = NodeID(graph.numberOfNodes()-1);
+		NodeID node = NodeID(target);
 		std::cout << "Target node label count: " << algo.size(node) << std::endl;
 	}
 	std::cout << timer.getTimeInSeconds()  << " # time in [s]" << std::endl << std::endl;
