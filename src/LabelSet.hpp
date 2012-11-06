@@ -44,7 +44,11 @@ protected:
 
 	/** First label where the y-coord is truly smaller */
 	static iterator y_predecessor(const iterator begin, const iterator end, const label_type_slot& new_label) {
-		return std::lower_bound(begin, end, new_label, secondWeightGreaterOrEquals);
+		iterator i = begin;
+		while (secondWeightGreaterOrEquals(*i, new_label)) {
+			++i;
+		}
+		return i;
 	}
 
 	static void printLabels(iterator begin, iterator end) {
