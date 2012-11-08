@@ -21,12 +21,12 @@
 /**
  * Common functions & types shared by all label set implementations.
  */
-template<typename label_type_slot>
+template<typename label_type, typename label_type_extended>
 class LabelSetBase {
 public:
 	typedef unsigned int Priority;
 
-	static Priority computePriority(const label_type_slot& label) {
+	static Priority computePriority(const label_type& label) {
 		#ifdef PRIORITY_SUM
 			return label.first_weight + label.second_weight;
 		#endif
@@ -40,29 +40,29 @@ public:
 
 #ifdef TREE_SET
 	struct SetOrderer {
-  		bool operator() (const label_type_slot& i, const label_type_slot& j) const {
+  		bool operator() (const label_type_extended& i, const label_type_extended& j) const {
   			return i.first_weight < j.first_weight;
   		}
 	};
-	typedef std::set<label_type_slot, SetOrderer> Set;
+	typedef std::set<label_type_extended, SetOrderer> Set;
 #else
-	typedef std::vector<label_type_slot> Set;
+	typedef std::vector<label_type_extended> Set;
 #endif
 
 	typedef typename Set::iterator iterator;
 	typedef typename Set::const_iterator const_iterator;
 
 protected:
-	static bool firstWeightLess(const label_type_slot& i, const label_type_slot& j)  {
+	static bool firstWeightLess(const label_type& i, const label_type& j)  {
 		return i.first_weight < j.first_weight;
 	}
 
-	static bool secondWeightGreaterOrEquals(const label_type_slot& i, const label_type_slot& j) {
+	static bool secondWeightGreaterOrEquals(const label_type& i, const label_type& j) {
 		return i.second_weight >= j.second_weight;
 	}
 
 	/** First label where the x-coord is truly smaller */
-	static iterator x_predecessor(Set& labels, const label_type_slot& new_label) {
+	static iterator x_predecessor(Set& labels, const label_type& new_label) {
 #ifdef TREE_SET
 		return --labels.lower_bound(new_label);
 #else
@@ -71,7 +71,7 @@ protected:
 	}
 
 	/** First label where the y-coord is truly smaller */
-	static iterator y_predecessor(const iterator& begin, const label_type_slot& new_label) {
+	static iterator y_predecessor(const iterator& begin, const label_type& new_label) {
 		iterator i = begin;
 		while (secondWeightGreaterOrEquals(*i, new_label)) {
 			++i;
@@ -90,7 +90,7 @@ protected:
 		std::cout << std::endl;
 	}
 
-	static bool isDominated(Set& labels, const label_type_slot& new_label, iterator& iter) {
+	static bool isDominated(Set& labels, const label_type& new_label, iterator& iter) {
 		iter = x_predecessor(labels, new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {
@@ -107,7 +107,7 @@ protected:
 		return false;
 	}
 
-	static void insertAndRemoveDominated(Set &labels, const label_type_slot& new_label, iterator iter) {
+	static void insertAndRemoveDominated(Set &labels, const label_type_extended& new_label, iterator iter) {
 		iterator first_nondominated = y_predecessor(iter, new_label);
 
 #ifdef TREE_SET
@@ -132,12 +132,11 @@ protected:
 template<typename label_type_slot>
 class LabelWithFlag : public label_type_slot {
 public:
-	LabelWithFlag() {}
-	LabelWithFlag(const label_type_slot& label):
+	explicit LabelWithFlag(const label_type_slot& label):
 		label_type_slot(label.first_weight, label.second_weight),
 		permanent(false)
 	{}
-	LabelWithFlag(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const bool permanent_):
+	explicit LabelWithFlag(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const bool permanent_):
 		label_type_slot(first, second),
 		permanent(permanent_)
 	{}
@@ -149,12 +148,13 @@ public:
   * Naive implementation: Find the next best label of this node by scanning all labels.
   */
 template<typename label_type_slot>
-class NaiveLabelSet : public LabelSetBase<LabelWithFlag<label_type_slot> > {
+class NaiveLabelSet : public LabelSetBase<label_type_slot, LabelWithFlag<label_type_slot> > {
 public: 
-	typedef LabelWithFlag<label_type_slot> label_type;
+	typedef LabelWithFlag<label_type_slot> label_type_extended;
+	typedef label_type_slot label_type;
 
 protected:
-	typedef LabelSetBase<label_type> B;
+	typedef LabelSetBase<label_type, label_type_extended> B;
 
 	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
 	typename B::Set labels;
@@ -177,8 +177,8 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
-		labels.insert(labels.begin(), label_type(min, max, /*permanent*/ true));
-		labels.insert(labels.end(), label_type(max, min, /*permanent*/ true));
+		labels.insert(labels.begin(), label_type_extended(min, max, /*permanent*/ true));
+		labels.insert(labels.end(), label_type_extended(max, min, /*permanent*/ true));
 
 		best_label = *labels.begin(); // one of the sentinals
 		best_label_priority = B::computePriority(best_label);
@@ -193,7 +193,7 @@ public:
 		if (B::isDominated(labels, new_label, iter)) {
 			return false;
 		}
-		B::insertAndRemoveDominated(labels, new_label, iter);
+		B::insertAndRemoveDominated(labels, label_type_extended(new_label), iter);
 		updateBestLabelIfNeeded(new_label);
 		return true;
 	}
@@ -245,12 +245,12 @@ public:
   * of elements that have to be scanned constanly.
   */
 template<typename label_type_slot>
-class SplittedNaiveLabelSet : public LabelSetBase<label_type_slot > {
+class SplittedNaiveLabelSet : public LabelSetBase<label_type_slot, label_type_slot > {
 public: 
 	typedef label_type_slot label_type;
 
 protected:
-	typedef LabelSetBase<label_type> B;
+	typedef LabelSetBase<label_type_slot, label_type> B;
 
 	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
 	typename B::Set perm_labels;
@@ -354,12 +354,11 @@ public:
 template<typename label_type_slot>
 class LabelWithHandle : public label_type_slot {
 public:
-	LabelWithHandle() {}
-	LabelWithHandle(const label_type_slot& label):
+	explicit LabelWithHandle(const label_type_slot& label):
 		label_type_slot(label.first_weight, label.second_weight),
 		handle(0)
 	{}
-	LabelWithHandle(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const size_t handle):
+	explicit LabelWithHandle(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const size_t handle):
 		label_type_slot(first, second),
 		handle(handle)
 	{}
@@ -369,12 +368,13 @@ public:
 
 
 template<typename label_type_slot>
-class HeapLabelSet : public LabelSetBase<LabelWithHandle<label_type_slot> > {
+class HeapLabelSet : public LabelSetBase<label_type_slot, LabelWithHandle<label_type_slot> > {
 public: 
-	typedef LabelWithHandle<label_type_slot> label_type;
+	typedef LabelWithHandle<label_type_slot> label_type_extended;
+	typedef label_type_slot label_type;
 
 protected:
-	typedef LabelSetBase<label_type> B;
+	typedef LabelSetBase<label_type_slot, label_type_extended> B;
 
 	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
 	typename B::Set labels;
@@ -390,8 +390,8 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
-		labels.insert(labels.begin(), label_type(min, max, 0));
-		labels.insert(labels.end(), label_type(max, min, 0));
+		labels.insert(labels.begin(), label_type_extended(min, max, 0));
+		labels.insert(labels.end(), label_type_extended(max, min, 0));
 	}
 
 	// Copy constructor which does not copy
@@ -400,17 +400,18 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
-		labels.insert(labels.begin(), label_type(min, max, 0));
-		labels.insert(labels.end(), label_type(max, min, 0));
+		labels.insert(labels.begin(), label_type_extended(min, max, 0));
+		labels.insert(labels.end(), label_type_extended(max, min, 0));
 	}
 
 	// Return true if the new_label is non-dominated and has been added
 	// as a temporary label to this label set. 
-	bool add(const label_type& new_label) {
+	bool add(const label_type& label) {
 		typename B::iterator iter;
-		if (B::isDominated(labels, new_label, iter)) {
+		if (B::isDominated(labels, label, iter)) {
 			return false;
 		}
+		label_type_extended new_label(label);
 		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
 		if (iter == first_nondominated) {
 			// delete range is empty, so just insert
@@ -463,18 +464,19 @@ public:
   * LabelSet as used by the SharedHeapLabelSettingAlgorithm
   */
 template<typename label_type_slot, typename heap_type_slot>
-class SharedHeapLabelSet : public LabelSetBase<LabelWithHandle<label_type_slot> > {
+class SharedHeapLabelSet : public LabelSetBase<label_type_slot, LabelWithHandle<label_type_slot> > {
 public: 
-	typedef LabelWithHandle<label_type_slot> label_type;
+	typedef LabelWithHandle<label_type_slot> label_type_extended;
+	typedef label_type_slot label_type;
+
 
 protected:
-	typedef LabelSetBase<label_type> B;
+	typedef LabelSetBase<label_type, label_type_extended> B;
 	typedef utility::datastructure::NodeID NodeID;
 	typedef typename heap_type_slot::data_type Data;
 
 	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
 	typename B::Set labels;
-
 
 public:
 	SharedHeapLabelSet() {
@@ -482,18 +484,18 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
-		labels.insert(labels.begin(), label_type(min, max, 0));
-		labels.insert(labels.end(), label_type(max, min, 0));
+		labels.insert(labels.begin(), label_type_extended(min, max, 0));
+		labels.insert(labels.end(), label_type_extended(max, min, 0));
 	}
 
 	// Return true if the new_label is non-dominated and has been added
 	// as a temporary label to this label set. 
-	bool add(const NodeID& node, const label_type& new_label, heap_type_slot& heap) {
+	bool add(const NodeID& node, const label_type& label, heap_type_slot& heap) {
 		typename B::iterator iter;
-		if (B::isDominated(labels, new_label, iter)) {
+		if (B::isDominated(labels, label, iter)) {
 			return false;
 		}
-
+		label_type_extended new_label(label);
 		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
 
 #ifdef TREE_SET
