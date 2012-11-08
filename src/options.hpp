@@ -15,8 +15,9 @@
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
  * Only one may be active at a time!
  */
-//#define LABEL_SET SplittedNaiveLabelSet
-#define LABEL_SET NaiveLabelSet
+//#define LABEL_SET NaiveLabelSet
+#define LABEL_SET SplittedNaiveLabelSet
+//#define LABEL_SET HeapLabelSet
 
 // Configure the linear combination used to select the best label
 // Only one may be active at a time!
