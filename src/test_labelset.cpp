@@ -100,19 +100,19 @@ void testBestLabelInteraction() {
 
 	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
 
-	set.add(Label(3,5));
+	set.add(Label(4,5));
 	assertTrue(set.hasTemporaryLabels(), "Should not be empty");
-	assertTrue(set.getBestTemporaryLabel() == Label(3,5), "Should find initial best label");
+	assertTrue(set.getBestTemporaryLabel() == Label(4,5), "Should find initial best label");
 
-	set.add(Label(2,4));
-	assertTrue(set.getBestTemporaryLabel() == Label(2,4), "Should handle if old best label is dominated");
+	set.add(Label(4,1));
+	assertTrue(set.getBestTemporaryLabel() == Label(4,1), "Should handle if old best label is dominated");
 
-	set.add(Label(3,1));
+	set.add(Label(2,2));
 	assertTrue(set.hasTemporaryLabels(), "");
-	assertTrue(set.getBestTemporaryLabel() == Label(3,1), "Use better label");
+	assertTrue(set.getBestTemporaryLabel() == Label(2,2), "Use better label");
 	set.markBestLabelAsPermantent();
 	assertTrue(set.hasTemporaryLabels(), "");
-	assertTrue(set.getBestTemporaryLabel() == Label(2,4), "Use next best temporary");
+	assertTrue(set.getBestTemporaryLabel() == Label(4,1), "Use next best temporary");
 	set.markBestLabelAsPermantent();
 
 	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
