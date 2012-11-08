@@ -1,80 +1,50 @@
 /*
- * BinaryHeap.hpp
+ * Based on BinaryHeap.hpp, but using handles so that the heap does not have a fixed size.
  *
  *  Created on: Apr 26, 2011
  *      Author: kobitzsch
+ *  Modified: Stephan Erb
  */
 
-#ifndef BINARY_HEAP_HPP_
-#define BINARY_HEAP_HPP_
+#ifndef UNBOUND_BINARY_HEAP_HPP_
+#define UNBOUND_BINARY_HEAP_HPP_
 
-#include "../../exception.h"
-#include "../NullData.hpp"
-#include "QueueStorages.hpp"
+#include "utility/exception.h"
+#include "utility/datastructure/NullData.hpp"
 
 #include <vector>
-#include <map>
-#include <tr1/unordered_map>
-
-#ifdef USE_GOOGLE_DATASTRUCTURES
-#include <google/dense_hash_map>
-#endif
 #include <limits>
 #include <cstring>
+#include <iostream>
 
-#include "HeapStatisticData.hpp"
+using utility::NullData;
 
-namespace utility{
 
-namespace datastructure{
-
-template< typename id_slot, typename key_slot, typename data_element_slot >
+template< typename key_slot, typename data_element_slot >
 struct DataElement{
-	DataElement( id_slot id_, key_slot key_, size_t heap_index_, const data_element_slot & data_element_ )
-		: id( id_ ), key( key_ ), data( data_element_ ), heap_index( heap_index_ )
+	DataElement( key_slot key_, size_t heap_index_, const data_element_slot & data_element_ )
+		: key( key_ ), data( data_element_ ), heap_index( heap_index_ )
 	{}
 
-	DataElement( id_slot id_, key_slot key_, size_t heap_index_ )
-		: id( id_ ), key( key_ ), heap_index( heap_index_ )
+	DataElement( key_slot key_, size_t heap_index_ )
+		: key( key_ ), heap_index( heap_index_ )
 	{}
 
 	const data_element_slot & getData() const { return data; }
 	data_element_slot & getData() { return data; }
 
-	id_slot id;
 	key_slot key;
 	data_element_slot data;
 	size_t heap_index;
 };
 
-template<typename id_slot, typename key_slot >
-struct DataElement< id_slot, key_slot, NullData  >{
-	DataElement( id_slot id_, key_slot key_, size_t heap_index_, const NullData & data_element_ )
-		: id( id_ ), key( key_ ), heap_index( heap_index_ )
-	{}
-
-	DataElement( id_slot id_, key_slot key_, size_t heap_index_ )
-		: id( id_ ), key( key_ ), heap_index( heap_index_ )
-	{}
-
-	//should never be called!
-	const NullData & getData() const { GUARANTEE( false, std::runtime_error, "DataElement<id_type, NULL_DATA> data requested. This should should never happen." ) return NULL; }
-	NullData & getData() { GUARANTEE( false, std::runtime_error, "DataElement<id_type, NULL_DATA> data requested. This should should never happen." )  return NULL; }
-
-	id_slot id;
-	key_slot key;
-	size_t heap_index;
-};
-
-//id_slot : ID Type for stored elements
-//key_slot: type of key_slot used
+//key_slot: type of the used priority / keys
 //Meta key slot: min/max values for key_slot accessible via static functions ::max() / ::min()
-template< typename id_slot, typename key_slot, typename meta_key_slot, typename data_slot = NullData, typename storage_slot = ArrayStorage< id_slot > >
-class BinaryHeap{
+template<typename key_slot, typename meta_key_slot, typename data_slot = NullData >
+class UnboundBinaryHeap {
 private:
-	BinaryHeap( const BinaryHeap & ){}	//do not copy
-	void operator=( const BinaryHeap& ){}	//really, do not copy
-	typedef storage_slot Storage;
+	UnboundBinaryHeap( const UnboundBinaryHeap & ){}	//do not copy
+	void operator=( const UnboundBinaryHeap& ){}	//really, do not copy
 protected:
 	struct HeapElement{
 		HeapElement( const key_slot & key_ = meta_key_slot::max(), const size_t & index_ = 0 )
@@ -86,18 +56,15 @@ protected:
 	};
 
 	std::vector< HeapElement > heap;
-	Storage storage;
-	std::vector< DataElement<id_slot, key_slot, data_slot> > data_elements;
+	std::vector< DataElement<key_slot, data_slot> > data_elements;
 
 public:
-	typedef id_slot value_type;
+	typedef size_t handle;
 	typedef key_slot key_type;
 	typedef meta_key_slot meta_key_type;
 	typedef data_slot data_type;
 
-	BinaryHeap( const id_slot & storage_initializer, size_t reserve_size = 0 )
-		: storage( storage_initializer )
-	{
+	UnboundBinaryHeap(size_t reserve_size = 0 ) {
 		heap.reserve( reserve_size + 1);
 		heap.push_back( HeapElement( meta_key_slot::min() ) );	//insert the sentinel element into the heap
 
@@ -113,73 +80,17 @@ public:
 	}
 
 	//push an element onto the heap
-	void push( const id_slot & id, const key_slot & key ){
-		GUARANTEE( !contains( id ), std::runtime_error, "[error] BinaryHeap::push - pushing already contained element" )
+	handle push(const key_slot & key, const data_slot & data){
 		size_t heap_id = heap.size();
-		size_t element_id = data_elements.size();
+		handle element_id = freeHandle();
+		if (isExistingHandle(element_id)) {
+			data_elements[element_id] = DataElement<key_slot,data_slot>( key, heap_id, data );
+		} else {
+			data_elements.push_back( DataElement<key_slot,data_slot>( key, heap_id, data ) );
+		}
 		heap.push_back( HeapElement( key, element_id ) );
-		data_elements.push_back( DataElement<id_slot,key_slot,data_slot>( id, key, heap_id ) );
-		storage[id] = element_id;
 		upHeap( heap_id );
-	}
-
-	//push with user data
-	void push( const id_slot & id, const key_slot & key, const data_slot & data ){
-		GUARANTEE( !contains( id ), std::runtime_error, "[error] BinaryHeap::push - pushing already contained element" )
-		size_t heap_id = heap.size();
-		size_t element_id = data_elements.size();
-		heap.push_back( HeapElement( key, element_id ) );
-		data_elements.push_back( DataElement<id_slot,key_slot,data_slot>( id, key, heap_id, data ) );
-		storage[id] = element_id;
-		upHeap( heap_id );
-	}
-
-	void reinsertingPush( const id_slot & id, const key_slot & key ){
-		GUARANTEE( !contains( id ), std::runtime_error, "[error] BinaryHeap::push - pushing already contained element" )
-		size_t heap_id = heap.size();
-		if( isReached( id ) ){
-			size_t element_id = storage[id];
-			heap.push_back( HeapElement( key, element_id ) );
-			data_elements[element_id].id = id;
-			data_elements[element_id].key = key;
-			data_elements[element_id].heap_index = heap_id;
-//			= DataElement<id_slot,key_slot,data_slot>( id, key, heap_id );
-		} else {
-			size_t element_id = data_elements.size();
-			heap.push_back( HeapElement( key, element_id ) );
-			data_elements.push_back( DataElement<id_slot,key_slot,data_slot>( id, key, heap_id ) );
-			storage[id] = element_id;
-		}
-		upHeap( heap_id );
-	}
-
-	void reinsertingPush( const id_slot & id, const key_slot & key, const data_slot & data ){
-		GUARANTEE( !contains( id ), std::runtime_error, "[error] BinaryHeap::push - pushing already contained element" )
-		size_t heap_id = heap.size();
-		if( isReached( id ) ){
-			size_t element_id = storage[id];
-			heap.push_back( HeapElement( key, element_id ) );
-			data_elements[element_id] = DataElement<id_slot,key_slot,data_slot>( id, key, heap_id, data );
-		} else {
-			size_t element_id = data_elements.size();
-			heap.push_back( HeapElement( key, element_id ) );
-			data_elements.push_back( DataElement<id_slot,key_slot,data_slot>( id, key, heap_id, data ) );
-			storage[id] = element_id;
-		}
-		upHeap( heap_id );
-	}
-
-	//reinserts an element into the queue or updates the key if the element has been reached
-	void update( const id_slot & id, const key_slot & key ){
-		GUARANTEE( isReached(id), std::runtime_error, "[error] BinaryHeap::update - trying to update an element not reached yet")
-		if( contains( id ) ){
-			updateKey( id, key );
-		} else {
-			size_t heap_id = heap.size();
-			size_t element_id = storage[id];
-			heap.push_back( HeapElement( key, element_id ) );
-			upHeap( heap_id );
-		}
+		return element_id;
 	}
 
 	void deleteMin(){
@@ -188,37 +99,38 @@ public:
 		size_t swap_element = heap.size() - 1;
 		data_elements[ heap[swap_element].data_index ].heap_index = 1;	//set the heap index
 		data_elements[ data_index ].heap_index = 0;						//mark minimum deleted
+		free(data_index);
 		heap[1] = heap[ swap_element ];									//faster then swap
 		heap.pop_back();												//delete former minimal element
 		if( !empty() ) downHeap(1);
 		GUARANTEE2( checkHeapProperty(), std::runtime_error, "[error] BinaryHeap::deleteMin - Heap property not fulfilled after deleteMin()" )
 	}
 
-	void deleteNode( const id_slot & id ){
+	void deleteNode( const handle & id ){
 		GUARANTEE( contains(id), std::runtime_error, "[error] trying to delete element not in heap." )
-		size_t data_index = storage[id];
 		size_t swap_element = heap.size() - 1;
-		if( data_elements[data_index].heap_index != swap_element ){
-			size_t heap_index = data_elements[ data_index ].heap_index;
+		if( data_elements[id].heap_index != swap_element ){
+			size_t heap_index = data_elements[ id ].heap_index;
 			size_t swap_data = heap[swap_element].data_index;
 			data_elements[ swap_data ].heap_index = heap_index;			//set the heap index
-			data_elements[ data_index ].heap_index = 0;					//mark deleted
+			data_elements[ id ].heap_index = 0;							//mark deleted
 			heap[heap_index] = heap[ swap_element ];					//faster then swap
 			heap.pop_back();											//delete element
-			if( data_elements[swap_data].key < data_elements[data_index].key ){
+			if( data_elements[swap_data].key < data_elements[id].key ){
 				upHeap(heap_index);
-			} else if( data_elements[swap_data].key > data_elements[data_index].key ){
+			} else if( data_elements[swap_data].key > data_elements[id].key ){
 				downHeap( heap_index );
 			}
 		} else {
 			heap.pop_back();
-			data_elements[ data_index ].heap_index = 0;					//mark deleted
+			data_elements[ id ].heap_index = 0;					//mark deleted
 		}
+		free(id);
 	}
 
-	const id_slot & getMin() const{
+	const handle & getMin() const{
 		GUARANTEE( !empty(), std::runtime_error, "[error] BinaryHeap::getMin() - Requesting minimum of empty heap" )
-		return data_elements[heap[1].data_index].id;
+		return heap[1].data_index;
 	}
 
 	const key_slot & getMinKey() const {
@@ -226,93 +138,77 @@ public:
 		return heap[1].key;
 	}
 
-	const key_slot & getCurrentKey( const id_slot & id ) const {
-		GUARANTEE( isReached(id), std::runtime_error, "[error] BinaryHeap::getCurrentKey - Accessing invalid element" )
-		return data_elements[storage[id]].key;	//get position of the element in the heap
+	const key_slot & getCurrentKey( const handle & id ) const {
+		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeap::getCurrentKey - Accessing invalid element" )
+		return data_elements[id].key;	//get position of the element in the heap
 	}
 
-	const key_slot & getKey( const id_slot & id ) const {
-		GUARANTEE( isReached(id), std::runtime_error, "[error] BinaryHeap::getCurrentKey - Accessing invalid element" )
-		return data_elements[storage[id]].key;	//get position of the element in the heap
+	const key_slot & getKey( const handle & id ) const {
+		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeap::getCurrentKey - Accessing invalid element" )
+		return data_elements[id].key;	//get position of the element in the heap
 	}
 
-	const data_slot & getUserData( const id_slot & id ) const {
-		GUARANTEE( isReached(id), std::runtime_error, "[error] BinaryHeaip::getUserData - Accessing element not reached yet")
-		return data_elements[ storage[id] ].getData();
+	const data_slot & getUserData( const handle & id ) const {
+		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeaip::getUserData - Accessing element not reached yet")
+		return data_elements[id].getData();
 	}
 
-	data_slot & getUserData( const id_slot & id ) {
-		GUARANTEE( isReached(id), std::runtime_error, "[error] BinaryHeaip::getUserData - Accessing element not reached yet")
-		return data_elements[ storage[id] ].getData();
+	data_slot & getUserData( const handle & id ) {
+		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeaip::getUserData - Accessing element not reached yet")
+		return data_elements[id].getData();
 	}
 
-	bool isReached( const id_slot & id ) const {
-		size_t data_index = storage[id];
-		return data_index < data_elements.size() && id == data_elements[data_index].id;
+	bool contains( const handle & id ) const {
+		return isExistingHandle(id) && data_elements[id].heap_index != 0;
 	}
 
-	bool contains( const id_slot & id ) const {
-		size_t data_index = storage[id];
-		return isReachedIndexed( id, data_index ) && data_elements[data_index].heap_index != 0;
-	}
-
-	void decreaseKey( const id_slot & id, const key_slot & new_key ){
+	void decreaseKey( const handle & id, const key_slot & new_key ){
 		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeap::decreaseKey - Calling decreaseKey for element not contained in Queue. Check with \"contains(id)\"" )
-		size_t data_id = storage[id];
-		size_t heap_index = data_elements[data_id].heap_index;	//get position of the element in the heap
+		size_t heap_index = data_elements[id].heap_index;	//get position of the element in the heap
 		heap[heap_index].key = new_key;
-		data_elements[data_id].key = new_key;
+		data_elements[id].key = new_key;
 		upHeap( heap_index );
 	}
 
-	void increaseKey( const id_slot & id, const key_slot & new_key ){
+	void increaseKey( const handle & id, const key_slot & new_key ){
 		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeap::increaseKey - Calling increaseKey for element not contained in Queue. Check with \"contains(id)\"" )
-		size_t data_id = storage[id];
-		size_t heap_index = data_elements[data_id].heap_index;	//get position of the element in the heap
+		size_t heap_index = data_elements[id].heap_index;	//get position of the element in the heap
 		heap[heap_index].key = new_key;
-		data_elements[data_id].key = new_key;
+		data_elements[id].key = new_key;
 		downHeap( heap_index );
 	}
 
-	void updateKey( const id_slot & id, const key_slot & new_key ){
-		GUARANTEE( contains(id), std::runtime_error, "[error] BinaryHeap::updateKey - Calling updateKey for element not contained in Queue. Check with \"contains(id)\"" )
-		size_t data_id = storage[id];
-		size_t heap_index = data_elements[data_id].heap_index;	//get position of the element in the heap
-		data_elements[data_id].key = new_key;
-		if( new_key > heap[heap_index].key ){
-			heap[heap_index].key = new_key;
-			downHeap( heap_index );
-		} else {
-			heap[heap_index].key = new_key;
-			upHeap( heap_index );
-		}
-	}
-
 	void clear(){
-		storage.clear();
+		freeList.clear();
 		heap.resize( 1 );	//remove anything but the sentinel
 		data_elements.clear();
 	}
 
-	void clearHeap(){
-		for( size_t i = 1; i < heap.size(); ++i ){
-			data_elements[ heap[i].data_index ].heap_index = 0;						//mark deleted
-		}
-		heap.resize( 1 );
-	}
-
-	void extract( std::vector<id_slot> & settled_nodes, std::vector<id_slot> & reached_nodes ) const {
-		for( size_t i = 0; i < data_elements.size(); ++i ){
-			if( contains( data_elements[i].id ) )
-				reached_nodes.push_back( data_elements[i].id );
-			else
-				settled_nodes.push_back( data_elements[i].id );
-		}
-	}
 
 protected:
-	inline bool isReachedIndexed( const id_slot & id, const size_t & data_index ) const {
-		return data_index < data_elements.size() && id == data_elements[data_index].id;
+
+	std::vector< handle> freeList;
+
+	void free(const handle& id) {
+		if (id == data_elements.size()-1) {
+			data_elements.pop_back();
+		} else {
+			freeList.push_back(id);
+		}
+	}
+
+	handle freeHandle() {
+		if (freeList.empty()) {
+			return data_elements.size();
+		} else {
+			const handle ret = freeList.back();
+			freeList.pop_back();
+			return ret;
+		}
+	}
+
+	bool isExistingHandle(const handle& id) const {
+		return id < data_elements.size(); 
 	}
 
 	inline void upHeap( size_t heap_position ){
@@ -380,7 +276,5 @@ protected:
 	}
 };
 
-}
-}
 
-#endif /* BINARY_HEAP_HPP_ */
+#endif /* UNBOUND_BINARY_HEAP_HPP_ */
