@@ -20,6 +20,8 @@ enum StatisticalElement {
 	NEW_BEST_LABEL
 };
 
+#ifdef GATHER_STATS
+
 class LabelSettingStatistics {
 private:
 	unsigned int data[DATA_COUNT];
@@ -31,7 +33,6 @@ private:
 	std::vector<unsigned int> depletion_sequences;
 public:
 
-	
 	LabelSettingStatistics(unsigned int node_count) :
 		labels_set_size(node_count),
 		max_temp_set_size(0),
@@ -55,6 +56,7 @@ public:
 			if (stat == BEST_NODE) {
 				depletion_counter[node]++;
 			}
+			
 	}
 
 	std::string toString() {
@@ -94,7 +96,27 @@ public:
 		out_stream << "  avg" << ": " << avg_depletion_run << "\n";
 		out_stream << "  max" << ": " << max_depletion_run << "";
 		return out_stream.str();
+
 	}
 };
+
+#else
+
+class LabelSettingStatistics {
+public:
+
+	LabelSettingStatistics(unsigned int node_count) {}
+
+	void report(StatisticalElement stat, NodeID node, unsigned int payload=0) {}
+
+	std::string toString() {
+		std::ostringstream out_stream;
+		out_stream << " Statistics disabled at compile time. See options file.";
+		return out_stream.str();
+
+	}
+};
+
+#endif
 
 #endif 
