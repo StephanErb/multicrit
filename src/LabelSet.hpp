@@ -406,9 +406,20 @@ public:
 		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
 
 #ifdef TREE_SET
+		if (iter == first_nondominated) {
+			new_label.handle = heap.push(B::computePriority(new_label), Data(node, new_label));
+		} else {
+			// replace first dominated label and remove the rest
+			new_label.handle = iter->handle;	
+			heap.decreaseKey(iter->handle, B::computePriority(new_label));
+			heap.getUserData(iter->handle) = Data(node, new_label);
 
-		labels.erase(iter--, first_nondominated);
-		labels.insert(iter, new_label);
+			for (typename B::iterator i = ++iter; i != first_nondominated; ++i) {
+				heap.deleteNode(i->handle);
+			}
+			labels.erase(--iter, first_nondominated);
+		}
+		labels.insert(new_label);
 #else
 		if (iter == first_nondominated) {
 			// delete range is empty, so just insert
