@@ -7,16 +7,15 @@
 #define LABELSET_H_
 
 #include "options.hpp"
-#ifdef TREE_SET
-	#include <set>
-#else
- 	#include <vector>
-#endif
+#include <set>
+#include <vector>
 
 #include <iostream>
 #include <limits>
 #include <algorithm>
+
 #include "utility/datastructure/graph/GraphTypes.hpp"
+#include "UnboundBinaryHeap.hpp"
 
 
 /**
@@ -368,6 +367,98 @@ public:
 };
 
 
+
+template<typename label_type_slot>
+class HeapLabelSet : public LabelSetBase<LabelWithHandle<label_type_slot> > {
+public: 
+	typedef LabelWithHandle<label_type_slot> label_type;
+
+protected:
+	typedef LabelSetBase<label_type> B;
+
+	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
+	typename B::Set labels;
+
+	typedef UnboundBinaryHeap<typename B::Priority, std::numeric_limits<typename B::Priority>, label_type_slot> BinaryHeap;
+	typedef typename BinaryHeap::handle handle;
+
+	BinaryHeap heap;
+
+public:
+	HeapLabelSet() {
+		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
+		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
+
+		// add sentinals
+		labels.insert(labels.begin(), label_type(min, max, 0));
+		labels.insert(labels.end(), label_type(max, min, 0));
+	}
+
+	// Copy constructor which does not copy
+	HeapLabelSet(const HeapLabelSet& other) {
+		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
+		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
+
+		// add sentinals
+		labels.insert(labels.begin(), label_type(min, max, 0));
+		labels.insert(labels.end(), label_type(max, min, 0));
+	}
+
+	// Return true if the new_label is non-dominated and has been added
+	// as a temporary label to this label set. 
+	bool add(const label_type& new_label) {
+		typename B::iterator iter;
+		if (B::isDominated(labels, new_label, iter)) {
+			return false;
+		}
+		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
+		if (iter == first_nondominated) {
+			// delete range is empty, so just insert
+			new_label.handle = heap.push(B::computePriority(new_label), new_label);
+			labels.insert(first_nondominated, new_label);
+		} else {
+			// replace first dominated label and remove the rest
+			iter->first_weight = new_label.first_weight;
+			iter->second_weight = new_label.second_weight;
+			heap.decreaseKey(iter->handle, B::computePriority(new_label));
+			heap.getUserData(iter->handle) = new_label;
+
+			for (typename B::iterator i = ++iter; i != first_nondominated; ++i) {
+				heap.deleteNode(i->handle);
+			}
+			labels.erase(iter, first_nondominated);
+		}
+		return true;
+	}
+
+	void markBestLabelAsPermantent() {
+		if (!heap.empty()) {
+			heap.deleteMin();
+		}
+	}
+
+	bool hasTemporaryLabels() const {
+		return !heap.empty();
+	}
+
+	typename B::Priority getPriorityOfBestTemporaryLabel() const {
+		return heap.getMinKey();
+	}
+
+	label_type getBestTemporaryLabel() const {
+		return heap.getUserData(heap.getMin());
+	}
+
+	/* Subtraction used to hide the sentinals */
+	std::size_t size() const { return labels.size()-2; }
+
+	typename B::iterator begin() { return labels.begin(); }
+	typename B::const_iterator begin() const { return labels.begin(); }
+	typename B::iterator end() { return labels.end(); }
+	typename B::const_iterator end() const { return labels.end(); }
+};
+
+
 /**
   * LabelSet as used by the SharedHeapLabelSettingAlgorithm
   */
@@ -391,8 +482,8 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
-		labels.insert(labels.begin(), label_type(min, max, /*permanent*/ true));
-		labels.insert(labels.end(), label_type(max, min, /*permanent*/ true));
+		labels.insert(labels.begin(), label_type(min, max, 0));
+		labels.insert(labels.end(), label_type(max, min, 0));
 	}
 
 	// Return true if the new_label is non-dominated and has been added
