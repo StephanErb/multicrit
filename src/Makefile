@@ -20,7 +20,7 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=Dijkstra time_labelsetting
+CODE=Dijkstra time_labelsetting time_grid_instances
 TESTS=test_labelset test_labelsetting
 
 #list of all normal / parallel targets
