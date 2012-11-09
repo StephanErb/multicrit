@@ -64,7 +64,7 @@ protected:
 	/** First label where the x-coord is truly smaller */
 	static iterator x_predecessor(Set& labels, const label_type& new_label) {
 #ifdef TREE_SET
-		return --labels.lower_bound(new_label);
+		return --labels.lower_bound(label_type_extended(new_label));
 #else
 		return --std::lower_bound(labels.begin(), labels.end(), new_label, firstWeightLess);
 #endif	
