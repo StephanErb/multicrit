@@ -18,8 +18,7 @@
 #include "utility/tool/timer.h"
 #include "timing.h"
 
-#define QUOTE(name) #name
-#define STR(macro) QUOTE(macro)
+
 
 typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
 typedef utility::datastructure::KGraph<Edge> Graph;
@@ -27,42 +26,16 @@ typedef utility::datastructure::NodeID NodeID;
 typedef Edge::edge_data Label;
 
 
-std::string currentConfig() {
-	std::ostringstream out_stream;
-
-	out_stream << STR(LABEL_SETTING_ALGORITHM) << "_";
-	if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
-		out_stream << STR(LABEL_SET) << "_";
-	}
-	#ifdef TREE_SET
-		out_stream << "TreeSet_";
-	#else
-		out_stream << "VectorSet_";
-	#endif
-
-	#ifdef PRIORITY_LEX
-		out_stream << "Lex";
-	#endif
-	#ifdef PRIORITY_SUM
-		out_stream << "Sum";
-	#endif
-	#ifdef PRIORITY_MAX
-		out_stream << "Max";
-	#endif
-
-	return out_stream.str();
-}
-
 void timeGrid(int num, std::string label, int height, int width, bool verbose, int iterations) {
-	Graph graph;
 	GraphGenerator<Graph> generator;
-	generator.generateRandomGridGraph(graph, height, width);
-
 	double timings[iterations];
 	std::fill_n(timings, iterations, 0);
 	size_t label_count;
 
 	for (int i = 0; i < iterations; i++) {
+		Graph graph;
+		generator.generateRandomGridGraph(graph, height, width);
+
 		LabelSettingAlgorithm<Graph> algo(graph);
 
 		utility::tool::TimeOfDayTimer timer;
@@ -75,10 +48,10 @@ void timeGrid(int num, std::string label, int height, int width, bool verbose, i
 		label_count = algo.size(node);
 		if (verbose) {
 			algo.printStatistics();
-			std::cout << "Target node label count: " << algo.size(node) << std::endl;
+			std::cout << "Target node label count: " << label_count << std::endl;
 		}
 	}
-	std::cout << num << " " << label << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # instance GX: time in [s], target node label count " << std::endl;
+	std::cout << num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
 }
 
 int main(int argc, char ** args) {
@@ -86,9 +59,9 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 
 	int c;
-	while( (c = getopt( argc, args, "i:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:v") ) != -1  ){
 		switch(c){
-		case 'i':
+		case 'c':
 			iterations = atoi(optarg);
 			break;
 		case 'v':
@@ -99,11 +72,42 @@ int main(int argc, char ** args) {
 		}
 	}
 	std::cout << "# " << currentConfig() << std::endl;
-	timeGrid(1, "G5", 50, 200, verbose, iterations);
-	timeGrid(2, "G6", 200, 50, verbose, iterations);
-	timeGrid(3, "G14", 200, 200, verbose, iterations);
-	timeGrid(4, "G32", 4, 1225, verbose, iterations);
-	timeGrid(5, "G33", 2, 2450, verbose, iterations);
+	timeGrid(1, "G", 30, 40, verbose, iterations);
+	timeGrid(2, "G", 20, 80, verbose, iterations);
+	timeGrid(3, "G", 50, 90, verbose, iterations);
+	timeGrid(4, "G", 90, 50, verbose, iterations);
+	timeGrid(5, "G", 50, 200, verbose, iterations);
+
+	timeGrid(6, "G", 200, 50, verbose, iterations);
+	timeGrid(7, "G", 100, 150, verbose, iterations);
+	timeGrid(8, "G", 150, 100, verbose, iterations);
+	timeGrid(9, "G", 100, 200, verbose, iterations);
+	timeGrid(10, "G", 200, 100, verbose, iterations);
+
+	timeGrid(11, "G", 200, 150, verbose, iterations);
+	timeGrid(12, "G", 50, 50, verbose, iterations);
+	timeGrid(13, "G", 100, 100, verbose, iterations);
+	timeGrid(14, "G", 200, 200, verbose, iterations);
+
+	timeGrid(15, "G", 2450, 2, verbose, iterations);
+	timeGrid(16, "G", 1225, 4, verbose, iterations);
+	timeGrid(17, "G", 612, 8, verbose, iterations);
+	timeGrid(18, "G", 288, 17, verbose, iterations);
+	timeGrid(19, "G", 196, 25, verbose, iterations);
+	timeGrid(20, "G", 140, 35, verbose, iterations);
+	timeGrid(21, "G", 111, 44, verbose, iterations);
+	timeGrid(22, "G", 92, 53, verbose, iterations);
+	timeGrid(23, "G", 79, 62, verbose, iterations);
+	timeGrid(24, "G", 70, 70, verbose, iterations);
+	timeGrid(25, "G", 62, 79, verbose, iterations);
+	timeGrid(26, "G", 53, 92, verbose, iterations);
+	timeGrid(27, "G", 44, 111, verbose, iterations);
+	timeGrid(28, "G", 35, 140, verbose, iterations);
+	timeGrid(29, "G", 25, 196, verbose, iterations);
+	timeGrid(30, "G", 17, 288, verbose, iterations);
+	timeGrid(31, "G", 8, 612, verbose, iterations);
+	timeGrid(32, "G", 4, 1225, verbose, iterations);
+	timeGrid(33, "G", 2, 2450, verbose, iterations);
 	return 0;
 }
 
