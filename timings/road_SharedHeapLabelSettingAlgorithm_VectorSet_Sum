@@ -1,0 +1,36 @@
+# SharedHeapLabelSettingAlgorithm_VectorSet_Sum
+# Map: ../instances/DC2
+# Nodes 9559 Edges 39377
+1 DC1 0.064386 2 # time in [s], target node label count 
+2 DC2 0.0842368 6 # time in [s], target node label count 
+3 DC3 0.100221 3 # time in [s], target node label count 
+4 DC4 0.0702127 2 # time in [s], target node label count 
+5 DC5 0.0573042 1 # time in [s], target node label count 
+6 DC6 0.0415102 7 # time in [s], target node label count 
+7 DC7 0.0808047 2 # time in [s], target node label count 
+8 DC8 0.0366707 1 # time in [s], target node label count 
+9 DC9 0.130566 6 # time in [s], target node label count 
+# SharedHeapLabelSettingAlgorithm_VectorSet_Sum
+# Map: ../instances/RI2
+# Nodes 53658 Edges 192084
+10 RI1 0.286729 3 # time in [s], target node label count 
+11 RI2 0.732107 15 # time in [s], target node label count 
+12 RI3 0.231933 2 # time in [s], target node label count 
+13 RI4 0.542382 17 # time in [s], target node label count 
+14 RI5 0.995804 16 # time in [s], target node label count 
+15 RI6 0.815824 3 # time in [s], target node label count 
+16 RI7 0.800923 3 # time in [s], target node label count 
+17 RI8 0.573298 4 # time in [s], target node label count 
+18 RI9 1.13276 22 # time in [s], target node label count 
+# SharedHeapLabelSettingAlgorithm_VectorSet_Sum
+# Map: ../instances/NJ2
+# Nodes 330386 Edges 1202458
+19 NJ1 3.96961 2 # time in [s], target node label count 
+20 NJ2 7.27562 6 # time in [s], target node label count 
+21 NJ3 6.25586 21 # time in [s], target node label count 
+22 NJ4 5.74923 5 # time in [s], target node label count 
+23 NJ5 3.33145 7 # time in [s], target node label count 
+24 NJ6 18.3736 12 # time in [s], target node label count 
+25 NJ7 3.45668 6 # time in [s], target node label count 
+26 NJ8 3.14272 13 # time in [s], target node label count 
+27 NJ9 9.74755 24 # time in [s], target node label count 
