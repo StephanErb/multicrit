@@ -1,0 +1,50 @@
+# we want to use umlauts
+set encoding iso_8859_1
+
+# the enhanced option allows format to typeset exponents without problems
+set terminal postscript eps enhanced color
+
+# the name of the output file
+set output "grid_instances-impl-alternatives.ps"
+
+# the title above the diagram
+set title "Bicriteria label setting runtimes on grid instances of [Raith, Ehrgott 2009]"
+
+# justify the legends to the left;
+# that 'left Left' is no typo, but leaving 'Left' out does not change much
+set key top left Left
+set key box linestyle -1
+set key samplen 1
+
+# the text along the vertical axis
+# (the numeric values are the results of trial and error experiments)
+set lmargin 6
+set label "Runtime [s]" at screen 0.015,0.5 center  rotate
+
+# the text along the horizontal axis
+# (the numeric values are the results of trial and error experiments)
+set bmargin 6
+set label "Grid Instance" at screen 0.5,0.03 center
+
+# we are using logarithmic scales
+#set logscale x 2
+set logscale y 10
+
+# Grid lines
+set grid ytics lc rgb "#bbbbbb" lw 1 lt 0
+set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
+
+# the tics along the horizontal axis and the labels for them
+set xtics rotate
+#set xtics  1,1
+#set format x "2^{%L}"
+
+# finally the plot command
+plot [0:34][:] '../timings/grid_SharedHeapLabelSettingAlgorithm_TreeSet_Lex' using 1:3:xticlabels(2) title ' LSet (binheap, std::set, lex)' with points pt 5 linetype 5,\
+ 	'../timings/grid_NodeHeapLabelSettingAlgorithm_HeapLabelSet_VectorSet_Lex' using 1:3:xticlabels(2) title ' LSet (separate binheaps, std::vector, lex)' with points pt 4 linetype 4,\
+	'../timings/grid_NodeHeapLabelSettingAlgorithm_SplittedNaiveLabelSet_VectorSet_Lex' using 1:3:xticlabels(2) title ' LSet (node binheap + scanning, std::vector, lex)' with points pt 7 linetype 7,\
+	'../timings/grid_SharedHeapLabelSettingAlgorithm_VectorSet_Lex' using 1:3:xticlabels(2) title ' LSet (binheap, std::vector, lex)' with points pt 3 linetype 3
+
+
+
+
