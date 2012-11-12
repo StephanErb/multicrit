@@ -1,0 +1,30 @@
+# Timing values of the paper by Raith & Ehrgott 2009
+# <our internal id> <their id> <time [s]>
+
+1 DC1 0.08
+2 DC2 0.14
+3 DC3 0.18
+4 DC4 0.10
+5 DC5 0.07
+6 DC6 0.05 
+7 DC7 0.13
+8 DC8 0.04
+9 DC9 0.26
+10 RI1 0.34
+11 RI2 1.97
+12 RI3 0.24
+13 RI4 0.99
+14 RI5 3.22
+15 RI6 2.44
+16 RI7 1.89
+17 RI8 0.97
+18 RI9 4.10
+19 NJ1 7.53
+20 NJ2 20.61
+21 NJ3 13.13
+22 NJ4 19.20
+23 NJ5 7.18
+24 NJ6 66.33
+25 NJ7 6.30
+26 NJ8 5.07
+27 NJ9 32.35
