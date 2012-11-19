@@ -11,14 +11,15 @@
 #include "utility/datastructure/graph/GraphTypes.hpp"
 #include "utility/datastructure/graph/GraphMacros.h"
 
-#define STAT_ELEMENT_COUNT 5
+#define STAT_ELEMENT_COUNT 6
 
 enum StatElement {
-	CANDIDATE,
+	IDENTICAL_TARGET_NODE,
 	LABEL_DOMINATED,
 	LABEL_NONDOMINATED,
 	MINIMA_COUNT,
-	ITERATION
+	ITERATION,
+	DOMINATION_SHORTCUT
 };
 
 #ifdef GATHER_STATS
@@ -30,12 +31,15 @@ private:
 	unsigned int peak_pq_size;
 	std::vector<unsigned int> minima_size;
 	unsigned int peak_minima_size;
+	std::vector<unsigned int> identical_target_node;
+	unsigned int peak_identical_target_node;
 
 public:
 
-	ParetoSearchStatistics(unsigned int node_count) :
+	ParetoSearchStatistics() :
 		peak_pq_size(0),
-		peak_minima_size(0)
+		peak_minima_size(0),
+		peak_identical_target_node(0)
 	{
 		std::fill_n(data, STAT_ELEMENT_COUNT, 0);
 	}
@@ -49,8 +53,12 @@ public:
 			}
 			if (stat == MINIMA_COUNT) {
 				minima_size.push_back(payload);
-				peak_minima_size = std::max(peak_pq_size, payload);
-			}			
+				peak_minima_size = std::max(peak_minima_size, payload);
+			}
+			if (stat == IDENTICAL_TARGET_NODE) {
+				identical_target_node.push_back(payload);
+				peak_identical_target_node = std::max(peak_identical_target_node, payload);
+			}
 	}
 
 	std::string toString() {
@@ -59,8 +67,12 @@ public:
 
 		unsigned int total_label_count = data[LABEL_NONDOMINATED] + data[LABEL_DOMINATED];
 		double dom_percent = 100.0 * data[LABEL_DOMINATED] / total_label_count;
+		double dom_shortcut_percent = 100.0 * data[DOMINATION_SHORTCUT] / data[LABEL_DOMINATED];
+
 		out_stream << "Created Labels: " << total_label_count << "\n";
 		out_stream << "  initially dominated" << ": " << dom_percent << "% (=" << data[LABEL_DOMINATED] <<")\n";
+		out_stream << "    via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
+
 		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
 
 		unsigned int total_pq_size = std::accumulate(pq_size.begin(), pq_size.end(), 0);
@@ -73,7 +85,13 @@ public:
 		double avg_minima_size = total_minima_size / minima_size.size();
 		out_stream << "Pareto Optimal Elements: " << "\n";
 		out_stream << "  avg" << ": " << avg_minima_size << "\n";
-		out_stream << "  max" << ": " << peak_minima_size;
+		out_stream << "  max" << ": " << peak_minima_size << "\n";
+
+		unsigned int total_ident_target_nodes = std::accumulate(identical_target_node.begin(), identical_target_node.end(), 0);
+		double avg_ident_target_nodes = total_ident_target_nodes / identical_target_node.size();
+		out_stream << "Identical Target Nodes per Iteration: " << "\n";
+		out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
+		out_stream << "  max" << ": " << peak_identical_target_node;
 		
 		return out_stream.str();
 

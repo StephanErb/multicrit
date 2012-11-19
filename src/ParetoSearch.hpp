@@ -25,70 +25,12 @@
 #include "ParetoSearchStatistics.hpp"
 
 
-template<typename label_type_slot>
-class ParetoLabelSet : public LabelSetBase<label_type_slot, label_type_slot > {
-public: 
-	typedef label_type_slot label_type;
-
-protected:
-	typedef LabelSetBase<label_type, label_type> B;
-	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
-	typename B::Set labels;
-
-public:
-	ParetoLabelSet() {
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
-
-		// add sentinals
-		labels.insert(labels.begin(), label_type_slot(min, max, /*permanent*/ true));
-		labels.insert(labels.end(), label_type_slot(max, min, /*permanent*/ true));
-	}
-
-	// Return true if the new_label is non-dominated and has been added
-	// as a temporary label to this label set. 
-	bool add(const label_type& new_label, std::vector<label_type>& dominated) {
-		typename B::iterator iter;
-		if (B::isDominated(labels, new_label, iter)) {
-			return false;
-		}
-		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
-		for (typename B::iterator i = iter; i != first_nondominated; ++i) {
-			dominated.push_back(*i);
-		}
-#ifdef TREE_SET
-		labels.erase(iter--, first_nondominated);
-		labels.insert(iter, new_label);
-#else
-		if (iter == first_nondominated) {
-			// delete range is empty, so just insert
-			labels.insert(first_nondominated, new_label);
-		} else {
-			// replace first dominated label and remove the rest
-			*iter = new_label;
-			labels.erase(++iter, first_nondominated);
-		}
-#endif
-		return true;
-	}
-
-	/* Subtraction used to hide the sentinals */
-	std::size_t size() const { return labels.size()-2; }
-
-	typename B::iterator begin() { return labels.begin(); }
-	typename B::const_iterator begin() const { return labels.begin(); }
-	typename B::iterator end() { return labels.end(); }
-	typename B::const_iterator end() const { return labels.end(); }
-};
-
-
 template<typename data_type>
 struct Operation {
 	enum OpType {INSERT, DELETE};
 	OpType type;
 	data_type data;
  	explicit Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-   	//Operation(const Operation& p) : type(p.type), data(p.data) { }
 };
 
 /**
@@ -140,9 +82,6 @@ public:
 	}
 
 	void applyUpdates(const std::vector<Operation<data_type> >& updates) {
-		
-		//std::cout << "applyUpdates";
-
 		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
 
 		iterator label_iter = labels.begin();
@@ -150,9 +89,6 @@ public:
 
 		std::vector<data_type> merged;
 		merged.reserve(labels.size()+ updates.size());
-
-		int removed = 0;
-		int inserted = 0;
 
 		while (update_iter != updates.end()) {
 			switch (update_iter->type) {
@@ -165,7 +101,6 @@ public:
 				}
 				++label_iter; // delete the element by jumping over it
                 ++update_iter;
-                ++removed;
                 continue;
 	        case Operation<data_type>::INSERT:
 				// insertion bounded by sentinal
@@ -183,16 +118,11 @@ public:
 				}
 				merged.push_back(update_iter->data);
 				++update_iter;
-				++inserted;
 				continue;
 	        }
 		}
-		//std::copy(label_iter, labels.end(), std::back_inserter(merged));
-		while (label_iter != labels.end()) {
-			merged.push_back(*label_iter++);
-		}
+		std::copy(label_iter, labels.end(), std::back_inserter(merged));
 	    labels = merged;
-		//std::cout << ": " << labels.size()-2 << " +" << inserted << " -" << removed << std::endl;
 	}
 
 	bool empty() {
@@ -202,7 +132,6 @@ public:
 	size_t size() {
 		return labels.size() -2;
 	}
-
 };
 
 
@@ -214,6 +143,9 @@ private:
 	typedef typename graph_slot::Edge Edge;
 	typedef typename Edge::edge_data Label;
 
+	typedef typename std::vector<Label>::iterator label_iter;
+	typedef typename std::vector<Label>::iterator const_label_iter;
+
 	struct Data : public Label {
 		NodeID node;
   		typedef Label label_type;
@@ -221,7 +153,7 @@ private:
 	};
 
     // Permanent and temporary labels per node.
-	std::vector<ParetoLabelSet<Label> > labels;
+	std::vector<std::vector<Label> > labels;
 
 	graph_slot graph;
 	ParetoQueue<Data> pq;
@@ -254,17 +186,63 @@ private:
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
 
-public:
+		static bool firstWeightLess(const Label& i, const Label& j)  {
+		return i.first_weight < j.first_weight;
+	}
 
-	typedef typename ParetoLabelSet<Label>::iterator label_iter;
-	typedef typename ParetoLabelSet<Label>::iterator const_label_iter;
+	static bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
+		return i.second_weight >= j.second_weight;
+	}
+
+	/** First label where the x-coord is truly smaller */
+	static label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
+		return --std::lower_bound(begin, end, new_label, firstWeightLess);
+	}
+
+	/** First label where the y-coord is truly smaller */
+	static label_iter y_predecessor(const label_iter& begin, const Label& new_label) {
+		label_iter i = begin;
+		while (secondWeightGreaterOrEquals(*i, new_label)) {
+			++i;
+		}
+		return i;
+	}
+
+	static bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
+		iter = x_predecessor(begin, end, new_label);
+
+		if (iter->second_weight <= new_label.second_weight) {
+			return true; // new label is dominated
+		}
+		++iter; // move to element with greater or equal x-coordinate
+
+		if (iter->first_weight == new_label.first_weight && 
+			iter->second_weight <= new_label.second_weight) {
+			// new label is dominated by the (single) pre-existing element with the same
+			// x-coordinate.
+			return true; 
+		}
+		return false;
+	}
+
+public:
 	typedef typename std::vector<Data>::iterator pareto_iter;
+	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
 
 	SequentialParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
-		graph(graph_),
-		stats(graph_.numberOfNodes())
-	 {}
+		graph(graph_)
+	{
+
+		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
+		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
+
+		// add sentinals
+		for (size_t i=0; i<labels.size(); ++i) {
+			labels[i].insert(labels[i].begin(), Label(min, max));
+			labels[i].insert(labels[i].end(), Label(max, min));		
+		}
+	}
 
 	void run(const NodeID node) {
 		std::vector<Data> globalMinima;
@@ -274,6 +252,7 @@ public:
 
 		while (!pq.empty()) {
 			stats.report(ITERATION, pq.size());
+
 			pq.findParetoMinima(globalMinima);
 			stats.report(MINIMA_COUNT, globalMinima.size());
 
@@ -283,9 +262,16 @@ public:
 					candidates.push_back(Data(edge.target, createNewLabel(*i, edge)));
 				}
 			}
+			// Sort sequence to group candidates by their target node
 			std::sort(candidates.begin(), candidates.end(), groupByNode);
+			updateLabelSets(candidates, updates);
 
-			merge(candidates, globalMinima, updates);
+			// Schedule optima for deletion
+			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
+				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
+			}
+			// Sort sequence for batch update
+			std::sort(updates.begin(), updates.end(), groupByWeight);
 			pq.applyUpdates(updates);
 
 			globalMinima.clear();
@@ -294,40 +280,70 @@ public:
 		}		
 	}
 
-	void merge(const std::vector<Data>& candidates, const std::vector<Data>& minima, std::vector<Operation<Data> >& updates) {
-		for (typename std::vector<Data>::const_iterator i = minima.begin(); i != minima.end(); ++i) {
-			updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
-		}
+	void updateLabelSets(const std::vector<Data>& candidates, std::vector<Operation<Data> >& updates) {
+		const_pareto_iter cand_iter = candidates.begin();
 
-		std::vector<Label> dominated;
-		for (typename std::vector<Data>::const_iterator i = candidates.begin(); i != candidates.end(); ++i) {
-			stats.report(CANDIDATE, i->node);
-
-			if (labels[i->node].add(*i, dominated)) {
-				stats.report(LABEL_NONDOMINATED, i->node);
-				updates.push_back(Operation<Data>(Operation<Data>::INSERT, *i));
-
-				for (typename std::vector<Label>::const_iterator j = dominated.begin(); j != dominated.end(); ++j) {
-					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(i->node, *j)));
-				}
-			} else {
-				stats.report(LABEL_DOMINATED, i->node);
+		while (cand_iter != candidates.end()) {
+			// find all labels belonging to the same target node
+			const_pareto_iter range_start = cand_iter;
+			while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
+				++cand_iter;
 			}
-			dominated.clear();
+			stats.report(IDENTICAL_TARGET_NODE, cand_iter - range_start);
+
+			// batch process labels belonging to the same target node
+			updateLabelSet(labels[range_start->node], range_start, cand_iter, updates);
 		}
-		std::sort(updates.begin(), updates.end(), groupByWeight);
+	}
+
+	void updateLabelSet(std::vector<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
+		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
+
+		label_iter labelset_iter = labelset.begin();
+		for (const_pareto_iter candidate = start; candidate != end; ++candidate) {
+			Data new_label = *candidate;
+			// short cut dominated check among candidates
+			if (new_label.second_weight >= min) { 
+				stats.report(LABEL_DOMINATED);
+				stats.report(DOMINATION_SHORTCUT);
+				continue; 
+			}
+			min = new_label.second_weight;
+			label_iter iter;
+			if (isDominated(labelset_iter, labelset.end(), new_label, iter)) {
+				stats.report(LABEL_DOMINATED);
+				continue;
+			}
+			stats.report(LABEL_NONDOMINATED);
+			updates.push_back(Operation<Data>(Operation<Data>::INSERT, new_label));
+
+			label_iter first_nondominated = y_predecessor(iter, new_label);
+			if (iter == first_nondominated) {
+				// delete range is empty, so just insert
+				labelset_iter = labelset.insert(first_nondominated, new_label);
+			} else {
+				// schedule deletion of dominated labels
+				for (label_iter i = iter; i != first_nondominated; ++i) {
+					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(new_label.node, *i)));
+				}
+				// replace first dominated label and remove the rest
+				*iter = new_label;
+				labelset_iter = labelset.erase(++iter, first_nondominated);
+			}
+		}
 	}
 	
 	void printStatistics() {
 		std::cout << stats.toString() << std::endl;
 	}
 
-	size_t size(NodeID node) {return labels[node].size(); }
+	// Subtraction / addition used to hide the sentinals
+	size_t size(NodeID node) {return labels[node].size()-2; }
 
-	label_iter begin(NodeID node) { return labels[node].begin(); }
-	const_label_iter begin(NodeID node) const { return labels[node].begin(); }
-	label_iter end(NodeID node) { return labels[node].end(); }
-	const_label_iter end(NodeID node) const { return labels[node].end(); }
+	label_iter begin(NodeID node) { return ++labels[node].begin(); }
+	const_label_iter begin(NodeID node) const { return ++labels[node].begin(); }
+	label_iter end(NodeID node) { return --labels[node].end(); }
+	const_label_iter end(NodeID node) const { return --labels[node].end(); }
 };
 
 
