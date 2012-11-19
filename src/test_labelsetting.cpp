@@ -63,6 +63,7 @@ void testGridSimple() {
 	LabelSettingAlgorithm<Graph> algo(graph);
 	algo.run(NodeID(0));
 
+	assertTrue(algo.size(NodeID(1)) == 2, "Should not contain dominated labels");
 	assertTrue(contains(algo, NodeID(1), Label(2,3)), "");
 	assertTrue(contains(algo, NodeID(1), Label(3,2)), "");
 }
