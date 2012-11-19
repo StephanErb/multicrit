@@ -27,17 +27,13 @@ TESTS=test_labelset test_labelsetting
 TARGETS = $(TESTS) $(CODE)
 PARALLEL =
 
-CXXFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID
-CXXFLAGS = -O3 -DNDEBUG -mtune=native -march=native
-CXXPFLAGS = -fopenmp -mtune=native -march=native -O3 -DNDEBUG
-CXXPFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp
+CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra
+CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra -fopenmp 
+CXXFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID #-fmudflap
+CXXPFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp #-fmudflap 
 
-CXXLIBS= -lrt
-CXXPLIBS= -lrt
-
-extractOsm.par: CXXPLIBS += -lprotobuf
-fast_plotting: CXXLIBS += -lpngwriter -largtable2 -lz -lfreetype -lpng
-punch.par: CXXPLIBS += -lpngwriter -lz -lfreetype -lpng
+CXXLIBS= -lrt #-lmudflap
+CXXPLIBS= -lrt #-lmudflap
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
 DEPENDENCYDIRS=.

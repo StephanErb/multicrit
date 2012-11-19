@@ -17,11 +17,69 @@
 
 #include <iostream>
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <iterator>
 
 #include "LabelSet.hpp"
-//#include "ParetoSearchStatistics.hpp"
+#include "ParetoSearchStatistics.hpp"
+
+
+template<typename label_type_slot>
+class ParetoLabelSet : public LabelSetBase<label_type_slot, label_type_slot > {
+public: 
+	typedef label_type_slot label_type;
+
+protected:
+	typedef LabelSetBase<label_type, label_type> B;
+	// sorted by increasing x (first_weight) and thus decreasing y (second_weight)
+	typename B::Set labels;
+
+public:
+	ParetoLabelSet() {
+		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
+		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
+
+		// add sentinals
+		labels.insert(labels.begin(), label_type_slot(min, max, /*permanent*/ true));
+		labels.insert(labels.end(), label_type_slot(max, min, /*permanent*/ true));
+	}
+
+	// Return true if the new_label is non-dominated and has been added
+	// as a temporary label to this label set. 
+	bool add(const label_type& new_label, std::vector<label_type>& dominated) {
+		typename B::iterator iter;
+		if (B::isDominated(labels, new_label, iter)) {
+			return false;
+		}
+		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
+		for (typename B::iterator i = iter; i != first_nondominated; ++i) {
+			dominated.push_back(*i);
+		}
+#ifdef TREE_SET
+		labels.erase(iter--, first_nondominated);
+		labels.insert(iter, new_label);
+#else
+		if (iter == first_nondominated) {
+			// delete range is empty, so just insert
+			labels.insert(first_nondominated, new_label);
+		} else {
+			// replace first dominated label and remove the rest
+			*iter = new_label;
+			labels.erase(++iter, first_nondominated);
+		}
+#endif
+		return true;
+	}
+
+	/* Subtraction used to hide the sentinals */
+	std::size_t size() const { return labels.size()-2; }
+
+	typename B::iterator begin() { return labels.begin(); }
+	typename B::const_iterator begin() const { return labels.begin(); }
+	typename B::iterator end() { return labels.end(); }
+	typename B::const_iterator end() const { return labels.end(); }
+};
 
 
 template<typename data_type>
@@ -29,8 +87,8 @@ struct Operation {
 	enum OpType {INSERT, DELETE};
 	OpType type;
 	data_type data;
- 	Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-   	Operation(const Operation& p) : type(p.type), data(p.data) { }
+ 	explicit Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
+   	//Operation(const Operation& p) : type(p.type), data(p.data) { }
 };
 
 /**
@@ -41,6 +99,7 @@ class ParetoQueue {
 private:
 	std::vector<data_type> labels;
 	typedef typename std::vector<data_type>::iterator iterator;
+	typedef typename std::vector<data_type>::const_iterator const_iterator;
 	typedef typename data_type::weight_type weight_type;
 
 	static void printLabels(iterator begin, iterator end) {
@@ -62,12 +121,11 @@ public:
 		labels.insert(labels.end(), data_type(NodeID(0), typename data_type::label_type(max, min)));
 	}
 
-	void findParetoMinima(std::vector<data_type>& minima) {
-		iterator iter = ++labels.begin(); // ignore the sentinal
-		iterator end = labels.end() - 1;  // ignore the sentinal
+	void findParetoMinima(std::vector<data_type>& minima) const {
+		const_iterator iter = labels.begin();
+		const_iterator end = --labels.end();  // ignore the sentinal
 
 		weight_type min = iter->second_weight;
-		minima.push_back(*iter);
 		while (iter != end) {
 			if (iter->second_weight < min) {
 				min = iter->second_weight;
@@ -75,11 +133,10 @@ public:
 			}
 			++iter;
 		}
-		//printLabels(labels.begin(), labels.end());
 	}
 
 	void init(const data_type& data) {
-		labels.insert(labels.begin()+1, data);
+		labels.insert(++labels.begin(), data);	
 	}
 
 	void applyUpdates(const std::vector<Operation<data_type> >& updates) {
@@ -91,27 +148,26 @@ public:
 		iterator label_iter = labels.begin();
 		u_iterator update_iter = updates.begin();
 
-  		std::vector<data_type> merged;
-  		merged.reserve(labels.size()+ updates.size());
+		std::vector<data_type> merged;
+		merged.reserve(labels.size()+ updates.size());
 
-  		int removed = 0;
-  		int inserted = 0;
+		int removed = 0;
+		int inserted = 0;
 
 		while (update_iter != updates.end()) {
 			switch (update_iter->type) {
 			case Operation<data_type>::DELETE:
-				// We know the element is in here
-				while (label_iter->first_weight != update_iter->data.first_weight) {
-					merged.push_back(*label_iter++);
-				}
-				while (label_iter->second_weight != update_iter->data.second_weight) {
+			  	// We know the element is in here
+				while (label_iter->first_weight != update_iter->data.first_weight ||
+						label_iter->second_weight != update_iter->data.second_weight ||
+						label_iter->node != update_iter->data.node) {
 					merged.push_back(*label_iter++);
 				}
 				++label_iter; // delete the element by jumping over it
-				++update_iter;
-				++removed;
-				continue;
-			case Operation<data_type>::INSERT:
+                ++update_iter;
+                ++removed;
+                continue;
+	        case Operation<data_type>::INSERT:
 				// insertion bounded by sentinal
 				while (label_iter->first_weight < update_iter->data.first_weight) {
 					merged.push_back(*label_iter++);
@@ -120,22 +176,31 @@ public:
 						&& label_iter->second_weight < update_iter->data.second_weight) {
 					merged.push_back(*label_iter++);
 				}
+				while (label_iter->first_weight == update_iter->data.first_weight
+						&& label_iter->second_weight == update_iter->data.second_weight
+						&& label_iter->node < update_iter->data.node) {
+					merged.push_back(*label_iter++);
+				}
 				merged.push_back(update_iter->data);
 				++update_iter;
 				++inserted;
 				continue;
-			}
+	        }
 		}
-		/*while (label_iter != labels.end()) {
+		//std::copy(label_iter, labels.end(), std::back_inserter(merged));
+		while (label_iter != labels.end()) {
 			merged.push_back(*label_iter++);
-		}*/
-		std::copy(label_iter, labels.end(), std::back_inserter(merged));
-		labels = merged;
+		}
+	    labels = merged;
 		//std::cout << ": " << labels.size()-2 << " +" << inserted << " -" << removed << std::endl;
 	}
 
 	bool empty() {
-		return labels.size() == 2;
+		return size() == 0;
+	}
+
+	size_t size() {
+		return labels.size() -2;
 	}
 
 };
@@ -156,11 +221,11 @@ private:
 	};
 
     // Permanent and temporary labels per node.
-	std::vector<NaiveLabelSet<Label> > labels;
+	std::vector<ParetoLabelSet<Label> > labels;
 
 	graph_slot graph;
 	ParetoQueue<Data> pq;
-	//ParetoSearchStatistics stats;
+	ParetoSearchStatistics stats;
 
 	struct CandidateComparator1 {
   		bool operator() (const Data& i, const Data& j) {
@@ -176,6 +241,9 @@ private:
 	struct CandidateComparator2 {
   		bool operator() (const Operation<Data>& i, const Operation<Data>& j) {
   			if (i.data.first_weight == j.data.first_weight) {
+  				if (i.data.second_weight == j.data.second_weight) {
+  					return i.data.node < j.data.node;
+  				}
   				return i.data.second_weight < j.data.second_weight;
   			}
   			return i.data.first_weight < j.data.first_weight;
@@ -188,13 +256,14 @@ private:
 
 public:
 
-	typedef typename NaiveLabelSet<Label>::iterator label_iter;
-	typedef typename NaiveLabelSet<Label>::iterator const_label_iter;
+	typedef typename ParetoLabelSet<Label>::iterator label_iter;
+	typedef typename ParetoLabelSet<Label>::iterator const_label_iter;
 	typedef typename std::vector<Data>::iterator pareto_iter;
 
 	SequentialParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
-		graph(graph_)
+		graph(graph_),
+		stats(graph_.numberOfNodes())
 	 {}
 
 	void run(const NodeID node) {
@@ -204,11 +273,11 @@ public:
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
+			stats.report(ITERATION, pq.size());
 			pq.findParetoMinima(globalMinima);
+			stats.report(MINIMA_COUNT, globalMinima.size());
 
 			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				//std::cout << " min (" << i->node << ": " << i->first_weight << "," << i->second_weight << ")" << std::endl;
-
 				FORALL_EDGES(graph, i->node, eid) {
 					const Edge& edge = graph.getEdge(eid);
 					candidates.push_back(Data(edge.target, createNewLabel(*i, edge)));
@@ -229,18 +298,28 @@ public:
 		for (typename std::vector<Data>::const_iterator i = minima.begin(); i != minima.end(); ++i) {
 			updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
 		}
+
+		std::vector<Label> dominated;
 		for (typename std::vector<Data>::const_iterator i = candidates.begin(); i != candidates.end(); ++i) {
-			//std::cout << " new candidate (" << i->node << ": " << i->first_weight << "," << i->second_weight << ")" << std::endl;
-			if (labels[i->node].add(*i)) {
+			stats.report(CANDIDATE, i->node);
+
+			if (labels[i->node].add(*i, dominated)) {
+				stats.report(LABEL_NONDOMINATED, i->node);
 				updates.push_back(Operation<Data>(Operation<Data>::INSERT, *i));
+
+				for (typename std::vector<Label>::const_iterator j = dominated.begin(); j != dominated.end(); ++j) {
+					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(i->node, *j)));
+				}
+			} else {
+				stats.report(LABEL_DOMINATED, i->node);
 			}
+			dominated.clear();
 		}
 		std::sort(updates.begin(), updates.end(), groupByWeight);
-
 	}
 	
 	void printStatistics() {
-		
+		std::cout << stats.toString() << std::endl;
 	}
 
 	size_t size(NodeID node) {return labels[node].size(); }
