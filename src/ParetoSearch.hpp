@@ -92,6 +92,7 @@ public:
 		u_iterator update_iter = updates.begin();
 
   		std::vector<data_type> merged;
+  		merged.reserve(labels.size()+ updates.size());
 
   		int removed = 0;
   		int inserted = 0;
