@@ -23,6 +23,8 @@
 #include "LabelSet.hpp"
 #include "LabelSettingStatistics.hpp"
 
+#include "ParetoSearch.hpp"
+
 
 template<typename graph_slot>
 class NodeHeapLabelSettingAlgorithm {

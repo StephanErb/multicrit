@@ -16,7 +16,8 @@
  * Only one may be active at a time!
  */ 
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
-#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
+//#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
+#define LABEL_SETTING_ALGORITHM SequentialParetoSearch
 
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
@@ -35,7 +36,7 @@
 /**
  * Keep this defined to gather runtime stats during label setting
  */
-//#define GATHER_STATS
+#define GATHER_STATS
 
 /**
  * Maximal costs used to compute the lexicographic priority.
