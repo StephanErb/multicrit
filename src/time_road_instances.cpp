@@ -69,7 +69,7 @@ void readGraphFromFile(Graph& graph, std::ifstream& in) {
 
 	while (in.getline(c_line, 256)) {
 		std::istringstream in_stream( c_line );
-		int start, end, first_weight, second_weight;
+		unsigned int start, end, first_weight, second_weight;
 		in_stream >> start >> end >> first_weight >> second_weight;
 
 		while (graph.numberOfNodes() < std::max(start, end)) {
