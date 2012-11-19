@@ -1,5 +1,9 @@
 # Engineering Parallel Biobjective Shortest Path Search
 
+## Code Overview
+
+1. State-of the art sequential label setting algorithm: `LabelSettingAlgorithm.hpp` which stores in label sets as implemented in `LabelSet.hpp`.
+
 ## Build
   
     make configure
@@ -27,3 +31,4 @@ Random grid graphs with costs in range [1, 10]:
     ./bin/time_grid_instances -c 12
 
     -c number of repetitions. Each one gets a new graph.
+
