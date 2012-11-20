@@ -1,27 +1,6 @@
-
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-
-//NodeID and EdgdeID
-#include "utility/datastructure/graph/GraphTypes.hpp"
-
-#include "utility/datastructure/graph/GraphMacros.h"
-#include "utility/datastructure/container/BinaryHeap.hpp"
-
 #include <iostream>
-#include <vector>
-
-#include "LabelSettingAlgorithm.hpp"
+#include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
-
-#include "utility/tool/timer.h"
-
-typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
-typedef utility::datastructure::KGraph<Edge> Graph;
-typedef utility::datastructure::NodeID NodeID;
-typedef Edge::edge_data Label;
-
 
 void assertTrue(bool cond, std::string msg) {
 	if (!cond) {
@@ -30,7 +9,7 @@ void assertTrue(bool cond, std::string msg) {
 	}
 }
 
-bool contains(LabelSettingAlgorithm<Graph>& algo, const NodeID node, const Label label) {
+bool contains(LabelSettingAlgorithm& algo, const NodeID node, const Label label) {
 	return std::find(algo.begin(node), algo.end(node), label) != algo.end(node);
 }
 
@@ -60,7 +39,7 @@ void testGridSimple() {
 	Graph graph;
 	createGridSimple(graph);
 
-	LabelSettingAlgorithm<Graph> algo(graph);
+	LabelSettingAlgorithm algo(graph);
 	algo.run(NodeID(0));
 
 	assertTrue(algo.size(NodeID(1)) == 2, "Should not contain dominated labels");
@@ -73,7 +52,7 @@ void testGridExponential() {
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
 
-	LabelSettingAlgorithm<Graph> algo(graph);
+	LabelSettingAlgorithm algo(graph);
 	algo.run(NodeID(0));
 
 	assertTrue(algo.size(NodeID(0)) == 0, "Start node should have no labels");

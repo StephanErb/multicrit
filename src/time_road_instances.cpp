@@ -1,32 +1,15 @@
-
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-#include "utility/datastructure/graph/GraphTypes.hpp"
-#include "utility/datastructure/graph/GraphMacros.h"
-
-#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include <stdio.h>
 #include <algorithm>
 #include <utility>
 
-#include "LabelSettingAlgorithm.hpp"
+#include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
-#include "utility/datastructure/graph/GraphBuilder.hpp"
 
 #include "utility/tool/timer.h"
 #include "timing.h"
-
-
-
-typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
-typedef utility::datastructure::KGraph<Edge> Graph;
-typedef utility::datastructure::NodeID NodeID;
-typedef Edge::edge_data Label;
 
 
 static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations) {
@@ -34,8 +17,8 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 	std::fill_n(timings, iterations, 0);
 	size_t label_count;
 
-	for (int i = 0; i < iterations; i++) {
-		LabelSettingAlgorithm<Graph> algo(graph);
+	for (int i = 0; i < iterations; ++i) {
+		LabelSettingAlgorithm algo(graph);
 
 		utility::tool::TimeOfDayTimer timer;
 		timer.start();
@@ -109,13 +92,15 @@ int main(int argc, char ** args) {
 			verbose = true;
 			break;
 		case '?':
-            std::cout << "Unrecognized option: " <<  optopt << std::endl;
+			std::cout << "Unrecognized option: " <<  optopt << std::endl;
+			break;
 		}
 	}
 
 	int instance = 1;
-	graph_in.open((directory + graphname + "1").c_str());
-	std::cout << "# Map: " << (directory + graphname + "1") << std::endl;
+	std::string map(directory + graphname + "1");
+	graph_in.open(map.c_str());
+	std::cout << "# Map: " << map << std::endl;
 	problems_in.open((directory + graphname + "_ODpairs.txt").c_str());
 
 	Graph graph;
@@ -135,6 +120,7 @@ int main(int argc, char ** args) {
 
 		time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations);
 	}
+	problems_in.close();
 	return 0;
 }
 

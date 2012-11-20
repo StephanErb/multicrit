@@ -1,18 +1,10 @@
 /*
- * A implementation of a sequential bi-objective shortest path label setting algorithm.
+ * Implementations of a sequential bi-objective shortest path label setting algorithm.
  *  
  * Author: Stephan Erb
  */
-#ifndef LABELSETTING_ALGO_H_
-#define LABELSETTING_ALGO_H_
-
-
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-
-//NodeID and EdgdeID
-#include "utility/datastructure/graph/GraphTypes.hpp"
+#ifndef SEQ_LABELSETTING_H_
+#define SEQ_LABELSETTING_H_
 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "utility/datastructure/container/BinaryHeap.hpp"
@@ -20,11 +12,8 @@
 
 #include <iostream>
 #include <vector>
-#include "LabelSet.hpp"
-#include "LabelSettingStatistics.hpp"
-
-#include "ParetoSearch.hpp"
-
+#include "SeqLabelSet.hpp"
+#include "SeqLabelSettingStatistics.hpp"
 
 template<typename graph_slot>
 class NodeHeapLabelSettingAlgorithm {
@@ -121,7 +110,6 @@ public:
 
 
 
-
 template<typename graph_slot>
 class SharedHeapLabelSettingAlgorithm {
 private:
@@ -149,7 +137,6 @@ private:
 	static Label createNewLabel(const Label& current_label, const Edge& edge) {
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
-
 
 public:
 
@@ -200,15 +187,6 @@ public:
 	const_iterator begin(NodeID node) const { return labels[node].begin(); }
 	iterator end(NodeID node) { return labels[node].end(); }
 	const_iterator end(NodeID node) const { return labels[node].end(); }
-};
-
-
-template<typename graph_slot>
-class LabelSettingAlgorithm : public LABEL_SETTING_ALGORITHM<graph_slot> {
-public:
-	LabelSettingAlgorithm(const graph_slot& graph_):
-		LABEL_SETTING_ALGORITHM<graph_slot>(graph_)
-	 {}
 };
 
 #endif 

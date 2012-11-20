@@ -1,27 +1,15 @@
-
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-#include "utility/datastructure/graph/GraphTypes.hpp"
-#include "utility/datastructure/graph/GraphMacros.h"
-
 #include <unistd.h>
 #include <iostream>
 #include <vector>
 #include <fstream>
 
-#include "LabelSettingAlgorithm.hpp"
+#include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
 
 #include "utility/tool/timer.h"
 
-typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
-typedef utility::datastructure::KGraph<Edge> Graph;
-typedef utility::datastructure::NodeID NodeID;
-typedef Edge::edge_data Label;
-
 void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
-	LabelSettingAlgorithm<Graph> algo(graph);
+	LabelSettingAlgorithm algo(graph);
 
 	utility::tool::TimeOfDayTimer timer;
 	timer.start();

@@ -1,5 +1,5 @@
-#ifndef LABELSETTING_STATS_H_
-#define LABELSETTING_STATS_H_
+#ifndef SEQ_LABELSETTING_STATS_H_
+#define SEQ_LABELSETTING_STATS_H_
 
 #include <vector>
 #include <algorithm>

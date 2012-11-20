@@ -7,12 +7,6 @@
 #ifndef PARETO_SEARCH_H_
 #define PARETO_SEARCH_H_
 
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-
-//NodeID and EdgdeID
-#include "utility/datastructure/graph/GraphTypes.hpp"
 #include "utility/datastructure/graph/GraphMacros.h"
 
 #include <iostream>
@@ -20,8 +14,8 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
+#include <limits>
 
-#include "LabelSet.hpp"
 #include "ParetoSearchStatistics.hpp"
 
 
@@ -37,7 +31,7 @@ struct Operation {
  * Queue storing all temporary labels of all nodes.
  */
 template<typename data_type>
-class ParetoQueue {
+class SequentialParetoQueue {
 private:
 
 #ifdef TREE_PARETO_QUEUE
@@ -74,13 +68,21 @@ private:
 
 public:
 
-	ParetoQueue() {
+	SequentialParetoQueue() {
 		const weight_type min = std::numeric_limits<weight_type>::min();
 		const weight_type max = std::numeric_limits<weight_type>::max();
 
 		// add sentinals
 		labels.insert(labels.begin(), data_type(NodeID(0), typename data_type::label_type(min, max)));
 		labels.insert(labels.end(), data_type(NodeID(0), typename data_type::label_type(max, min)));
+	}
+
+	bool empty() {
+		return size() == 0;
+	}
+
+	size_t size() {
+		return labels.size() -2;
 	}
 
 	void findParetoMinima(std::vector<data_type>& minima) const {
@@ -114,6 +116,8 @@ public:
 			applyUpdatesOnVector(updates);
 		#endif
 	}
+
+private:
 
 	inline void applyUpdatesOnTree(const std::vector<Operation<data_type> >& updates) {
 		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
@@ -176,14 +180,6 @@ public:
 		std::copy(label_iter, labels.end(), std::back_inserter(merged));
 	    labels = merged;
 	}
-
-	bool empty() {
-		return size() == 0;
-	}
-
-	size_t size() {
-		return labels.size() -2;
-	}
 };
 
 
@@ -212,7 +208,7 @@ private:
 	std::vector<std::vector<Label> > labels;
 
 	graph_slot graph;
-	ParetoQueue<Data> pq;
+	SequentialParetoQueue<Data> pq;
 	ParetoSearchStatistics stats;
 
 	struct GroupByNodeComp {

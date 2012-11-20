@@ -1,30 +1,13 @@
-
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-#include "utility/datastructure/graph/GraphTypes.hpp"
-#include "utility/datastructure/graph/GraphMacros.h"
-
 #include <unistd.h>
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <sstream>
-#include <stdio.h>
 
-#include "LabelSettingAlgorithm.hpp"
+#include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
 
 #include "utility/tool/timer.h"
 #include "timing.h"
-
-
-
-typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
-typedef utility::datastructure::KGraph<Edge> Graph;
-typedef utility::datastructure::NodeID NodeID;
-typedef Edge::edge_data Label;
-
 
 void timeGrid(int num, std::string label, int height, int width, bool verbose, int iterations) {
 	GraphGenerator<Graph> generator;
@@ -36,7 +19,7 @@ void timeGrid(int num, std::string label, int height, int width, bool verbose, i
 		Graph graph;
 		generator.generateRandomGridGraph(graph, height, width);
 
-		LabelSettingAlgorithm<Graph> algo(graph);
+		LabelSettingAlgorithm algo(graph);
 
 		utility::tool::TimeOfDayTimer timer;
 		timer.start();

@@ -1,20 +1,15 @@
 #ifndef GRAPHGENERATOR_H_
 #define GRAPHGENERATOR_H_
 
-//Graph, Node and Edges
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-
-//NodeID and EdgdeID
-#include "utility/datastructure/graph/GraphTypes.hpp"
 #include "utility/datastructure/graph/GraphMacros.h"
-
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <algorithm>
 
 template<typename graph_slot>
 class GraphGenerator {
@@ -140,7 +135,7 @@ public:
 	 * Simple graph with exponential number of labels. Idea taken from the paper 
 	 * 		"Pareto Shortest Paths is Often Feasible in Practice" (see Fig 1.)
 	 */
-	void generateExponentialGraph(Graph& graph, int node_count) {
+	void generateExponentialGraph(Graph& graph, int node_count) const {
 		graph.addNode();
 		const NodeID START = NodeID(0);
 		NodeID previous_top = START;
@@ -167,7 +162,7 @@ public:
 		//printGraph(graph);
 	}
 
-	static void buildGraphFromEdges(Graph& graph, std::vector<std::pair<NodeID,Edge> >& edges) {
+	void buildGraphFromEdges(Graph& graph, std::vector<std::pair<NodeID,Edge> >& edges) const {
 		std::sort(edges.begin(), edges.end(), comp);
 		NodeID max = (NodeID) 0;
 		for( size_t i = 0; i < edges.size(); ++i ){
@@ -188,7 +183,7 @@ public:
 		graph.finalize();
 	}
 
-	void printGraph(Graph& graph) {
+	void printGraph(Graph& graph) const {
 		FORALL_NODES(graph, node) {
 			FORALL_EDGES(graph, node, eid) {
 				const Edge& edge = graph.getEdge(eid);

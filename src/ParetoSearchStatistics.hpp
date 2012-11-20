@@ -7,10 +7,6 @@
 #include <sstream>
 #include <numeric>
 
-//NodeID and EdgdeID
-#include "utility/datastructure/graph/GraphTypes.hpp"
-#include "utility/datastructure/graph/GraphMacros.h"
-
 #define STAT_ELEMENT_COUNT 6
 
 enum StatElement {

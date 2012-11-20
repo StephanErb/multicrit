@@ -3,8 +3,8 @@
  *  
  * Author: Stephan Erb
  */
-#ifndef LABELSET_H_
-#define LABELSET_H_
+#ifndef SEQ_LABELSET_H_
+#define SEQ_LABELSET_H_
 
 #include "options.hpp"
 #include <set>
@@ -544,7 +544,6 @@ public:
 	typename B::iterator end() { return labels.end(); }
 	typename B::const_iterator end() const { return labels.end(); }
 };
-
 
 
 template<typename label_type_slot>

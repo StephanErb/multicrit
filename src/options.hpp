@@ -1,6 +1,9 @@
+#ifndef ALGO_OPTIONS_
+#define ALGO_OPTIONS_
 
 #include <unistd.h>
 #include <sstream>
+#include <iostream>
 #include <string.h>
 
 #define QUOTE(name) #name
@@ -10,8 +13,8 @@
  * Configure the label setting algorithm to use.
  */ 
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
-//#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
-#define LABEL_SETTING_ALGORITHM SequentialParetoSearch	// will always use custom pareto label set
+#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
+//#define LABEL_SETTING_ALGORITHM SequentialParetoSearch	// will always use custom pareto label set
 
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
@@ -46,7 +49,7 @@
  * Maximal costs used to compute the lexicographic priority.
  * Must be appropriate to the problem size!
  */
- #define MAX_COST 200000
+ #define MAX_COST 20000
 
  std::string currentConfig() {
 	std::ostringstream out_stream;
@@ -81,3 +84,4 @@
 	}
 	return out_stream.str();
 }
+#endif
