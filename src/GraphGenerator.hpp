@@ -48,6 +48,12 @@ private:
     	return Weight(first_weight, second_weight);
 	}
 
+	static bool comp( const std::pair<NodeID,Edge> & a, const std::pair<NodeID,Edge> & b ){
+		if (a.first < b.first) return true;
+		if ( a.first > b.first) return false;
+		return a.second.getTarget() < b.second.getTarget();
+	}
+
 public:
 
 	typedef graph_slot Graph;
@@ -159,6 +165,27 @@ public:
 		}
 		graph.finalize();
 		//printGraph(graph);
+	}
+
+	static void buildGraphFromEdges(Graph& graph, std::vector<std::pair<NodeID,Edge> >& edges) {
+		std::sort(edges.begin(), edges.end(), comp);
+		NodeID max = (NodeID) 0;
+		for( size_t i = 0; i < edges.size(); ++i ){
+			max = std::max( edges[i].first, max );
+			max = std::max( edges[i].second.target, max );
+		}
+		unsigned int node_id = 0;
+		graph.addNode();
+		for( size_t i = 0; i < edges.size(); ++i ){
+			while( edges[i].first > (NodeID) node_id ){
+				++node_id;
+				graph.addNode();
+			}
+			graph.addEdge( (NodeID) edges[i].first, edges[i].second );
+		}
+		while( max > node_id )
+			graph.addNode();
+		graph.finalize();
 	}
 
 	void printGraph(Graph& graph) {

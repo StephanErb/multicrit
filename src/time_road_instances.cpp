@@ -12,9 +12,11 @@
 #include <sstream>
 #include <stdio.h>
 #include <algorithm>
+#include <utility>
 
 #include "LabelSettingAlgorithm.hpp"
 #include "GraphGenerator.hpp"
+#include "utility/datastructure/graph/GraphBuilder.hpp"
 
 #include "utility/tool/timer.h"
 #include "timing.h"
@@ -27,7 +29,7 @@ typedef utility::datastructure::NodeID NodeID;
 typedef Edge::edge_data Label;
 
 
-void time(const Graph& graph, NodeID start, NodeID end, int num, std::string label, bool verbose, int iterations) {
+static void time(const Graph& graph, NodeID start, NodeID end, int num, std::string label, bool verbose, int iterations) {
 	double timings[iterations];
 	std::fill_n(timings, iterations, 0);
 	size_t label_count;
@@ -50,7 +52,7 @@ void time(const Graph& graph, NodeID start, NodeID end, int num, std::string lab
 	std::cout << num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
 }
 
-void readGraphFromFile(Graph& graph, std::ifstream& in) {
+static void readGraphFromFile(Graph& graph, std::ifstream& in) {
 	std::string line;
 	char c_line[256];
 
@@ -61,23 +63,21 @@ void readGraphFromFile(Graph& graph, std::ifstream& in) {
 	in_stream >> line >> line >> node_count >> edge_count;
 	std::cout << "# Nodes " << node_count <<  " Edges " << edge_count << std::endl;
 
-	graph.addNode();
-
 	// Skip two unused lines
 	std::getline(in, line);
 	std::getline(in, line);
+
+	std::vector< std::pair<NodeID, Edge > > edges;
 
 	while (in.getline(c_line, 256)) {
 		std::istringstream in_stream( c_line );
 		unsigned int start, end, first_weight, second_weight;
 		in_stream >> start >> end >> first_weight >> second_weight;
 
-		while (graph.numberOfNodes() < std::max(start, end)) {
-			graph.addNode();
-		}
-		graph.addEdge(NodeID(start), Edge(NodeID(end), Label(first_weight, second_weight)));
+		edges.push_back(std::make_pair(NodeID(start), Edge(NodeID(end), Label(first_weight, second_weight))));
 	}
-	graph.finalize();
+	GraphGenerator<Graph> generator;
+	generator.buildGraphFromEdges(graph, edges);
 }
 
 int main(int argc, char ** args) {
