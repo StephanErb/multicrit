@@ -1,11 +1,11 @@
 /*
- * A implementation of a bi-objective shortest path label setting algorithm.
+ * A implementation of a bi-objective shortest path label setting algorithm
+ * that always relaxes _all_ globaly pareto optimal labels instead of just one.
  *  
  * Author: Stephan Erb
  */
 #ifndef PARETO_SEARCH_H_
 #define PARETO_SEARCH_H_
-
 
 //Graph, Node and Edges
 #include "utility/datastructure/graph/KGraph.hpp"
@@ -39,9 +39,29 @@ struct Operation {
 template<typename data_type>
 class ParetoQueue {
 private:
-	std::vector<data_type> labels;
-	typedef typename std::vector<data_type>::iterator iterator;
-	typedef typename std::vector<data_type>::const_iterator const_iterator;
+
+#ifdef TREE_PARETO_QUEUE
+	template<typename type>
+	struct SetOrderer {
+  		bool operator() (const type& i, const type& j) const {
+  			if (i.first_weight == j.first_weight) {
+  				if (i.second_weight == j.second_weight) {
+  					return i.node < j.node;
+  				}
+  				return i.second_weight < j.second_weight;
+  			}
+  			return i.first_weight < j.first_weight;
+  		}
+	};
+	typedef std::set<data_type, SetOrderer<data_type> > QueueType;
+	QueueType labels;
+#else
+	typedef std::vector<data_type> QueueType;
+	QueueType labels;
+#endif
+	
+	typedef typename QueueType::iterator iterator;
+	typedef typename QueueType::const_iterator const_iterator;
 	typedef typename data_type::weight_type weight_type;
 
 	static void printLabels(iterator begin, iterator end) {
@@ -75,13 +95,45 @@ public:
 			}
 			++iter;
 		}
+		#ifdef TREE_PARETO_QUEUE
+			// hack to workaround out-of-order initialization
+			if (minima.empty()) {
+				minima.push_back(*labels.begin());
+			}
+		#endif
 	}
 
 	void init(const data_type& data) {
-		labels.insert(++labels.begin(), data);	
+		labels.insert(++labels.begin(), data);
 	}
 
 	void applyUpdates(const std::vector<Operation<data_type> >& updates) {
+		#ifdef TREE_PARETO_QUEUE
+			applyUpdatesOnTree(updates);
+		#else
+			applyUpdatesOnVector(updates);
+		#endif
+	}
+
+	inline void applyUpdatesOnTree(const std::vector<Operation<data_type> >& updates) {
+		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
+		u_iterator update_iter = updates.begin();
+
+		while (update_iter != updates.end()) {
+			switch (update_iter->type) {
+			case Operation<data_type>::DELETE:
+			  	labels.erase(update_iter->data);
+				++update_iter;
+				continue;
+			case Operation<data_type>::INSERT:
+				labels.insert(update_iter->data);
+				++update_iter;
+				continue;
+	        }
+		}
+	}
+
+	inline void applyUpdatesOnVector(const std::vector<Operation<data_type> >& updates) {
 		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
 
 		iterator label_iter = labels.begin();
@@ -143,14 +195,18 @@ private:
 	typedef typename graph_slot::Edge Edge;
 	typedef typename Edge::edge_data Label;
 
-	typedef typename std::vector<Label>::iterator label_iter;
-	typedef typename std::vector<Label>::iterator const_label_iter;
-
 	struct Data : public Label {
 		NodeID node;
   		typedef Label label_type;
  		explicit Data(const NodeID& x, const Label& y) : Label(y), node(x) {}
+ 		Data() : Label(0,0), node(0) {}
+ 		Data(const Data& data) : Label(data), node(data.node) {}
 	};
+
+	typedef typename std::vector<Label>::iterator label_iter;
+	typedef typename std::vector<Label>::iterator const_label_iter;
+	typedef typename std::vector<Data>::iterator pareto_iter;
+	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
 
     // Permanent and temporary labels per node.
 	std::vector<std::vector<Label> > labels;
@@ -159,36 +215,39 @@ private:
 	ParetoQueue<Data> pq;
 	ParetoSearchStatistics stats;
 
-	struct CandidateComparator1 {
-  		bool operator() (const Data& i, const Data& j) {
-  			if (i.node == j.node) {
-  				if (i.first_weight == j.first_weight) {
-  					return i.second_weight < j.second_weight;
-  				}
-  				return i.first_weight < j.first_weight;
-  			} 
-  			return i.node < j.node;
-  		}
+	struct GroupByNodeComp {
+		bool operator() (const Data& i, const Data& j) const {
+			if (i.node == j.node) {
+				if (i.first_weight == j.first_weight) {
+					return i.second_weight < j.second_weight;
+				}
+				return i.first_weight < j.first_weight;
+			} 
+			return i.node < j.node;
+		}
 	} groupByNode;
-	struct CandidateComparator2 {
-  		bool operator() (const Operation<Data>& i, const Operation<Data>& j) {
-  			if (i.data.first_weight == j.data.first_weight) {
-  				if (i.data.second_weight == j.data.second_weight) {
-  					return i.data.node < j.data.node;
-  				}
-  				return i.data.second_weight < j.data.second_weight;
-  			}
-  			return i.data.first_weight < j.data.first_weight;
-  		}
+
+	struct GroupByWeightComp {
+		bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
+			if (i.data.first_weight == j.data.first_weight) {
+				if (i.data.second_weight == j.data.second_weight) {
+					return i.data.node < j.data.node;
+				}
+				return i.data.second_weight < j.data.second_weight;
+			}
+			return i.data.first_weight < j.data.first_weight;
+		}
 	} groupByWeight;
 
 	static Label createNewLabel(const Label& current_label, const Edge& edge) {
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
 
-		static bool firstWeightLess(const Label& i, const Label& j)  {
-		return i.first_weight < j.first_weight;
-	}
+	static struct WeightLessComp {
+		bool operator() (const Label& i, const Label& j) const {
+			return i.first_weight < j.first_weight;
+		}
+	} firstWeightLess;
 
 	static bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
 		return i.second_weight >= j.second_weight;
@@ -223,61 +282,6 @@ private:
 			return true; 
 		}
 		return false;
-	}
-
-public:
-	typedef typename std::vector<Data>::iterator pareto_iter;
-	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
-
-	SequentialParetoSearch(const graph_slot& graph_):
-		labels(graph_.numberOfNodes()),
-		graph(graph_)
-	{
-
-		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
-		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
-
-		// add sentinals
-		for (size_t i=0; i<labels.size(); ++i) {
-			labels[i].insert(labels[i].begin(), Label(min, max));
-			labels[i].insert(labels[i].end(), Label(max, min));		
-		}
-	}
-
-	void run(const NodeID node) {
-		std::vector<Data> globalMinima;
-		std::vector<Data> candidates;
-		std::vector<Operation<Data> > updates;
-		pq.init(Data(node, Label(0,0)));
-
-		while (!pq.empty()) {
-			stats.report(ITERATION, pq.size());
-
-			pq.findParetoMinima(globalMinima);
-			stats.report(MINIMA_COUNT, globalMinima.size());
-
-			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				FORALL_EDGES(graph, i->node, eid) {
-					const Edge& edge = graph.getEdge(eid);
-					candidates.push_back(Data(edge.target, createNewLabel(*i, edge)));
-				}
-			}
-			// Sort sequence to group candidates by their target node
-			std::sort(candidates.begin(), candidates.end(), groupByNode);
-			updateLabelSets(candidates, updates);
-
-			// Schedule optima for deletion
-			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
-			}
-			// Sort sequence for batch update
-			std::sort(updates.begin(), updates.end(), groupByWeight);
-			pq.applyUpdates(updates);
-
-			globalMinima.clear();
-			candidates.clear();
-			updates.clear();
-		}		
 	}
 
 	void updateLabelSets(const std::vector<Data>& candidates, std::vector<Operation<Data> >& updates) {
@@ -331,6 +335,57 @@ public:
 				labelset_iter = labelset.erase(++iter, first_nondominated);
 			}
 		}
+	}
+
+public:
+	SequentialParetoSearch(const graph_slot& graph_):
+		labels(graph_.numberOfNodes()),
+		graph(graph_)
+	{
+		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
+		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
+
+		// add sentinals
+		for (size_t i=0; i<labels.size(); ++i) {
+			labels[i].insert(labels[i].begin(), Label(min, max));
+			labels[i].insert(labels[i].end(), Label(max, min));		
+		}
+	}
+
+	void run(const NodeID node) {
+		std::vector<Data> globalMinima;
+		std::vector<Data> candidates;
+		std::vector<Operation<Data> > updates;
+		pq.init(Data(node, Label(0,0)));
+
+		while (!pq.empty()) {
+			stats.report(ITERATION, pq.size());
+
+			pq.findParetoMinima(globalMinima);
+			stats.report(MINIMA_COUNT, globalMinima.size());
+
+			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
+				FORALL_EDGES(graph, i->node, eid) {
+					const Edge& edge = graph.getEdge(eid);
+					candidates.push_back(Data(edge.target, createNewLabel(*i, edge)));
+				}
+			}
+			// Sort sequence to group candidates by their target node
+			std::sort(candidates.begin(), candidates.end(), groupByNode);
+			updateLabelSets(candidates, updates);
+
+			// Schedule optima for deletion
+			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
+				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
+			}
+			// Sort sequence for batch update
+			std::sort(updates.begin(), updates.end(), groupByWeight);
+			pq.applyUpdates(updates);
+
+			globalMinima.clear();
+			candidates.clear();
+			updates.clear();
+		}		
 	}
 	
 	void printStatistics() {

@@ -7,31 +7,35 @@
 #define STR(macro) QUOTE(macro)
 
 /**
- * If defined, use std::set to store labels, otherwise use std::vector
- */
-//#define TREE_SET
-
-/**
  * Configure the label setting algorithm to use.
- * Only one may be active at a time!
  */ 
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
 //#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
-#define LABEL_SETTING_ALGORITHM SequentialParetoSearch
+#define LABEL_SETTING_ALGORITHM SequentialParetoSearch	// will always use custom pareto label set
 
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
- * Only one may be active at a time!
  */
 #define LABEL_SET NaiveLabelSet
 //#define LABEL_SET SplittedNaiveLabelSet
 //#define LABEL_SET HeapLabelSet
 
-// Configure the linear combination used to select the best label
-// Only one may be active at a time!
+/**
+ * Configure the linear combination used to select the best label
+ */ 
 //#define PRIORITY_SUM
 #define PRIORITY_LEX
 //#define PRIORITY_MAX
+
+/**
+ * If defined, use std::set to store labels, otherwise use std::vector
+ */
+//#define TREE_SET
+
+/**
+ * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector
+ */
+//#define TREE_PARETO_QUEUE
 
 /**
  * Keep this defined to gather runtime stats during label setting
@@ -42,31 +46,38 @@
  * Maximal costs used to compute the lexicographic priority.
  * Must be appropriate to the problem size!
  */
- #define MAX_COST 20000
-
+ #define MAX_COST 200000
 
  std::string currentConfig() {
 	std::ostringstream out_stream;
 
 	out_stream << STR(LABEL_SETTING_ALGORITHM) << "_";
-	if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
-		out_stream << STR(LABEL_SET) << "_";
+
+	if (strcmp(STR(LABEL_SETTING_ALGORITHM), "SequentialParetoSearch") == 0) {
+		#ifdef TREE_PARETO_QUEUE
+			out_stream << "TreeParetoQueue";
+		#else
+			out_stream << "VectorParetoQueue";
+		#endif
+	} else {
+		if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
+			out_stream << STR(LABEL_SET) << "_";
+		}
+		#ifdef TREE_SET
+			out_stream << "TreeSet_";
+		#else
+			out_stream << "VectorSet_";
+		#endif
+
+		#ifdef PRIORITY_LEX
+			out_stream << "Lex";
+		#endif
+		#ifdef PRIORITY_SUM
+			out_stream << "Sum";
+		#endif
+		#ifdef PRIORITY_MAX
+			out_stream << "Max";
+		#endif	
 	}
-	#ifdef TREE_SET
-		out_stream << "TreeSet_";
-	#else
-		out_stream << "VectorSet_";
-	#endif
-
-	#ifdef PRIORITY_LEX
-		out_stream << "Lex";
-	#endif
-	#ifdef PRIORITY_SUM
-		out_stream << "Sum";
-	#endif
-	#ifdef PRIORITY_MAX
-		out_stream << "Max";
-	#endif
-
 	return out_stream.str();
 }

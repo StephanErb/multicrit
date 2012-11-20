@@ -29,11 +29,11 @@ PARALLEL =
 
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra -fopenmp 
-CXXFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID #-fmudflap
-CXXPFLAGSDBG = -O0 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp #-fmudflap 
+CXXFLAGSDBG = -g3 -W -Wall -Wunused -Wextra -DPARANOID
+CXXPFLAGSDBG = -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp
 
-CXXLIBS= -lrt #-lmudflap
-CXXPLIBS= -lrt #-lmudflap
+CXXLIBS= -lrt
+CXXPLIBS= -lrt
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
 DEPENDENCYDIRS=.
