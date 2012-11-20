@@ -8,6 +8,7 @@
 
 #include "utility/tool/timer.h"
 
+
 void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 	LabelSettingAlgorithm algo(graph);
 
@@ -25,7 +26,7 @@ void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 }
 
 void timeGrid(int width, int height, bool verbose) {
-	std::cout << "# Raith & Ehrgott Grid (hard): " << std::endl;
+	std::cout << "# Raith & Ehrgott Grid (" << width << "x" << height << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraph(graph, width, height);
@@ -33,8 +34,8 @@ void timeGrid(int width, int height, bool verbose) {
 }
 
 void timeCorrelatedGrid1(int width, int height, bool verbose) {
-	double p = 0.4;
-	std::cout << "# Machuca Grid Correlated (p=" << p << "): " << std::endl;
+	double p = 0.8;
+	std::cout << "# Machuca Grid Correlated (p=" << p << ", "<< width << "x" << height << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraphWithCostCorrleation(graph, width, height, p);
@@ -42,8 +43,8 @@ void timeCorrelatedGrid1(int width, int height, bool verbose) {
 }
 
 void timeCorrelatedGrid2(int width, int height, bool verbose) {
-	double p = -0.4;
-	std::cout << "# Machuca Grid Correlated (p=" << p << "): " << std::endl;
+	double p = -0.8;
+	std::cout << "# Machuca Grid Correlated (p=" << p << ", "<< width << "x" << height << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraphWithCostCorrleation(graph, width, height, p);
@@ -51,10 +52,11 @@ void timeCorrelatedGrid2(int width, int height, bool verbose) {
 }
 
 void timeExponentialGraph(bool verbose) {
-	std::cout << "# Exponential Graph: " << std::endl;
+	int n = 32;
+	std::cout << "# Exponential Graph (root degree&depth=" << n << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
-	generator.generateExponentialGraph(graph, 20);
+	generator.generateExponentialStarGraph(graph, n);
 	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
 }
 

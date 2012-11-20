@@ -136,29 +136,43 @@ public:
 	 * 		"Pareto Shortest Paths is Often Feasible in Practice" (see Fig 1.)
 	 */
 	void generateExponentialGraph(Graph& graph, int node_count) const {
+		generateExponentialGraph(graph, node_count, 1);
+	}
+
+	/**
+	 * A star of exponential graphs.
+	 */
+	void generateExponentialStarGraph(Graph& graph, int node_count) const {
+		generateExponentialGraph(graph, node_count, node_count);
+	}
+	
+	void generateExponentialGraph(Graph& graph, int node_count, int root_degree) const {
 		graph.addNode();
 		const NodeID START = NodeID(0);
-		NodeID previous_top = START;
-
 		int i = 0;
-		int first_weight = 2;
-		int second_weight = 1;
 
-		while (i < node_count) {
-			graph.addNode();
-			NodeID bottom = NodeID(++i);
-			graph.addNode();
-			NodeID top = NodeID(++i);
+		for (int edge_count=1; edge_count <= root_degree; ++edge_count) {
+			NodeID previous_top = START;
 
-			graph.addEdge(previous_top, Edge(bottom, Weight(first_weight, second_weight)));
-			graph.addEdge(previous_top, Edge(top, Weight(first_weight, 2*first_weight)));
-			graph.addEdge(bottom, Edge(top, Weight(first_weight, second_weight)));
+			int first_weight = 2;
+			int second_weight = 1;
 
-			first_weight = 2 * first_weight;
-			second_weight = 2 * second_weight;
-			previous_top = top;
+			while (i < node_count*edge_count) {
+				graph.addNode();
+				NodeID bottom = NodeID(++i);
+				graph.addNode();
+				NodeID top = NodeID(++i);
+
+				graph.addEdge(previous_top, Edge(bottom, Weight(first_weight, second_weight)));
+				graph.addEdge(previous_top, Edge(top, Weight(first_weight, 2*first_weight)));
+				graph.addEdge(bottom, Edge(top, Weight(first_weight, second_weight)));
+
+				first_weight = 2 * first_weight;
+				second_weight = 2 * second_weight;
+				previous_top = top;
+			}
+			graph.finalize();	
 		}
-		graph.finalize();
 		//printGraph(graph);
 	}
 
