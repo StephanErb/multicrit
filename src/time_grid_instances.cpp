@@ -48,7 +48,6 @@ void timeGrid(int num, std::string label, int height, int width, bool verbose, i
 		label_count = algo.size(node);
 		if (verbose) {
 			algo.printStatistics();
-			std::cout << "Target node label count: " << label_count << std::endl;
 		}
 	}
 	std::cout << num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;

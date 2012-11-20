@@ -46,7 +46,6 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 		label_count = algo.size(end);
 		if (verbose) {
 			algo.printStatistics();
-			std::cout << "Target node label count: " << label_count << std::endl;
 		}
 	}
 	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
