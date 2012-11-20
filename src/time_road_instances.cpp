@@ -29,7 +29,7 @@ typedef utility::datastructure::NodeID NodeID;
 typedef Edge::edge_data Label;
 
 
-static void time(const Graph& graph, NodeID start, NodeID end, int num, std::string label, bool verbose, int iterations) {
+static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations) {
 	double timings[iterations];
 	std::fill_n(timings, iterations, 0);
 	size_t label_count;
@@ -49,7 +49,7 @@ static void time(const Graph& graph, NodeID start, NodeID end, int num, std::str
 			std::cout << "Target node label count: " << label_count << std::endl;
 		}
 	}
-	std::cout << num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
+	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
 }
 
 static void readGraphFromFile(Graph& graph, std::ifstream& in) {
@@ -84,22 +84,24 @@ int main(int argc, char ** args) {
 	std::cout << "# " << currentConfig() << std::endl;
 	bool verbose = false;
 	int iterations = 1;
-	std::string label;
+	int total_instance = 1;
+
+	std::string graphname;
+	std::string directory;
 	std::ifstream graph_in;
 	std::ifstream problems_in;
 
 	int c;
-	while( (c = getopt( argc, args, "c:vg:i:l:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:g:d:n:v") ) != -1  ){
 		switch(c){
+		case 'd':
+			directory = optarg;
+			break;
 		case 'g':
-			graph_in.open(optarg);
-			std::cout << "# Map: " << optarg << std::endl;
+			graphname = optarg;
 			break;
-		case 'i':
-			problems_in.open(optarg);
-			break;
-		case 'l':
-			label = optarg;
+		case 'n':
+			total_instance = atoi(optarg);
 			break;
 		case 'c':
 			iterations = atoi(optarg);
@@ -111,11 +113,16 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
+
+	int instance = 1;
+	graph_in.open((directory + graphname + "1").c_str());
+	std::cout << "# Map: " << (directory + graphname + "1") << std::endl;
+	problems_in.open((directory + graphname + "_ODpairs.txt").c_str());
+
 	Graph graph;
 	readGraphFromFile(graph, graph_in);
 	graph_in.close();
 
-	int instance = 0;
 	std::string line;
 	while (std::getline(problems_in, line)) {
 		int start, end;
@@ -127,7 +134,7 @@ int main(int argc, char ** args) {
 		start_stream >> start;
 		end_stream >> end;
 
-		time(graph, NodeID(start), NodeID(end), ++instance, label, verbose, iterations);
+		time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations);
 	}
 	return 0;
 }

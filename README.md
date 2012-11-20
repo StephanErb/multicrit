@@ -16,14 +16,14 @@ Modify `src/options.hpp` to configure the algorithm / data structures.
 ### Road (time/distance, simple)
 Extract the DC, RI and NJ tar files in `instances/`. Then run:
 
-    ./bin/time_road_instances -g ../instances/RI2 -i ../instances/RI_ODpairs.txt -l RI -c 12
+    ./bin/time_road_instances -d ../instances/ -g NJ -n 19
 
-    -g Graph
-    -i list of start & goal nodes
-    -l label prefix
+    -d directory with instances
+    -g graph/city name
+    -n first instance number
     -c number of repetitions
 
-To update the timing values under `timings/` pipe all road timings into one file and updated the instance counter so that they become unique.
+To update the timing values under `timings/` pipe all road timings into one file.
 
 ### Grid (random, simple)
 Random grid graphs with costs in range [1, 10]:
