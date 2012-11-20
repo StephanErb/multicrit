@@ -13,8 +13,8 @@
  * Configure the label setting algorithm to use.
  */ 
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
-#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
-//#define LABEL_SETTING_ALGORITHM SequentialParetoSearch	// will always use custom pareto label set
+//#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
+#define LABEL_SETTING_ALGORITHM SequentialParetoSearch	// will always use custom pareto label set
 
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
