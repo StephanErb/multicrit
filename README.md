@@ -2,7 +2,10 @@
 
 ## Code Overview
 
-1. State-of the art sequential label setting algorithm: `LabelSettingAlgorithm.hpp` which stores in label sets as implemented in `LabelSet.hpp`.
+`BiCritShortestPathAlgorithm` is the shortest path algorithm interface to be used by clients. The actual algorithm is set and configured in `options.hpp`.
+
+1. `SeqLabelSetting.hpp`: Sequential state-of the art label setting algorithm. It stores labels in label sets implemented in `SeqLabelSet.hpp`.
+2. `ParetoSearch.hpp`: Sequential label setting algorithm that is based on the novel idea to process all globally, currently non-domianted labels within a single iteration.
 
 ## Build
   
@@ -16,7 +19,7 @@ Modify `src/options.hpp` to configure the algorithm / data structures.
 ### Road (time/distance, simple)
 Extract the DC, RI and NJ tar files in `instances/`. Then run:
 
-    ./bin/time_road_instances -d ../instances/ -g NJ -n 19
+    ./bin/time_road_instances -d ../instances/ -g NJ -n 19 -c 12
 
     -d directory with instances
     -g graph/city name
