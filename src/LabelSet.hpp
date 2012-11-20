@@ -53,9 +53,11 @@ public:
 	typedef typename Set::const_iterator const_iterator;
 
 protected:
-	static bool firstWeightLess(const label_type& i, const label_type& j)  {
-		return i.first_weight < j.first_weight;
-	}
+	static struct WeightLessComp {
+		bool operator() (const label_type& i, const label_type& j) const {
+			return i.first_weight < j.first_weight;
+		}
+	} firstWeightLess;
 
 	static bool secondWeightGreaterOrEquals(const label_type& i, const label_type& j) {
 		return i.second_weight >= j.second_weight;
