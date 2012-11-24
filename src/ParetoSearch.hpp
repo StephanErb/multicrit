@@ -9,178 +9,9 @@
 
 #include "utility/datastructure/graph/GraphMacros.h"
 
-#include <iostream>
-#include <vector>
-#include <set>
-#include <algorithm>
-#include <iterator>
-#include <limits>
-
+#include "ParetoQueue.hpp"
 #include "ParetoSearchStatistics.hpp"
 
-
-template<typename data_type>
-struct Operation {
-	enum OpType {INSERT, DELETE};
-	OpType type;
-	data_type data;
- 	explicit Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-};
-
-/**
- * Queue storing all temporary labels of all nodes.
- */
-template<typename data_type>
-class SequentialParetoQueue {
-private:
-
-#ifdef TREE_PARETO_QUEUE
-	template<typename type>
-	struct SetOrderer {
-  		bool operator() (const type& i, const type& j) const {
-  			if (i.first_weight == j.first_weight) {
-  				if (i.second_weight == j.second_weight) {
-  					return i.node < j.node;
-  				}
-  				return i.second_weight < j.second_weight;
-  			}
-  			return i.first_weight < j.first_weight;
-  		}
-	};
-	typedef std::set<data_type, SetOrderer<data_type> > QueueType;
-	QueueType labels;
-#else
-	typedef std::vector<data_type> QueueType;
-	QueueType labels;
-#endif
-	
-	typedef typename QueueType::iterator iterator;
-	typedef typename QueueType::const_iterator const_iterator;
-	typedef typename data_type::weight_type weight_type;
-
-	static void printLabels(iterator begin, iterator end) {
-		std::cout << "All labels:";
-		for (iterator i = begin; i != end; ++i) {
-			std::cout << " (" << i->node << ": " << i->first_weight << "," << i->second_weight << ")";
-		}
-		std::cout << std::endl;
-	}
-
-public:
-
-	SequentialParetoQueue() {
-		const weight_type min = std::numeric_limits<weight_type>::min();
-		const weight_type max = std::numeric_limits<weight_type>::max();
-
-		// add sentinals
-		labels.insert(labels.begin(), data_type(NodeID(0), typename data_type::label_type(min, max)));
-		labels.insert(labels.end(), data_type(NodeID(0), typename data_type::label_type(max, min)));
-	}
-
-	bool empty() {
-		return size() == 0;
-	}
-
-	size_t size() {
-		return labels.size() -2;
-	}
-
-	void findParetoMinima(std::vector<data_type>& minima) const {
-		const_iterator iter = labels.begin();
-		const_iterator end = --labels.end();  // ignore the sentinal
-
-		weight_type min = iter->second_weight;
-		while (iter != end) {
-			if (iter->second_weight < min) {
-				min = iter->second_weight;
-				minima.push_back(*iter);
-			}
-			++iter;
-		}
-		#ifdef TREE_PARETO_QUEUE
-			// hack to workaround out-of-order initialization
-			if (minima.empty()) {
-				minima.push_back(*labels.begin());
-			}
-		#endif
-	}
-
-	void init(const data_type& data) {
-		labels.insert(++labels.begin(), data);
-	}
-
-	void applyUpdates(const std::vector<Operation<data_type> >& updates) {
-		#ifdef TREE_PARETO_QUEUE
-			applyUpdatesOnTree(updates);
-		#else
-			applyUpdatesOnVector(updates);
-		#endif
-	}
-
-private:
-
-	inline void applyUpdatesOnTree(const std::vector<Operation<data_type> >& updates) {
-		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
-		u_iterator update_iter = updates.begin();
-
-		while (update_iter != updates.end()) {
-			switch (update_iter->type) {
-			case Operation<data_type>::DELETE:
-			  	labels.erase(update_iter->data);
-				++update_iter;
-				continue;
-			case Operation<data_type>::INSERT:
-				labels.insert(update_iter->data);
-				++update_iter;
-				continue;
-	        }
-		}
-	}
-
-	inline void applyUpdatesOnVector(const std::vector<Operation<data_type> >& updates) {
-		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
-
-		iterator label_iter = labels.begin();
-		u_iterator update_iter = updates.begin();
-
-		std::vector<data_type> merged;
-		merged.reserve(labels.size()+ updates.size());
-
-		while (update_iter != updates.end()) {
-			switch (update_iter->type) {
-			case Operation<data_type>::DELETE:
-			  	// We know the element is in here
-				while (label_iter->first_weight != update_iter->data.first_weight ||
-						label_iter->second_weight != update_iter->data.second_weight ||
-						label_iter->node != update_iter->data.node) {
-					merged.push_back(*label_iter++);
-				}
-				++label_iter; // delete the element by jumping over it
-                ++update_iter;
-                continue;
-	        case Operation<data_type>::INSERT:
-				// insertion bounded by sentinal
-				while (label_iter->first_weight < update_iter->data.first_weight) {
-					merged.push_back(*label_iter++);
-				}
-				while (label_iter->first_weight == update_iter->data.first_weight
-						&& label_iter->second_weight < update_iter->data.second_weight) {
-					merged.push_back(*label_iter++);
-				}
-				while (label_iter->first_weight == update_iter->data.first_weight
-						&& label_iter->second_weight == update_iter->data.second_weight
-						&& label_iter->node < update_iter->data.node) {
-					merged.push_back(*label_iter++);
-				}
-				merged.push_back(update_iter->data);
-				++update_iter;
-				continue;
-	        }
-		}
-		std::copy(label_iter, labels.end(), std::back_inserter(merged));
-	    labels = merged;
-	}
-};
 
 
 template<typename graph_slot>
@@ -336,7 +167,8 @@ private:
 public:
 	SequentialParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
-		graph(graph_)
+		graph(graph_),
+		pq(graph_.numberOfNodes())
 	{
 		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
 		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
