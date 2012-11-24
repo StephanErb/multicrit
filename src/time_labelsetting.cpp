@@ -51,8 +51,7 @@ void timeCorrelatedGrid2(int width, int height, bool verbose) {
 	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
 }
 
-void timeExponentialGraph(bool verbose) {
-	int n = 32;
+void timeExponentialGraph(bool verbose, int n) {
 	std::cout << "# Exponential Graph (root degree&depth=" << n << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
@@ -63,6 +62,7 @@ void timeExponentialGraph(bool verbose) {
 int main(int argc, char ** args) {
 	int width = 50;
 	int height = 50;
+	int nodes = 12;
 	bool verbose = false;
 
 	int c;
@@ -70,6 +70,7 @@ int main(int argc, char ** args) {
 		switch(c){
 		case 'w':
 			width = atoi(optarg);
+			nodes = width * 0.16;
 			break;
 		case 'h':
 			height = atoi(optarg);
@@ -81,7 +82,7 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	timeExponentialGraph(verbose);
+	timeExponentialGraph(verbose, nodes);
 	timeGrid(width, height, verbose);
 	timeCorrelatedGrid1(width, height, verbose);
 	timeCorrelatedGrid2(width, height, verbose);
