@@ -1,0 +1,36 @@
+# SequentialParetoSearch_VectorParetoQueue
+# Map: ../instances/DC1
+# Nodes 9559 Edges 39377
+1 DC1 0.133917 2 # time in [s], target node label count 
+2 DC2 0.168755 6 # time in [s], target node label count 
+3 DC3 0.202947 3 # time in [s], target node label count 
+4 DC4 0.143833 2 # time in [s], target node label count 
+5 DC5 0.121674 1 # time in [s], target node label count 
+6 DC6 0.0826913 7 # time in [s], target node label count 
+7 DC7 0.169069 2 # time in [s], target node label count 
+8 DC8 0.0741043 1 # time in [s], target node label count 
+9 DC9 0.272022 6 # time in [s], target node label count 
+# SequentialParetoSearch_VectorParetoQueue
+# Map: ../instances/RI1
+# Nodes 53658 Edges 192084
+10 RI1 0.587589 3 # time in [s], target node label count 
+11 RI2 1.31966 15 # time in [s], target node label count 
+12 RI3 0.423333 2 # time in [s], target node label count 
+13 RI4 0.857974 17 # time in [s], target node label count 
+14 RI5 1.53896 16 # time in [s], target node label count 
+15 RI6 1.30679 3 # time in [s], target node label count 
+16 RI7 1.42031 3 # time in [s], target node label count 
+17 RI8 1.06804 4 # time in [s], target node label count 
+18 RI9 1.92358 22 # time in [s], target node label count 
+# SequentialParetoSearch_VectorParetoQueue
+# Map: ../instances/NJ1
+# Nodes 330386 Edges 1202458
+19 NJ1 8.36928 2 # time in [s], target node label count 
+20 NJ2 14.2885 6 # time in [s], target node label count 
+21 NJ3 12.1258 21 # time in [s], target node label count 
+22 NJ4 10.5238 5 # time in [s], target node label count 
+23 NJ5 6.95273 7 # time in [s], target node label count 
+24 NJ6 44.1264 12 # time in [s], target node label count 
+25 NJ7 6.38753 6 # time in [s], target node label count 
+26 NJ8 5.9455 13 # time in [s], target node label count 
+27 NJ9 19.653 24 # time in [s], target node label count 
