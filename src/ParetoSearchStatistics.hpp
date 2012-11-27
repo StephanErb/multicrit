@@ -99,7 +99,7 @@ public:
 class LabelSettingStatistics {
 public:
 
-	LabelSettingStatistics(unsigned int node_count) {}
+	LabelSettingStatistics() {}
 
 	void report(StatElement stat, unsigned int payload=0) {}
 
