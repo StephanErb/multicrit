@@ -4,7 +4,7 @@
 #include "utility/datastructure/graph/GraphMacros.h"
 
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/uniform_int.hpp>
 
 #include <iostream>
 #include <cmath>
@@ -24,12 +24,12 @@ private:
 	boost::random::mt19937 gen;
 
 	Weight randomWeight(WeightType max_cost) {
-		boost::random::uniform_int_distribution<> dist(1, max_cost);
+		boost::uniform_int<> dist(1, max_cost);
     	return Weight(dist(gen), dist(gen));
 	}
 
 	Weight correlatedRandomWeight(WeightType max_cost, double p) {
-		boost::random::uniform_int_distribution<> dist(1, max_cost);
+		boost::uniform_int<> dist(1, max_cost);
 
 		double first_weight = dist(gen);
 		double second_weight = dist(gen);
