@@ -14,8 +14,9 @@
 
 static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations) {
 	double timings[iterations];
+	double label_count[iterations];
 	std::fill_n(timings, iterations, 0);
-	size_t label_count;
+	std::fill_n(label_count, iterations, 0);
 
 	for (int i = 0; i < iterations; ++i) {
 		LabelSettingAlgorithm algo(graph);
@@ -26,12 +27,12 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 		timer.stop();
 		timings[i] = timer.getTimeInSeconds();
 
-		label_count = algo.size(end);
+		label_count[i] = algo.size(end);
 		if (verbose) {
 			algo.printStatistics();
 		}
 	}
-	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
+	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << pruned_average(label_count, iterations, 0) << " # time in [s], target node label count " << std::endl;
 }
 
 static void readGraphFromFile(Graph& graph, std::ifstream& in) {

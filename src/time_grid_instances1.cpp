@@ -12,8 +12,9 @@
 void timeGrid(int num, std::string label, int height, int width, bool verbose, int iterations) {
 	GraphGenerator<Graph> generator;
 	double timings[iterations];
+	double label_count[iterations];
 	std::fill_n(timings, iterations, 0);
-	size_t label_count;
+	std::fill_n(label_count, iterations, 0);
 
 	for (int i = 0; i < iterations; i++) {
 		Graph graph;
@@ -27,13 +28,12 @@ void timeGrid(int num, std::string label, int height, int width, bool verbose, i
 		timer.stop();
 		timings[i] = timer.getTimeInSeconds();
 
-		NodeID node = NodeID(NodeID(1));
-		label_count = algo.size(node);
+		label_count[i] = algo.size(NodeID(1));
 		if (verbose) {
 			algo.printStatistics();
 		}
 	}
-	std::cout << num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << label_count << " # time in [s], target node label count " << std::endl;
+	std::cout << num << " " << label << num << " " << pruned_average(timings, iterations, 0.25) << " " << pruned_average(label_count, iterations, 0) << " # time in [s], target node label count " << std::endl;
 }
 
 int main(int argc, char ** args) {
@@ -53,6 +53,7 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
+	std::cout << "# Instances of [Raith, Ehrgott 2009]" << std::endl;
 	std::cout << "# " << currentConfig() << std::endl;
 	timeGrid(1, "G", 30, 40, verbose, iterations);
 	timeGrid(2, "G", 20, 80, verbose, iterations);
