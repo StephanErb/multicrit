@@ -21,7 +21,7 @@ private:
 	typedef typename Weight::weight_type WeightType;
 
 	// Mersenne Twister random number genrator
-	boost::random::mt19937 gen;
+	boost::mt19937 gen;
 
 	Weight randomWeight(WeightType max_cost) {
 		boost::uniform_int<> dist(1, max_cost);
