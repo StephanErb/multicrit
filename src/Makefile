@@ -20,7 +20,8 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=time_labelsetting time_grid_instances1 time_grid_instances2 time_road_instances
+CODE=time_labelsetting time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2
+
 TESTS=test_labelset test_labelsetting
 
 #list of all normal / parallel targets
