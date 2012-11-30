@@ -28,7 +28,7 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 		timer.stop();
 		timings[i] = timer.getTimeInSeconds();
 
-		label_count[i] = algo.size(graph.numberOfNodes()-1);
+		label_count[i] = algo.size(NodeID(graph.numberOfNodes()-1));
 		if (verbose) {
 			algo.printStatistics();
 		}
