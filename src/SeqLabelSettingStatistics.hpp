@@ -79,7 +79,7 @@ public:
 
 	LabelSettingStatistics(unsigned int node_count) {}
 
-	void report(StatisticalElement stat, NodeID node, unsigned int payload=0) {}
+	void report(StatisticalElement stat, NodeID node, unsigned int payload=0) { }
 
 	std::string toString() {
 		std::ostringstream out_stream;

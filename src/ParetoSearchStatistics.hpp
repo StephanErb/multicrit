@@ -96,10 +96,10 @@ public:
 
 #else
 
-class LabelSettingStatistics {
+class ParetoSearchStatistics {
 public:
 
-	LabelSettingStatistics() {}
+	ParetoSearchStatistics() {}
 
 	void report(StatElement stat, unsigned int payload=0) {}
 
