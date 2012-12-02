@@ -139,12 +139,13 @@ private:
 				stats.report(DOMINATION_SHORTCUT);
 				continue; 
 			}
-			min = new_label.second_weight;
 			label_iter iter;
 			if (isDominated(labelset_iter, labelset.end(), new_label, iter)) {
 				stats.report(LABEL_DOMINATED);
+				min = iter->second_weight; 
 				continue;
 			}
+			min = new_label.second_weight;
 			stats.report(LABEL_NONDOMINATED);
 			updates.push_back(Operation<Data>(Operation<Data>::INSERT, new_label));
 
