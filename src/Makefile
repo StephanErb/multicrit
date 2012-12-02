@@ -30,8 +30,8 @@ PARALLEL =
 
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra -fopenmp 
-CXXFLAGSDBG = -g3 -W -Wall -Wunused -Wextra -DPARANOID
-CXXPFLAGSDBG = -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp
+CXXFLAGSDBG = -O3 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fno-inline -fno-default-inline 
+CXXPFLAGSDBG = -O3 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp
 
 CXXLIBS= -lrt
 CXXPLIBS= -lrt
