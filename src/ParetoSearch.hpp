@@ -42,17 +42,14 @@ private:
 	SequentialParetoQueue<Data> pq;
 	ParetoSearchStatistics stats;
 
-	struct GroupByNodeComp {
-		bool operator() (const Data& i, const Data& j) const {
-			if (i.node == j.node) {
-				if (i.first_weight == j.first_weight) {
-					return i.second_weight < j.second_weight;
-				}
-				return i.first_weight < j.first_weight;
-			} 
-			return i.node < j.node;
+	struct GroupLabelsByWeightComp {
+		bool operator() (const Label& i, const Label& j) const {
+			if (i.first_weight == j.first_weight) {
+				return i.second_weight < j.second_weight;
+			}
+			return i.first_weight < j.first_weight;
 		}
-	} groupByNode;
+	} groupLabelsByWeight;
 
 	struct GroupByWeightComp {
 		bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
@@ -111,28 +108,12 @@ private:
 		return false;
 	}
 
-	void updateLabelSets(const std::vector<Data>& candidates, std::vector<Operation<Data> >& updates) {
-		const_pareto_iter cand_iter = candidates.begin();
-
-		while (cand_iter != candidates.end()) {
-			// find all labels belonging to the same target node
-			const_pareto_iter range_start = cand_iter;
-			while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
-				++cand_iter;
-			}
-			stats.report(IDENTICAL_TARGET_NODE, cand_iter - range_start);
-
-			// batch process labels belonging to the same target node
-			updateLabelSet(labels[range_start->node], range_start, cand_iter, updates);
-		}
-	}
-
-	void updateLabelSet(std::vector<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
+	void updateLabelSet(NodeID node, std::vector<Label>& labelset, const const_label_iter start, const const_label_iter end, std::vector<Operation<Data> >& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
-		for (const_pareto_iter candidate = start; candidate != end; ++candidate) {
-			Data new_label = *candidate;
+		for (const_label_iter candidate = start; candidate != end; ++candidate) {
+			Label new_label = *candidate;
 			// short cut dominated check among candidates
 			if (new_label.second_weight >= min) { 
 				stats.report(LABEL_DOMINATED);
@@ -147,7 +128,7 @@ private:
 			}
 			min = new_label.second_weight;
 			stats.report(LABEL_NONDOMINATED);
-			updates.push_back(Operation<Data>(Operation<Data>::INSERT, new_label));
+			updates.push_back(Operation<Data>(Operation<Data>::INSERT, Data(node, new_label)));
 
 			label_iter first_nondominated = y_predecessor(iter, new_label);
 			if (iter == first_nondominated) {
@@ -156,7 +137,7 @@ private:
 			} else {
 				// schedule deletion of dominated labels
 				for (label_iter i = iter; i != first_nondominated; ++i) {
-					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(new_label.node, *i)));
+					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *i)));
 				}
 				// replace first dominated label and remove the rest
 				*iter = new_label;
@@ -183,7 +164,8 @@ public:
 
 	void run(const NodeID node) {
 		std::vector<Data> globalMinima;
-		std::vector<Data> candidates;
+		std::vector<std::vector<Label> > candidates(graph.numberOfNodes());
+		std::vector<NodeID> activeNodes;
 		std::vector<Operation<Data> > updates;
 		pq.init(Data(node, Label(0,0)));
 
@@ -196,12 +178,23 @@ public:
 			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
 				FORALL_EDGES(graph, i->node, eid) {
 					const Edge& edge = graph.getEdge(eid);
-					candidates.push_back(Data(edge.target, createNewLabel(*i, edge)));
+					//  Mark target node bucket as used && write the candidate to this bucket
+					if (candidates[edge.target].empty()) {
+						activeNodes.push_back(edge.target);
+					}
+					candidates[edge.target].push_back(createNewLabel(*i, edge));
 				}
 			}
-			// Sort sequence to group candidates by their target node
-			std::sort(candidates.begin(), candidates.end(), groupByNode);
-			updateLabelSets(candidates, updates);
+
+			// process all non-emtpy buckets
+			for (typename std::vector<NodeID>::iterator iter = activeNodes.begin(); iter != activeNodes.end(); ++iter) {
+				NodeID node = *iter;
+				stats.report(IDENTICAL_TARGET_NODE, candidates[node].size());
+				std::sort(candidates[node].begin(), candidates[node].end(), groupLabelsByWeight);
+				// batch process labels belonging to the same target node
+				updateLabelSet(node, labels[node], candidates[node].begin(), candidates[node].end(), updates);
+				candidates[node].clear();
+			}
 
 			// Schedule optima for deletion
 			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
@@ -212,7 +205,7 @@ public:
 			pq.applyUpdates(updates);
 
 			globalMinima.clear();
-			candidates.clear();
+			activeNodes.clear();
 			updates.clear();
 		}		
 	}
