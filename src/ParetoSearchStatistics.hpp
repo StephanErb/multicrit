@@ -23,18 +23,21 @@ enum StatElement {
 class ParetoSearchStatistics {
 private:
 	unsigned int data[STAT_ELEMENT_COUNT];
-	std::vector<unsigned int> pq_size;
+	unsigned int pq_size;
 	unsigned int peak_pq_size;
-	std::vector<unsigned int> minima_size;
+	unsigned int minima_size;
 	unsigned int peak_minima_size;
-	std::vector<unsigned int> identical_target_node;
+	unsigned int identical_target_node;
 	unsigned int peak_identical_target_node;
 
 public:
 
 	ParetoSearchStatistics() :
+		pq_size(0),
 		peak_pq_size(0),
+		minima_size(0),
 		peak_minima_size(0),
+		identical_target_node(0),
 		peak_identical_target_node(0)
 	{
 		std::fill_n(data, STAT_ELEMENT_COUNT, 0);
@@ -44,15 +47,15 @@ public:
 			data[stat]++;
 
 			if (stat == ITERATION) {
-				pq_size.push_back(payload);
+				pq_size += payload;
 				peak_pq_size = std::max(peak_pq_size, payload);
 			}
 			if (stat == MINIMA_COUNT) {
-				minima_size.push_back(payload);
+				minima_size += payload;
 				peak_minima_size = std::max(peak_minima_size, payload);
 			}
 			if (stat == IDENTICAL_TARGET_NODE) {
-				identical_target_node.push_back(payload);
+				identical_target_node += payload;
 				peak_identical_target_node = std::max(peak_identical_target_node, payload);
 			}
 	}
@@ -71,20 +74,17 @@ public:
 
 		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
 
-		unsigned int total_pq_size = std::accumulate(pq_size.begin(), pq_size.end(), 0);
-		double avg_pq_size = total_pq_size / pq_size.size();
+		double avg_pq_size = pq_size / data[ITERATION];
 		out_stream << "ParetoQueue sizes: " << "\n";
 		out_stream << "  avg" << ": " << avg_pq_size << "\n";
 		out_stream << "  max" << ": " << peak_pq_size << "\n";
 
-		unsigned int total_minima_size = std::accumulate(minima_size.begin(), minima_size.end(), 0);
-		double avg_minima_size = total_minima_size / minima_size.size();
+		double avg_minima_size = minima_size / data[MINIMA_COUNT];
 		out_stream << "Pareto Optimal Elements: " << "\n";
 		out_stream << "  avg" << ": " << avg_minima_size << "\n";
 		out_stream << "  max" << ": " << peak_minima_size << "\n";
 
-		unsigned int total_ident_target_nodes = std::accumulate(identical_target_node.begin(), identical_target_node.end(), 0);
-		double avg_ident_target_nodes = total_ident_target_nodes / identical_target_node.size();
+		double avg_ident_target_nodes = identical_target_node / data[IDENTICAL_TARGET_NODE];
 		out_stream << "Identical Target Nodes per Iteration: " << "\n";
 		out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
 		out_stream << "  max" << ": " << peak_identical_target_node;
