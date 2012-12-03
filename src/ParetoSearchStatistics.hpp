@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <numeric>
+#include <vector>
 
 #define STAT_ELEMENT_COUNT 6
 
@@ -20,6 +21,7 @@ enum StatElement {
 
 #ifdef GATHER_STATS
 
+template<typename Label>
 class ParetoSearchStatistics {
 private:
 	unsigned int data[STAT_ELEMENT_COUNT];
@@ -29,6 +31,14 @@ private:
 	unsigned int peak_minima_size;
 	unsigned int identical_target_node;
 	unsigned int peak_identical_target_node;
+
+	static unsigned int sumLabelCount(unsigned int accum, std::vector<Label> labels) {
+		return accum + labels.size() -2; // sentinal correction
+	}
+
+	static unsigned int cmpLess(std::vector<Label> x, std::vector<Label> y) {
+		return x.size() < y.size();
+	}
 
 public:
 
@@ -60,7 +70,7 @@ public:
 			}
 	}
 
-	std::string toString() {
+	std::string toString(std::vector<std::vector<Label> > labels) {
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
@@ -71,8 +81,18 @@ public:
 		out_stream << "Created Labels: " << total_label_count << "\n";
 		out_stream << "  initially dominated" << ": " << dom_percent << "% (=" << data[LABEL_DOMINATED] <<")\n";
 		out_stream << "    via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
-
 		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
+
+		unsigned int final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0, sumLabelCount);
+		unsigned int finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
+		double finally_dom_percent = 100.0 * finally_dominated / data[LABEL_NONDOMINATED];
+		out_stream << "    finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
+
+		double avg_set_size = final_total_label_count / labels.size();
+		unsigned int max_set_size = (*std::max_element(labels.begin(), labels.end(), cmpLess)).size() -2; //sentinal correction
+		out_stream << "LabelSet sizes: " << "\n";
+		out_stream << "  avg" << ": " << avg_set_size << "\n";
+		out_stream << "  max" << ": " << max_set_size << "\n";
 
 		double avg_pq_size = pq_size / data[ITERATION];
 		out_stream << "ParetoQueue sizes: " << "\n";
@@ -96,6 +116,7 @@ public:
 
 #else
 
+template<typename Label>
 class ParetoSearchStatistics {
 public:
 
@@ -103,7 +124,7 @@ public:
 
 	void report(StatElement stat, unsigned int payload=0) {}
 
-	std::string toString() {
+	std::string toString(std::vector<std::vector<Label> > labels) {
 		std::ostringstream out_stream;
 		out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();

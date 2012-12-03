@@ -40,7 +40,7 @@ private:
 
 	graph_slot graph;
 	SequentialParetoQueue<Data> pq;
-	ParetoSearchStatistics stats;
+	ParetoSearchStatistics<Label> stats;
 
 	struct GroupLabelsByWeightComp {
 		bool operator() (const Label& i, const Label& j) const {
@@ -211,7 +211,7 @@ public:
 	}
 	
 	void printStatistics() {
-		std::cout << stats.toString() << std::endl;
+		std::cout << stats.toString(labels) << std::endl;
 	}
 
 	// Subtraction / addition used to hide the sentinals
