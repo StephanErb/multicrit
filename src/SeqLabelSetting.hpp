@@ -53,7 +53,7 @@ public:
 		while (!heap.empty()) {
 			const NodeID current_node = heap.getMin();
 			const Label current_label =  heap.getUserData(current_node);
-			stats.report(BEST_NODE, current_node);
+			stats.report(NEXT_ITERATION, current_node);
 
 			//std::cout << "Selecting node " << current_node  << " via label (" << 
 			//	current_label.first_weight << "," << current_label.second_weight << "):"<< std::endl;
@@ -155,7 +155,7 @@ public:
 		while (!heap.empty()) {
 			const Data current = heap.getUserData(heap.getMin());
 			heap.deleteMin();
-			stats.report(BEST_NODE, current.node);
+			stats.report(NEXT_ITERATION, current.node);
 
 			//std::cout << "Selecting node " << current.node  << " via label (" << 
 			//	current.label.first_weight << "," << current.label.second_weight << "):"<< std::endl;

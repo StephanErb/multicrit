@@ -14,7 +14,7 @@
 #define DATA_COUNT 4
 
 enum StatisticalElement {
-	BEST_NODE,
+	NEXT_ITERATION,
 	NEW_LABEL_DOMINATED,
 	NEW_LABEL_NONDOMINATED,
 	NEW_BEST_LABEL
@@ -49,9 +49,10 @@ public:
 	std::string toString() {
 		std::ostringstream out_stream;
 		
+		out_stream << "\nIterations: " << data[NEXT_ITERATION] << "\n";
 		unsigned int total_label_count = data[NEW_LABEL_NONDOMINATED] + data[NEW_LABEL_DOMINATED];
 		double dom_percent = 100.0 * data[NEW_LABEL_DOMINATED] / total_label_count;
-		out_stream << "\nCreated Labels: " << total_label_count << "\n";
+		out_stream << "Created Labels: " << total_label_count << "\n";
 		out_stream << "  initially dominated" << ": " << dom_percent << "% (=" << data[NEW_LABEL_DOMINATED] <<")\n";
 		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[NEW_LABEL_NONDOMINATED] <<")\n";
 
