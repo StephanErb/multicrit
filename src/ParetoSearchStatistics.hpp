@@ -7,6 +7,7 @@
 #include <sstream>
 #include <numeric>
 #include <vector>
+#include <deque>
 
 #define STAT_ELEMENT_COUNT 6
 
@@ -32,11 +33,11 @@ private:
 	unsigned int identical_target_node;
 	unsigned int peak_identical_target_node;
 
-	static unsigned int sumLabelCount(unsigned int accum, std::vector<Label> labels) {
+	static unsigned int sumLabelCount(unsigned int accum, std::deque<Label> labels) {
 		return accum + labels.size() -2; // sentinal correction
 	}
 
-	static unsigned int cmpLess(std::vector<Label> x, std::vector<Label> y) {
+	static unsigned int cmpLess(std::deque<Label> x, std::deque<Label> y) {
 		return x.size() < y.size();
 	}
 
@@ -70,7 +71,7 @@ public:
 			}
 	}
 
-	std::string toString(std::vector<std::vector<Label> > labels) {
+	std::string toString(std::vector<std::deque<Label> > labels) {
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
