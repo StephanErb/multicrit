@@ -11,7 +11,7 @@
 #include "ParetoSearch.hpp"
 #include "SeqLabelSetting.hpp"
 
-typedef utility::datastructure::DirectedIntegerBiWeightedEdge Edge;
+typedef utility::datastructure::IntegerBiWeightedEdge Edge;
 typedef utility::datastructure::KGraph<Edge> Graph;
 typedef utility::datastructure::NodeID NodeID;
 typedef Edge::edge_data Label;
