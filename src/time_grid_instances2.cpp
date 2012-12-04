@@ -8,13 +8,17 @@
 
 #include "utility/tool/timer.h"
 #include "timing.h"
+#include "memory.h"
+
 
 void timeGrid(int num, int height, int width, bool verbose, int iterations, double p) {
 	GraphGenerator<Graph> generator;
 	double timings[iterations];
 	double label_count[iterations];
+	double memory[iterations];
 	std::fill_n(timings, iterations, 0);
 	std::fill_n(label_count, iterations, 0);
+	std::fill_n(memory, iterations, 0);
 
 	for (int i = 0; i < iterations; i++) {
 		Graph graph;
@@ -27,13 +31,16 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 		algo.run(NodeID(0));
 		timer.stop();
 		timings[i] = timer.getTimeInSeconds();
+		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(NodeID(graph.numberOfNodes()-1));
 		if (verbose) {
 			algo.printStatistics();
 		}
 	}
-	std::cout << num << " " << height << "x" << width << " " << pruned_average(timings, iterations, 0.25) << " " << pruned_average(label_count, iterations, 0) << " " << p << " # time in [s], target node label count, p " << std::endl;
+	std::cout << num << " " << height << "x" << width << " " << pruned_average(timings, iterations, 0.25) << " "
+		<< pruned_average(label_count, iterations, 0) << " " << p << " " << pruned_average(memory, iterations, 0)/1024 << " " 
+		<< getPeakMemorySize()/1024 << " # time in [s], target node label count, p, memory [mb], peak memory [mb] " << std::endl;
 }
 
 int main(int argc, char ** args) {
