@@ -35,6 +35,9 @@
  */
 //#define TREE_SET
 
+/**
+ * Only used by the SequentialParetoSearch algorithm. All other default to std::vector
+ */
 #define LABELSET_SET_SEQUENCE_TYPE std::vector
 //#define LABELSET_SET_SEQUENCE_TYPE std::deque
 
@@ -48,14 +51,11 @@
  */
 #define GATHER_STATS
 
-
 /**
- * Enable the following flag to write label set access positions
+ * Enable the following flag to gather & write label set access positions
+ * instead of the ordinary runtime stats
  */ 
 #define WRITE_LABELSET_ACCESS_LOG
-#ifndef WRITE_LABELSET_ACCESS_LOG
- 	#define OUTPUT_TIMING
-#endif
 
 /**
  * Maximal costs used to compute the lexicographic priority.
@@ -72,7 +72,7 @@
 		#ifdef TREE_PARETO_QUEUE
 			out_stream << "TreeParetoQueue";
 		#else
-			out_stream << "VectorParetoQueue";
+			out_stream << STR(LABELSET_SET_SEQUENCE_TYPE) << "ParetoQueue";
 		#endif
 	} else {
 		if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {

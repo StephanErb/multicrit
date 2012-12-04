@@ -42,6 +42,10 @@ private:
 	SequentialParetoQueue<Data> pq;
 	ParetoSearchStatistics<Label> stats;
 
+	#ifdef WRITE_LABELSET_ACCESS_LOG
+		std::vector<unsigned long> set_access;
+	#endif
+
 	struct GroupByNodeComp {
 		bool operator() (const Data& i, const Data& j) const {
 			if (i.node == j.node) {
@@ -127,10 +131,6 @@ private:
 		}
 	}
 
-	#ifdef WRITE_LABELSET_ACCESS_LOG
-		unsigned char sample_counter;
-	#endif
-
 	void updateLabelSet(LABELSET_SET_SEQUENCE_TYPE<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
@@ -157,8 +157,7 @@ private:
 			if (iter == first_nondominated) {
 
 				#ifdef WRITE_LABELSET_ACCESS_LOG
-					double relativePos = ((double)(first_nondominated - labelset.begin()))/labelset.size();
-					if (++sample_counter == 0) std::cout << relativePos << " " << std::endl;
+					set_access[(int)(100*(first_nondominated - labelset.begin())/(double)labelset.size())]++;
 				#endif
 
 				// delete range is empty, so just insert
@@ -168,8 +167,7 @@ private:
 				for (label_iter i = iter; i != first_nondominated; ++i) {
 
 					#ifdef WRITE_LABELSET_ACCESS_LOG
-						double relativePos = ((double)(first_nondominated - labelset.begin()))/labelset.size();
-						if (i != iter && ++sample_counter == 0) std::cout << relativePos << " " << std::endl;
+						if (i != iter) set_access[(int)(100*(first_nondominated - labelset.begin())/(double)labelset.size())]++;
 					#endif
 
 					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(new_label.node, *i)));
@@ -186,6 +184,9 @@ public:
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())
+		#ifdef WRITE_LABELSET_ACCESS_LOG
+			,set_access(100)
+		#endif
 	{
 		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
 		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
@@ -234,7 +235,13 @@ public:
 	}
 	
 	void printStatistics() {
-		std::cout << stats.toString(labels) << std::endl;
+		#ifdef WRITE_LABELSET_ACCESS_LOG
+			for (size_t i=0; i < set_access.size(); ++i) {
+				std::cout << "0."<< i << " " << set_access[i] << std::endl;
+			}
+		#else 
+			std::cout << stats.toString(labels) << std::endl;
+		#endif
 	}
 
 	// Subtraction / addition used to hide the sentinals

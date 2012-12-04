@@ -38,9 +38,6 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 			algo.printStatistics();
 		}
 	}
-	#ifndef OUTPUT_TIMING
-		std::cout << "# ";
-	#endif
 	std::cout << num << " " << height << "x" << width << " " << pruned_average(timings, iterations, 0.25) << " "
 		<< pruned_average(label_count, iterations, 0) << " " << p << " " << pruned_average(memory, iterations, 0)/1024 << " " 
 		<< getPeakMemorySize()/1024 << " # time in [s], target node label count, p, memory [mb], peak memory [mb] " << std::endl;
