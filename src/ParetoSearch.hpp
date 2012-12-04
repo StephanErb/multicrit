@@ -8,7 +8,7 @@
 #define PARETO_SEARCH_H_
 
 #include "utility/datastructure/graph/GraphMacros.h"
-
+#include "options.hpp"
 #include "ParetoQueue.hpp"
 #include "ParetoSearchStatistics.hpp"
 
@@ -30,13 +30,13 @@ private:
  		Data(const Data& data) : Label(data), node(data.node) {}
 	};
 
-	typedef typename std::deque<Label>::iterator label_iter;
-	typedef typename std::deque<Label>::iterator const_label_iter;
+	typedef typename LABELSET_SET_SEQUENCE_TYPE<Label>::iterator label_iter;
+	typedef typename LABELSET_SET_SEQUENCE_TYPE<Label>::iterator const_label_iter;
 	typedef typename std::vector<Data>::iterator pareto_iter;
 	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
 
     // Permanent and temporary labels per node.
-	std::vector<std::deque<Label> > labels;
+	std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> > labels;
 
 	graph_slot graph;
 	SequentialParetoQueue<Data> pq;
@@ -131,7 +131,7 @@ private:
 		unsigned char sample_counter;
 	#endif
 
-	void updateLabelSet(std::vector<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
+	void updateLabelSet(LABELSET_SET_SEQUENCE_TYPE<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();

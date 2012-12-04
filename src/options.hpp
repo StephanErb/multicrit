@@ -31,9 +31,12 @@
 //#define PRIORITY_MAX
 
 /**
- * If defined, use std::set to store labels, otherwise use std::vector
+ * If defined, use std::set to store labels, otherwise use the LABELSET_SET_SEQUENCE_TYPE defined below
  */
 //#define TREE_SET
+
+#define LABELSET_SET_SEQUENCE_TYPE std::vector
+//#define LABELSET_SET_SEQUENCE_TYPE std::deque
 
 /**
  * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector

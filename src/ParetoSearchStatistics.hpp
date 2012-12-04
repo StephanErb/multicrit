@@ -33,11 +33,11 @@ private:
 	unsigned int identical_target_node;
 	unsigned int peak_identical_target_node;
 
-	static unsigned int sumLabelCount(unsigned int accum, std::deque<Label> labels) {
+	static unsigned int sumLabelCount(unsigned int accum, LABELSET_SET_SEQUENCE_TYPE<Label> labels) {
 		return accum + labels.size() -2; // sentinal correction
 	}
 
-	static unsigned int cmpLess(std::deque<Label> x, std::deque<Label> y) {
+	static unsigned int cmpLess(LABELSET_SET_SEQUENCE_TYPE<Label> x, LABELSET_SET_SEQUENCE_TYPE<Label> y) {
 		return x.size() < y.size();
 	}
 
@@ -71,7 +71,7 @@ public:
 			}
 	}
 
-	std::string toString(std::vector<std::deque<Label> >& labels) {
+	std::string toString(std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> >& labels) {
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
@@ -124,7 +124,7 @@ public:
 
 	void report(StatElement stat, unsigned int payload=0) {}
 
-	std::string toString(std::vector<std::vector<Label> >& labels) {
+	std::string toString(std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> >& labels) {
 		std::ostringstream out_stream;
 		out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();
