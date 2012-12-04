@@ -45,6 +45,15 @@
  */
 #define GATHER_STATS
 
+
+/**
+ * Enable the following flag to write label set access positions
+ */ 
+#define WRITE_LABELSET_ACCESS_LOG
+#ifndef WRITE_LABELSET_ACCESS_LOG
+ 	#define OUTPUT_TIMING
+#endif
+
 /**
  * Maximal costs used to compute the lexicographic priority.
  * Must be appropriate to the problem size!

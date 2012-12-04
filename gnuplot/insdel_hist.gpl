@@ -1,0 +1,31 @@
+# we want to use umlauts
+set encoding iso_8859_1
+
+# the enhanced option allows format to typeset exponents without problems
+set terminal postscript eps enhanced color
+
+# the name of the output file
+set output "insdel_hist.ps"
+
+set title "Labelset Modification Distribution" 
+
+n=500	#number of intervals
+max=1.	#max value
+min=0.	#min value
+width=(max-min)/n	#interval width
+#function used to map a value to the intervals
+hist(x,width)=width*floor(x/width)+width/2.0
+set xrange [min:max]
+set yrange [0:]
+#to put an empty boundary around the
+#data inside an autoscaled graph.
+set offset graph 0.05,0.05,0.05,0.0
+set xtics min,(max-min)/5,max
+set boxwidth width*0.9
+set style fill solid 0.5	#fillstyle
+set xtics 0.1,0.1
+set tics out nomirror
+set xlabel "Labelset modifications on positions normalized to range [0,1]"
+set ylabel "Frequency (sample factor 1/256)"
+#count and plot
+plot "../logs/grid2_simple" u (hist($1,width)):(1.0) smooth freq w boxes lc rgb"green" notitle

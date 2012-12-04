@@ -14,8 +14,6 @@
 
 #include <deque>
 
-
-
 template<typename graph_slot>
 class SequentialParetoSearch {
 private:
@@ -129,7 +127,11 @@ private:
 		}
 	}
 
-	void updateLabelSet(std::deque<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
+	#ifdef WRITE_LABELSET_ACCESS_LOG
+		unsigned char sample_counter;
+	#endif
+
+	void updateLabelSet(std::vector<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
@@ -153,11 +155,23 @@ private:
 
 			label_iter first_nondominated = y_predecessor(iter, new_label);
 			if (iter == first_nondominated) {
+
+				#ifdef WRITE_LABELSET_ACCESS_LOG
+					double relativePos = ((double)(first_nondominated - labelset.begin()))/labelset.size();
+					if (++sample_counter == 0) std::cout << relativePos << " " << std::endl;
+				#endif
+
 				// delete range is empty, so just insert
 				labelset_iter = labelset.insert(first_nondominated, new_label);
 			} else {
 				// schedule deletion of dominated labels
 				for (label_iter i = iter; i != first_nondominated; ++i) {
+
+					#ifdef WRITE_LABELSET_ACCESS_LOG
+						double relativePos = ((double)(first_nondominated - labelset.begin()))/labelset.size();
+						if (i != iter && ++sample_counter == 0) std::cout << relativePos << " " << std::endl;
+					#endif
+
 					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(new_label.node, *i)));
 				}
 				// replace first dominated label and remove the rest
