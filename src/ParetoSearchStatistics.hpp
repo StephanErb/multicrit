@@ -25,15 +25,15 @@ enum StatElement {
 template<typename Label>
 class ParetoSearchStatistics {
 private:
-	unsigned int data[STAT_ELEMENT_COUNT];
-	unsigned int pq_size;
-	unsigned int peak_pq_size;
-	unsigned int minima_size;
-	unsigned int peak_minima_size;
-	unsigned int identical_target_node;
-	unsigned int peak_identical_target_node;
+	unsigned long data[STAT_ELEMENT_COUNT];
+	unsigned long pq_size;
+	unsigned long peak_pq_size;
+	unsigned long minima_size;
+	unsigned long peak_minima_size;
+	unsigned long identical_target_node;
+	unsigned long peak_identical_target_node;
 
-	static unsigned int sumLabelCount(unsigned int accum, LABELSET_SET_SEQUENCE_TYPE<Label> labels) {
+	static unsigned long sumLabelCount(unsigned long accum, LABELSET_SET_SEQUENCE_TYPE<Label> labels) {
 		return accum + labels.size() -2; // sentinal correction
 	}
 
@@ -54,7 +54,7 @@ public:
 		std::fill_n(data, STAT_ELEMENT_COUNT, 0);
 	}
 
-	void report(StatElement stat, unsigned int payload=0) {
+	void report(StatElement stat, unsigned long payload=0) {
 			data[stat]++;
 
 			if (stat == ITERATION) {
@@ -75,7 +75,7 @@ public:
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
-		unsigned int total_label_count = data[LABEL_NONDOMINATED] + data[LABEL_DOMINATED];
+		unsigned long total_label_count = data[LABEL_NONDOMINATED] + data[LABEL_DOMINATED];
 		double dom_percent = 100.0 * data[LABEL_DOMINATED] / total_label_count;
 		double dom_shortcut_percent = 100.0 * data[DOMINATION_SHORTCUT] / data[LABEL_DOMINATED];
 
@@ -84,13 +84,13 @@ public:
 		out_stream << "    via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
 		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
 
-		unsigned int final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0, sumLabelCount);
-		unsigned int finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
+		unsigned long final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0, sumLabelCount);
+		unsigned long finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
 		double finally_dom_percent = 100.0 * finally_dominated / data[LABEL_NONDOMINATED];
 		out_stream << "    finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
 
 		double avg_set_size = final_total_label_count / labels.size();
-		unsigned int max_set_size = (*std::max_element(labels.begin(), labels.end(), cmpLess)).size() -2; //sentinal correction
+		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), cmpLess)).size() -2; //sentinal correction
 		out_stream << "LabelSet sizes: " << "\n";
 		out_stream << "  avg" << ": " << avg_set_size << "\n";
 		out_stream << "  max" << ": " << max_set_size << "\n";
@@ -122,7 +122,7 @@ public:
 
 	ParetoSearchStatistics() {}
 
-	void report(StatElement stat, unsigned int payload=0) {}
+	void report(StatElement stat, unsigned long payload=0) {}
 
 	std::string toString(std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> >& labels) {
 		std::ostringstream out_stream;
