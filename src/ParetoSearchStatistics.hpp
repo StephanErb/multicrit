@@ -71,7 +71,7 @@ public:
 			}
 	}
 
-	std::string toString(std::vector<std::deque<Label> > labels) {
+	std::string toString(std::vector<std::deque<Label> >& labels) {
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
@@ -111,7 +111,6 @@ public:
 		out_stream << "  max" << ": " << peak_identical_target_node;
 		
 		return out_stream.str();
-
 	}
 };
 
@@ -125,7 +124,7 @@ public:
 
 	void report(StatElement stat, unsigned int payload=0) {}
 
-	std::string toString(std::vector<std::vector<Label> > labels) {
+	std::string toString(std::vector<std::vector<Label> >& labels) {
 		std::ostringstream out_stream;
 		out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();
