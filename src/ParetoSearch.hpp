@@ -42,8 +42,8 @@ private:
 	SequentialParetoQueue<Data> pq;
 	ParetoSearchStatistics<Label> stats;
 
-	#ifdef WRITE_LABELSET_ACCESS_LOG
-		std::vector<unsigned long> set_access;
+	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+		unsigned long set_changes[101] = {};
 	#endif
 
 	struct GroupByNodeComp {
@@ -156,8 +156,8 @@ private:
 			label_iter first_nondominated = y_predecessor(iter, new_label);
 			if (iter == first_nondominated) {
 
-				#ifdef WRITE_LABELSET_ACCESS_LOG
-					set_access[(int)(100*(first_nondominated - labelset.begin())/(double)labelset.size())]++;
+				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+					set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
 				#endif
 
 				// delete range is empty, so just insert
@@ -166,8 +166,8 @@ private:
 				// schedule deletion of dominated labels
 				for (label_iter i = iter; i != first_nondominated; ++i) {
 
-					#ifdef WRITE_LABELSET_ACCESS_LOG
-						if (i != iter) set_access[(int)(100*(first_nondominated - labelset.begin())/(double)labelset.size())]++;
+					#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+						if (i != iter) set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
 					#endif
 
 					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(new_label.node, *i)));
@@ -184,9 +184,6 @@ public:
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())
-		#ifdef WRITE_LABELSET_ACCESS_LOG
-			,set_access(100)
-		#endif
 	{
 		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
 		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
@@ -235,13 +232,14 @@ public:
 	}
 	
 	void printStatistics() {
-		#ifdef WRITE_LABELSET_ACCESS_LOG
-			for (size_t i=0; i < set_access.size(); ++i) {
-				std::cout << "0."<< i << " " << set_access[i] << std::endl;
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			std::cout << "# LabelSet Modifications" << std::endl;
+			for (size_t i=0; i < 101; ++i) {
+				std::cout << i << " " << set_changes[i] << std::endl;
 			}
-		#else 
-			std::cout << stats.toString(labels) << std::endl;
 		#endif
+		pq.printStatistics();
+		std::cout << stats.toString(labels) << std::endl;
 	}
 
 	// Subtraction / addition used to hide the sentinals

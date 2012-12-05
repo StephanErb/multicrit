@@ -52,10 +52,9 @@
 #define GATHER_STATS
 
 /**
- * Enable the following flag to gather & write label set access positions
- * instead of the ordinary runtime stats
+ * Enable the following flag to gather how label sets and the pareto queue are modified
  */ 
-#define WRITE_LABELSET_ACCESS_LOG
+#define GATHER_DATASTRUCTURE_MODIFICATION_LOG
 
 /**
  * Maximal costs used to compute the lexicographic priority.

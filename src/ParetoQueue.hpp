@@ -31,6 +31,11 @@ private:
 	typedef typename QueueType::const_iterator const_iterator;
 	typedef typename data_type::weight_type weight_type;
 
+	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+		unsigned long pq_inserts[101] = {}; //all elements 0
+		unsigned long pq_deletes[101] = {}; //all elements 0
+	#endif
+
 	static void printLabels(const std::string msg, const const_iterator begin, const const_iterator end) {
 		std::cout << msg;
 		for (const_iterator i = begin; i != end; ++i) {
@@ -89,6 +94,9 @@ public:
 						label_iter->node != update_iter->data.node) {
 					temp.push_back(*label_iter++);
 				}
+				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+					pq_deletes[(int)(100*((label_iter - labels.begin())/(double)labels.size()) + 0.5)]++;
+				#endif
 				++label_iter; // delete the element by jumping over it
                 ++update_iter;
                 continue;
@@ -106,6 +114,9 @@ public:
 						&& label_iter->node < update_iter->data.node) {
 					temp.push_back(*label_iter++);
 				}
+				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+					pq_inserts[(int)(100*((label_iter - labels.begin())/(double)labels.size()) + 0.5)]++;
+				#endif
 				temp.push_back(update_iter->data);
 				++update_iter;
 				continue;
@@ -113,6 +124,15 @@ public:
 		}
 		std::copy(label_iter, labels.end(), std::back_inserter(temp));
 	    labels.swap(temp);
+	}
+
+	void printStatistics() {
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			std::cout << "# ParetoQueue Insertions, Deletions" << std::endl;
+			for (size_t i=0; i < 101; ++i) {
+				std::cout << i << " " << pq_inserts[i] << " " << pq_deletes[i] << std::endl;
+			}
+		#endif
 	}
 
 	bool empty() {
