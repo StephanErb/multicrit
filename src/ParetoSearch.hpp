@@ -43,7 +43,7 @@ private:
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-		unsigned long set_changes[101] = {};
+		std::vector<unsigned long> set_changes;
 	#endif
 
 	struct GroupByNodeComp {
@@ -184,6 +184,9 @@ public:
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			,set_changes(101)
+		#endif
 	{
 		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
 		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();

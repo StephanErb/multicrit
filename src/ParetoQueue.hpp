@@ -32,8 +32,8 @@ private:
 	typedef typename data_type::weight_type weight_type;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-		unsigned long pq_inserts[101] = {}; //all elements 0
-		unsigned long pq_deletes[101] = {}; //all elements 0
+		std::vector<unsigned long> pq_inserts;
+		std::vector<unsigned long> pq_deletes;
 	#endif
 
 	static void printLabels(const std::string msg, const const_iterator begin, const const_iterator end) {
@@ -46,7 +46,11 @@ private:
 
 public:
 
-	SequentialVectorParetoQueue(const size_t node_count) {
+	SequentialVectorParetoQueue(const size_t node_count)
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+		: pq_inserts(101), pq_deletes(101)
+		#endif
+	{
 		const weight_type min = std::numeric_limits<weight_type>::min();
 		const weight_type max = std::numeric_limits<weight_type>::max();
 
