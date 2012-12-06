@@ -1,8 +1,8 @@
 
 
 
+# SharedHeapLabelSettingAlgorithm_VectorSet_Lex
 
-#SharedHeapLabelSettingAlgorithm_VectorSet_Lex
 __Exponential Graph (root degree&depth=32):__
 
     Created Labels: 6291360
@@ -42,9 +42,6 @@ __Machuca Grid Correlated (p=0.8, 200x200):__
     Target node label count: 23
     0.250895 # time in [s]
     
-\newpage
-
-
 __Machuca Grid Correlated (p=-0.8, 200x200):__
 
     Created Labels: 112048842
@@ -60,287 +57,97 @@ __Machuca Grid Correlated (p=-0.8, 200x200):__
 
 
 
-## PreSort Optimization
 
-# Exponential Graph (root degree&depth=32):
+# SequentialParetoSearch_std::vectorParetoQueue
 
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 4095
-  max: 32768
-Target node label count: 0
-7.38313 # time in [s]
+__Exponential Graph (root degree&depth=32):__
 
-# Raith & Ehrgott Grid (200x200):
+    Iterations: 33
+    Created Labels: 6291360
+      initially dominated: 0% (=0)
+        via candidate shortcut: -nan% (=0)
+      initially non-dominated: 100% (=6291360)
+        finally dominated: 0% (=0)
+    LabelSet sizes: 
+      avg: 5957
+      max: 65536
+    ParetoQueue sizes: 
+      avg: 254196
+      max: 2097152
+    Pareto Optimal Elements: 
+      avg: 190647
+      max: 2097152
+    Identical Target Nodes per Iteration: 
+      avg: 4095
+      max: 32768
+    Target node label count: 0
+    5.93423 # time in [s]
 
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.4779% (=15829089)
-    via candidate shortcut: 9.9703% (=1578207)
-  initially non-dominated: 27.5221% (=6010793)
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 4
-  max: 592
-Target node label count: 284
-12.2231 # time in [s]
+__Raith & Ehrgott Grid (200x200):__
 
-# Machuca Grid Correlated (p=0.8, 200x200):
+    Iterations: 2228
+    Created Labels: 21839882
+      initially dominated: 72.4779% (=15829089)
+        via candidate shortcut: 46.6628% (=7386294)
+      initially non-dominated: 27.5221% (=6010793)
+        finally dominated: 8.93466% (=537044)
+    LabelSet sizes: 
+      avg: 136
+      max: 368
+    ParetoQueue sizes: 
+      avg: 24609
+      max: 58144
+    Pareto Optimal Elements: 
+      avg: 2456
+      max: 6059
+    Identical Target Nodes per Iteration: 
+      avg: 4
+      max: 592
+    Target node label count: 284
+    10.0692 # time in [s]
 
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 70.4468% (=956407)
-    via candidate shortcut: 12.3631% (=118242)
-  initially non-dominated: 29.5532% (=401224)
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 21
-Target node label count: 23
-0.414576 # time in [s]
+__Machuca Grid Correlated (p=0.8, 200x200):__
 
-# Machuca Grid Correlated (p=-0.8, 200x200):
+    Iterations: 2270
+    Created Labels: 1357631
+      initially dominated: 70.4468% (=956407)
+        via candidate shortcut: 48.7005% (=465775)
+      initially non-dominated: 29.5532% (=401224)
+        finally dominated: 14.951% (=59987)
+    LabelSet sizes: 
+      avg: 8
+      max: 27
+    ParetoQueue sizes: 
+      avg: 1358
+      max: 3810
+    Pareto Optimal Elements: 
+      avg: 150
+      max: 475
+    Identical Target Nodes per Iteration: 
+      avg: 2
+      max: 21
+    Target node label count: 23
+    0.376274 # time in [s]
 
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 73.8799% (=82781568)
-    via candidate shortcut: 14.6534% (=12130315)
-  initially non-dominated: 26.1201% (=29267274)
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 11
-  max: 381
-Target node label count: 1582
-56.9015 # time in [s]
+__Machuca Grid Correlated (p=-0.8, 200x200):__
 
-
-
-# SequentialParetoSearch_VectorParetoQueue
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
-
-Iterations: 41683
-Created Labels: 978246494
-  initially dominated: 60.2916% (=589800871)
-    via candidate shortcut: 4.02458% (=23736982)
-  initially non-dominated: 39.7084% (=388445623)
-ParetoQueue sizes: 
-  avg: 61976
-  max: 1475541
-Pareto Optimal Elements: 
-  avg: 8454
-  max: 14185
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 119
-1 NY1 792.945 1089 # time in [s], target node label count
-
-
-
-### Fast Dominance Check Improved
-
-# SequentialParetoSearch_VectorParetoQueue
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
-
-Iterations: 41683
-Created Labels: 978246494
-  initially dominated: 60.2916% (=589800871)
-    via candidate shortcut: 37.9922% (=224078125)
-  initially non-dominated: 39.7084% (=388445623)
-ParetoQueue sizes: 
-  avg: 61976
-  max: 1475541
-Pareto Optimal Elements: 
-  avg: 8454
-  max: 14185
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 119
-1 NY1 772.032 1089 # time in [s], target node label count
-
-
-### Simple Sort Opt
-
-# Exponential Graph (root degree&depth=32):
-
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 6137
-  max: 65536
-Target node label count: 0
-6.16743 # time in [s]
-
-# Raith & Ehrgott Grid (200x200):
-
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.0796% (=15742106)
-    via candidate shortcut: 0% (=0)
-  initially non-dominated: 27.9204% (=6097776)
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 1
-  max: 46
-Target node label count: 284
-11.4382 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
-
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 69.92% (=949255)
-    via candidate shortcut: 0% (=0)
-  initially non-dominated: 30.08% (=408376)
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 1
-  max: 12
-Target node label count: 23
-0.320039 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
-
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 72.3224% (=81036394)
-    via candidate shortcut: 0% (=0)
-  initially non-dominated: 27.6776% (=31012448)
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 3
-  max: 188
-Target node label count: 1582
-145.201 # time in [s]
-
-
-
-## Bucket Sort + std::sort
-
-# Exponential Graph (root degree&depth=32):
-
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 4095
-  max: 32768
-Target node label count: 0
-5.63292 # time in [s]
-
-# Raith & Ehrgott Grid (200x200):
-
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.4779% (=15829089)
-    via candidate shortcut: 46.6628% (=7386294)
-  initially non-dominated: 27.5221% (=6010793)
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 4
-  max: 592
-Target node label count: 284
-10.2627 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
-
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 70.4468% (=956407)
-    via candidate shortcut: 48.7005% (=465775)
-  initially non-dominated: 29.5532% (=401224)
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 21
-Target node label count: 23
-0.344848 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
-
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 73.8799% (=82781568)
-    via candidate shortcut: 68.7152% (=56883491)
-  initially non-dominated: 26.1201% (=29267274)
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 11
-  max: 381
-Target node label count: 1582
-42.9842 # time in [s]
+    Iterations: 4166
+    Created Labels: 112048842
+      initially dominated: 73.8799% (=82781568)
+        via candidate shortcut: 68.7152% (=56883491)
+      initially non-dominated: 26.1201% (=29267274)
+        finally dominated: 3.85961% (=1129603)
+    LabelSet sizes: 
+      avg: 703
+      max: 1583
+    ParetoQueue sizes: 
+      avg: 70785
+      max: 152941
+    Pareto Optimal Elements: 
+      avg: 6754
+      max: 15492
+    Identical Target Nodes per Iteration: 
+      avg: 11
+      max: 381
+    Target node label count: 1582
+    45.5604 # time in [s]
