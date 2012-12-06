@@ -54,7 +54,7 @@
 /**
  * Enable the following flag to gather how label sets and the pareto queue are modified
  */ 
-#define GATHER_DATASTRUCTURE_MODIFICATION_LOG
+//#define GATHER_DATASTRUCTURE_MODIFICATION_LOG
 
 /**
  * Maximal costs used to compute the lexicographic priority.
