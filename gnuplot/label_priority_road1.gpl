@@ -5,7 +5,7 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color
 
 # the name of the output file
-set output "road_instances-ordering.ps"
+set output "label_priority_road1.ps"
 
 # the title above the diagram
 set title "Bicriteria label setting runtimes on road instances of [Raith, Ehrgott 2009]"

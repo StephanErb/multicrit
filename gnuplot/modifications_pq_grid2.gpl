@@ -5,12 +5,12 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color
 
 # the name of the output file
-set output "road2_pq-modifications.ps"
+set output "modifications_pq_grid2.ps"
 
-set title "ParetoQueue Modification Distribution on NY Road Instance of [Machuca 2012]" 
+set title "ParetoQueue Modification Distribution on Grid 200x200 (p=-0.8) of [Machuca 2012]"
 
 set xrange [0:105]
-set yrange [0:11]
+set yrange [0:700]
 
 set style histogram rowstacked
 set style data histograms
@@ -29,8 +29,6 @@ set style fill solid 0.5 noborder
 set tics out nomirror
 
 set xlabel "ParetoQueue modifications on positions normalized to range [0,1]"
-set ylabel "Frequency [million]"
+set ylabel "Frequency [thousand]"
 
-plot "../logs/road_NY_pq" using ($3/1000000) t "Deletions", '' using ($2/1000000) t "Insertions"
-
-#u ($1/100):($3/1000) w boxes lc rgb"green" notitle
+plot "../logs/grid2_hard_pq" using ($3/1000) t "Deletions", '' using ($2/1000) t "Insertions"

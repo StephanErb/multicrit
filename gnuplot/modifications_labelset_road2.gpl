@@ -5,9 +5,9 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color
 
 # the name of the output file
-set output "road1_labelset-modifications.ps"
+set output "modifications_labelset_road2.ps"
 
-set title "Labelset Modification Distribution on NJ Road Instance of [Raith, Ehrgott 2009]" 
+set title "Labelset Modification Distribution on NY Road Instance of [Machuca 2012]"
 
 set xrange [0:1]
 set yrange [0:]
@@ -28,4 +28,4 @@ set tics out nomirror
 set xlabel "Labelset modifications on positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
 
-plot "../logs/road_NJ_sets" u ($1/100):($2/1000000) w boxes lc rgb"green" notitle
+plot "../logs/road_NY_sets" u ($1/100):($2/1000000) w boxes lc rgb"green" notitle

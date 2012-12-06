@@ -5,7 +5,7 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color
 
 # the name of the output file
-set output "grid2_labelset-modifications.ps"
+set output "modifications_labelset_grid2.ps"
 
 set title "Labelset Modification Distribution on Grid 200x200 (p=-0.8) of [Machuca 2012]" 
 
