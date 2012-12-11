@@ -1,0 +1,36 @@
+# we want to use umlauts
+set encoding iso_8859_1
+
+# the enhanced option allows format to typeset exponents without problems
+set terminal postscript eps enhanced color
+
+# the name of the output file
+set output "modifications_pq_road2_5000.ps"
+
+set title "5000 Iterations: ParetoQueue Modification Distribution on NY Road Instance of [Machuca 2012]" 
+
+set xrange [0:105]
+set yrange [0:11]
+
+set style histogram rowstacked
+set style data histograms
+
+# Grid lines
+set grid ytics lc rgb "#bbbbbb" lw 1 lt 0
+set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
+
+#to put an empty boundary around the
+#data inside an autoscaled graph.
+set offset graph 0.05,0.05,0.05,0.0
+
+ set xtics ("0" 0, "0.1" 10, "0.2" 20, "0.3" 30, "0.4" 40, "0.5" 50, "0.6" 60, "0.7" 70, "0.8" 80, "0.9" 90, "1" 100)
+set style fill solid 0.5 noborder
+
+set tics out nomirror
+
+set xlabel "ParetoQueue modifications on positions normalized to range [0,1]"
+set ylabel "Frequency [million]"
+
+plot "../logs/road_NY_pq_5000" using ($3/1000000) t "Deletions", '' using ($2/1000000) t "Insertions"
+
+#u ($1/100):($3/1000) w boxes lc rgb"green" notitle
