@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <array>
 #include <unistd.h>
+#include <cmath>
 
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
@@ -40,8 +41,8 @@
 #define BTREE_ASSERT(x)         do { } while(0)
 #endif
 
-#define BTREE_PRINT(x)          do { } while(0)
-//#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
+//#define BTREE_PRINT(x)          do { } while(0)
+#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
 
 
 /// The maximum of a and b. Used in some compile-time formulas.
@@ -99,6 +100,7 @@ public:
     /// Size type used to count keys
     typedef size_t                      size_type;
 
+    typedef unsigned short              level_type;
 public:
     // *** Static Constant Options and Values of the B+ Tree
 
@@ -117,11 +119,11 @@ private:
     /// by inner_node or leaf_node.
     struct node {
         /// Level in the b-tree, if level == 0 -> leaf node
-        unsigned short  level;
+        level_type level;
 
         /// Number of key slotuse use, so number of valid children or data
         /// pointers
-        unsigned short  slotuse;
+        unsigned short slotuse;
 
         /// Delayed initialisation of constructed node
         inline void initialize(const unsigned short l) {
@@ -240,7 +242,7 @@ public:
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
     explicit inline btree(const allocator_type &alloc = allocator_type())
-        : root(NULL), allocator(alloc)
+        : root(NULL), allocator(alloc) 
     {
         spare_leaf = allocate_leaf();
         stats = tree_stats(); // reset stats after leaf creation
@@ -375,14 +377,18 @@ public:
         weightdelta.reserve(updates.size()+1);
         partial_sum(updates.begin(), updates.end(), weightdelta.begin());
 
-        if (root->isleafnode()) {
-            updateLeaf(static_cast<leaf_node*>(root), static_cast<leaf_node*>(spare_leaf), updates, 0, updates.size());
-            std::swap(root, spare_leaf);
-        }
+        // Find out if the root node needs rebalancing
+        double n = size() + weightdelta[updates.size()];
+        level_type optimal_level = n <= leafslotmax < 0 ? 0 : ceil( log(n/traits::leafparameter_k) / log(traits::branchingparameter_b) );
+        BTREE_PRINT("optimal level " << optimal_level << " actual level " << root->level << std::endl);
 
-        if (root->slotuse == 0) {
-            free_node(root);
-            root = NULL;
+        if (n == 0) {
+            clear();
+        } else if (optimal_level != root->level) {
+            //reconstruct()
+        } else {
+            key_type router; // unused
+            insert(root, router, updates, 0, updates.size());
         }
 
         if (traits::selfverify) {
@@ -401,11 +407,21 @@ private:
         }
     }
 
-    void updateLeaf(leaf_node* in_leaf, leaf_node* out_leaf, const update_list& updates, const size_t begin, const size_t end) {
+    void insert(node*& node, key_type& router, const update_list& updates, const size_type begin, const size_type end) {
+        if (node->isleafnode()) {
+            updateLeaf(static_cast<leaf_node*>(node), static_cast<leaf_node*>(spare_leaf), router, updates, begin, end);
+            std::swap(node, spare_leaf);
+        } else {
+
+
+        }
+    }
+
+    void updateLeaf(const leaf_node* in_leaf, leaf_node* out_leaf, key_type& router, const update_list& updates, const size_type begin, const size_type end) {
         int in = 0; // existing key to read
         int out = 0; // position where to write
 
-        for (size_t i = begin; i != end; ++i) {
+        for (size_type i = begin; i != end; ++i) {
             switch (updates[i].type) {
             case Operation<key_type>::DELETE:
                 // We know the element is in here, so no bounds checks
@@ -426,7 +442,8 @@ private:
             out_leaf->slotkey[out++] = in_leaf->slotkey[in++];
         }
         out_leaf->slotuse = out;
-        stats.itemcount += out - in;  
+        stats.itemcount += out - in;
+        router = out_leaf->slotkey[out_leaf->slotuse-1];  
     }
 
 
@@ -484,7 +501,7 @@ private:
 
     /// Recursively descend down the tree and verify each node
     void verify_node(const node* n, key_type* minkey, key_type* maxkey, tree_stats &vstats) const {
-        BTREE_PRINT("verifynode " << n << std::endl);
+        //BTREE_PRINT("verifynode " << n << std::endl);
 
         if (n->isleafnode()) {
             const leaf_node *leaf = static_cast<const leaf_node*>(n);
@@ -522,7 +539,7 @@ private:
                 assert(subnode->level + 1 == inner->level);
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
 
-                BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
+                //BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
 
                 if (slot == 0) {
                     *minkey = subminkey;
