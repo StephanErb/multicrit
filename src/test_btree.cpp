@@ -115,11 +115,13 @@ void testSplitLeafInto3() {
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 0});
-	updates.push_back({Operation<int>::INSERT, 4});
 	updates.push_back({Operation<int>::INSERT, 6});
+	updates.push_back({Operation<int>::INSERT, 7});
+	updates.push_back({Operation<int>::DELETE, 20});
 	updates.push_back({Operation<int>::INSERT, 49}); // new router 
 	updates.push_back({Operation<int>::DELETE, 50}); // delete existing router after 2nd subtree 
 	updates.push_back({Operation<int>::INSERT, 51});
+	updates.push_back({Operation<int>::INSERT, 72});
 	updates.push_back({Operation<int>::INSERT, 81});
 
 	btree.apply_updates(updates);
