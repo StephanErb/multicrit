@@ -22,7 +22,7 @@
 #####################################################
 CODE=time_labelsetting time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2
 
-TESTS=test_labelset test_labelsetting
+TESTS=test_labelset test_labelsetting test_btree
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)
