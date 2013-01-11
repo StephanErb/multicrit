@@ -147,6 +147,8 @@ private:
         /// Pointers to children
         node*           childid[innerslotmax+1];
 
+        size_type       weight[innerslotmax+1];
+
         /// Set variables to initial values
         inline void initialize(const unsigned short l) {
             node::initialize(l);
@@ -435,10 +437,15 @@ private:
     void reconstruct(const node* in_node, node*& out_node, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end,
             const update_list& updates, const size_type begin, const size_type end) {
         if (level == 0) { // create leaf
-            out_node = allocate_leaf();
-            out_node->slotuse = rank_end - rank_begin;
-            stats.itemcount += out_node->slotuse;
+            leaf_node* result = allocate_leaf();
+
+            result->slotuse = rank_end - rank_begin;
+            stats.itemcount += result->slotuse;
             BTREE_PRINT("Constructing child for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
+
+            router = result->slotkey[result->slotuse-1];
+            out_node = result;
+
         } else {
             size_type designated_treesize = (maxweight(level-1) + minweight(level-1)) / 2;
             std::cout << maxweight(level-1) << " " << minweight(level-1) << std::endl;
@@ -456,10 +463,13 @@ private:
 
             size_type rank = rank_begin;
             for (unsigned short i = 0; i < result->slotuse; ++i) {
+                result->weight[i] = designated_treesize;
                 reconstruct(in_node, result->childid[i], level-1, result->slotkey[i], rank, rank+designated_treesize, updates, begin, end);
                 rank+= designated_treesize;
             }
             reconstruct(in_node, result->childid[result->slotuse], level-1, router, rank, rank_end, updates, begin, end);
+            result->weight[result->slotuse] = rank_end - rank;
+
 
             out_node = result;
         }
@@ -587,7 +597,11 @@ private:
                 key_type submaxkey = key_type();
 
                 assert(subnode->level + 1 == inner->level);
+
+                size_type itemcount = vstats.itemcount;
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
+
+                assert(inner->weight[slot] == vstats.itemcount - itemcount);
 
                 //BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
 
