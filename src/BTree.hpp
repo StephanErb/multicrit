@@ -33,6 +33,7 @@
 #include <array>
 #include <unistd.h>
 #include <cmath>
+#include <bitset>
 
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
@@ -511,22 +512,51 @@ private:
     }
 
     void update(node*& node, key_type& router, const size_type rank, const size_type upd_begin, const size_type upd_end, const bool rewrite_subtree) {
+        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << node << std::endl);
 
         if (node->isleafnode()) {
             if (rewrite_subtree) {
                 write_updated_leaf_to_new_tree(node, rank, upd_begin, upd_end);
             } else {
-                update_leaf(node, router, upd_begin, upd_end);
+                update_leaf_in_current_tree(node, router, upd_begin, upd_end);
             }
 
         } else {
             inner_node* inner = static_cast<inner_node*>(node);
+            const level_type subtree_level = inner->level - 1;
+            size_type subtree_rank = rank;
 
+            // Distribute operations and find out which subtrees need rebalancing
+            size_type subupd_begin = upd_begin;
             for (width_type i = 0; i < inner->slotuse; ++i) {
-                find_lower(upd_begin, upd_end, inner->slotkey[i]);
+                size_type subupd_end = find_lower(subupd_begin, upd_end, inner->slotkey[i]);
 
-                // TODO recursive update & eventually starting the reconstruction
+                const size_type new_weight = inner->weight[i] = inner->weight[i] + weightdelta[subupd_end] - weightdelta[subupd_begin];
+
+                if (subupd_begin != subupd_end) {
+                    const bool rebalance_needed = new_weight < minweight(subtree_level) || new_weight > maxweight(subtree_level);
+                    if (rebalance_needed) {
+                        BTREE_PRINT("Rebalancing needed (but not implemented) " << std::endl);
+                        // See root level for how to do it.
+                    } else {
+                        update(inner->childid[i], inner->slotkey[i], subtree_rank, subupd_begin, subupd_end, rebalance_needed);
+                    }
+                }
+                subtree_rank += new_weight; 
+                subupd_begin = subupd_end;
             }
+
+            if (subupd_begin != upd_end) {
+                const size_type new_weight = inner->weight[inner->slotuse] = inner->weight[inner->slotuse] + weightdelta[upd_end] - weightdelta[subupd_begin];
+                const bool rebalance_needed = new_weight < minweight(subtree_level) || new_weight > maxweight(subtree_level);
+
+                if (rebalance_needed) {
+                    BTREE_PRINT("Rebalancing needed (but not implemented) " << std::endl);
+                } else {
+                    update(inner->childid[inner->slotuse], router, subtree_rank, subupd_begin, upd_end, rebalance_needed);
+                }
+            }
+
         }
         if (rewrite_subtree) {
             free_node(node);
@@ -541,13 +571,13 @@ private:
         while(lo < hi) {
             size_type mid = (lo + hi) >> 1; // FIXME: Potential integer overflow
 
-            if (key_lessequal(key, updates[mid].data)) {
+            if (key_less(key, updates[mid].data)) {
                 hi = mid - 1;
             } else {
                 lo = mid + 1;
             }
         }
-        hi += (hi < 0 || key_less(updates[hi].data, key));
+        hi += (hi < 0 || key_lessequal(updates[hi].data, key));
         return hi;
     }
 
@@ -571,7 +601,7 @@ private:
     }
 
     void write_updated_leaf_to_new_tree(node*& node, const size_type rank, const size_type begin, const size_type end) {
-        BTREE_PRINT("Rewriting updated leaf " << node);
+        BTREE_PRINT("Rewriting updated leaf " << node << " starting with rank " << rank);
 
         size_type leaf_number = rank / designated_leafsize;
         width_type offset_in_leaf = rank % designated_leafsize;
@@ -636,14 +666,15 @@ private:
         return leaf_count+1 < leaves.size();
     }
 
-    void update_leaf(node*& node, key_type& router, const size_type begin, const size_type end) {
-        BTREE_PRINT("Updating leaf " << node);
-
+    void update_leaf_in_current_tree(node*& node, key_type& router, const size_type begin, const size_type end) {
         width_type in = 0; // existing key to read
         width_type out = 0; // position where to write
 
         leaf_node* result = static_cast<leaf_node*>(spare_leaf);
         const leaf_node* leaf = static_cast<leaf_node*>(node);
+
+        BTREE_PRINT("Updating leaf from " << node << " to " << result);
+
 
         for (size_type i = begin; i != end; ++i) {
             switch (updates[i].type) {
@@ -668,7 +699,7 @@ private:
         result->slotuse = out;
         router = result->slotkey[out-1]; 
 
-        BTREE_PRINT(" " << leaf->slotuse << " -> " << result->slotuse << std::endl);
+        BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);
 
         spare_leaf = node;
         node = result;

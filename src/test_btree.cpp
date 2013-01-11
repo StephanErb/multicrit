@@ -100,6 +100,7 @@ void testSplitLeafInto3() {
 
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
+	assertTrue(btree.get_stats().leaves == 1, "Leafcount");
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 1});
@@ -108,12 +109,23 @@ void testSplitLeafInto3() {
 	updates.push_back({Operation<int>::INSERT, 4});
 	updates.push_back({Operation<int>::INSERT, 5});
 
-
-
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 1, "13 elements need 3 leaves");
-}
+	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
 
+	updates.clear();
+	updates.push_back({Operation<int>::INSERT, 0});
+	updates.push_back({Operation<int>::INSERT, 4});
+	updates.push_back({Operation<int>::INSERT, 6});
+	updates.push_back({Operation<int>::INSERT, 49}); // new router 
+	updates.push_back({Operation<int>::DELETE, 50}); // delete existing router after 2nd subtree 
+	updates.push_back({Operation<int>::INSERT, 51});
+	updates.push_back({Operation<int>::INSERT, 81});
+
+	btree.apply_updates(updates);
+	assertTrue(btree.height() == 1, "All elements still fit into 3 leaves");
+	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
+}
 
 int main() {
 	testBulkUpdatesOfSingleLeaf();
