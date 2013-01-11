@@ -28,7 +28,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::INSERT, 20});
 	updates.push_back({Operation<int>::INSERT, 30});
 
-	btree.applyUpdates(updates);
+	btree.apply_updates(updates);
 	assertTrue(btree.size() == 3, "Insert into empty tree");
 
 	updates.clear();
@@ -38,7 +38,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::INSERT, 25});
 	updates.push_back({Operation<int>::INSERT, 35});
 
-	btree.applyUpdates(updates);
+	btree.apply_updates(updates);
 	assertTrue(btree.size() == 8, "Insert into spaces");
 
 	updates.clear();
@@ -46,7 +46,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::DELETE, 20});
 	updates.push_back({Operation<int>::DELETE, 30});
 
-	btree.applyUpdates(updates);
+	btree.apply_updates(updates);
 	assertTrue(btree.size() == 5, "Delete original elements");
 
 	updates.clear();
@@ -56,7 +56,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::DELETE, 25});
 	updates.push_back({Operation<int>::DELETE, 35});
 
-	btree.applyUpdates(updates);
+	btree.apply_updates(updates);
 	assertTrue(btree.size() == 0, "Empty");
 }
 
@@ -74,14 +74,14 @@ void testSplitLeaf() {
 	updates.push_back({Operation<int>::INSERT, 70});
 	updates.push_back({Operation<int>::INSERT, 80});
 
-	btree.applyUpdates(updates);
-	assertTrue(btree.height() == 0, "Elements fit into leave");
+	btree.apply_updates(updates);
+	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 5});
 
-	btree.applyUpdates(updates);
-	assertTrue(btree.height() == 1, "Elements need 2 leaves");
+	btree.apply_updates(updates);
+	assertTrue(btree.height() == 1, "9 elements need 2 leaves");
 }
 
 

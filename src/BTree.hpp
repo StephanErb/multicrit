@@ -64,8 +64,7 @@ struct Operation {
 };
 
 template <typename _Key>
-struct btree_default_traits
-{
+struct btree_default_traits {
     /// If true, the tree will self verify it's invariants after each insert()
     /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
     static const bool   selfverify = false;
@@ -240,6 +239,15 @@ private:
     /// Memory allocator.
     allocator_type allocator;
 
+    // Currently running updates
+    const Operation<key_type>* updates;
+    size_type updates_size;
+
+
+    // Weight delta of currently running updates
+    std::vector<size_type> weightdelta;
+
+
 public:
     // *** Constructors and Destructor
 
@@ -255,6 +263,7 @@ public:
     /// Frees up all used B+ tree memory pages
     inline ~btree() {
         clear();
+        free_node(spare_leaf);
     }
 
 private:
@@ -330,27 +339,23 @@ public:
     void clear() {
         if (root) {
             clear_recursive(root);
-            free_node(root);
             root = NULL;
-            stats = tree_stats();
         }
-        BTREE_ASSERT(stats.itemcount == 0);
+        BTREE_ASSERT(stats.innernodes == 0);
+        BTREE_ASSERT(stats.leaves == 0);
     }
 
 private:
     /// Recursively free up nodes
-    void clear_recursive(node *n) {
+    void clear_recursive(node* n) {
         if (!n->isleafnode()) {
             inner_node *innernode = static_cast<inner_node*>(n);
 
-            for (width_type slot = 0; slot < innernode->slotuse + 1; ++slot) {
+            for (width_type slot = 0; slot <= innernode->slotuse; ++slot) {
                 clear_recursive(innernode->childid[slot]);
-                free_node(innernode->childid[slot]);
             }
-        } else {
-            stats.itemcount -= n->slotuse;
         }
-        stats.leaves--;
+        free_node(n);
     }
 
 public:
@@ -380,38 +385,59 @@ public:
     }
 
 public:
-    typedef std::vector<Operation<key_type> > update_list;
 
-    void applyUpdates(const update_list& updates) {
+    void apply_updates(const std::vector<Operation<key_type>>& _updates) {
+        setOperationsAndComputeWeightDelta(_updates);
+
+        size_type new_size = stats.itemcount = size() + weightdelta[updates_size];
+        level_type designated_level = num_optimal_levels(new_size);
+        
+        if (new_size == 0) {
+            clear(); // Tree will become empty. Just finish early.
+            return;
+        } 
         if (root == NULL) {
             root = allocate_leaf();
         }
-        // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
-        // computes the weight delta realized by the updates in range [begin, end)
-        std::vector<size_type> weightdelta;
-        prefix_sum(updates, weightdelta);
+        key_type router; // unused on this level
 
-        // Find out if the root node needs rebalancing
-        double n = size() + weightdelta[updates.size()];
-        level_type optimal_level = (n <= leafslotmax) ? 0 : ceil( log(n/traits::leafparameter_k) / log(traits::branchingparameter_b) );
-        BTREE_PRINT(n << "elements with optimal level " << optimal_level << ", but actual level " << root->level << std::endl);
+        // Apply updates to tree. If we overflow some leaves may be converted to DelayedUpates
+        update(root, router, 0, updates_size);
 
-        if (n == 0) {
-            clear();
-        } else if (optimal_level != root->level) {
-            key_type router; // unused
-            node* newroot = NULL;
+        if (designated_level != root->level) { 
+            // need to reconstruct
 
-            // FIXME: correct height needed
+            if (designated_level == 0) {
+                // write all remaining elements into a single leaf
+                node* newroot = NULL;
+                std::cout << "Reconstruct Leaf " << std::endl;
+                create_subtree(root, newroot, designated_level, router, 0, new_size);
 
-            reconstruct(root, newroot, optimal_level, router, 0, n, updates, 0, updates.size());
-            clear_recursive(root);
-            root = newroot;
-        } else {
-            key_type router; // unused
-            insert(root, router, updates, 0, updates.size());
+                clear_recursive(root);
+                root = newroot;
+            } else {
+                // Reconstruct entire tree
+                inner_node* newroot = allocate_inner(designated_level);
+
+                size_type subtreesize = designated_subtreesize(designated_level);
+                width_type subtrees = num_subtrees(new_size, subtreesize);
+                width_type slotuse = newroot->slotuse = subtrees - 1;
+
+                size_type rank = 0;
+                for (width_type i = 0; i < slotuse; ++i) {
+                    newroot->weight[i] = subtreesize;
+                    create_subtree(root, newroot->childid[i], designated_level-1, newroot->slotkey[i], rank, rank+subtreesize);
+                    rank += subtreesize;
+                }
+                create_subtree(root, newroot->childid[slotuse], designated_level-1, router, rank, new_size);
+                newroot->weight[slotuse] = new_size - rank;
+
+                clear_recursive(root);
+                root = newroot;
+
+                print_node(std::cout, root, 0, true);
+            }
         }
-
         if (traits::selfverify) {
             verify();
         }
@@ -419,36 +445,44 @@ public:
 
 private:
 
-    static void prefix_sum(const update_list& updates, std::vector<size_type>& weightdelta) {
-        weightdelta.reserve(updates.size()+1);
+    void setOperationsAndComputeWeightDelta(const std::vector<Operation<key_type>>& _updates) {
+        updates = _updates.data();
+        updates_size = _updates.size();
+
+        // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
+        // computes the weight delta realized by the updates in range [begin, end)
+        weightdelta.clear();
+        weightdelta.reserve(updates_size+1);
         auto result = weightdelta.begin();
 
         long val = 0; // exclusive prefix sum
         *result++ = val;
-        for (auto update : updates) {
-            *result++ = val = val + (update.type == Operation<key_type>::INSERT ? 1 : -1);
+        for (size_type i = 0; i < updates_size; ++i) {
+            *result++ = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
         }
     }
 
-    void insert(node*& node, key_type& router, const update_list& updates, const size_type begin, const size_type end) {
+    void update(node*& node, key_type& router, const size_type begin, const size_type end) {
         if (node->isleafnode()) {
-            updateLeaf(static_cast<leaf_node*>(node), static_cast<leaf_node*>(spare_leaf), router, updates, begin, end);
+            create_leave(static_cast<leaf_node*>(node), static_cast<leaf_node*>(spare_leaf), router, begin, end);
             std::swap(node, spare_leaf);
         } else {
             inner_node* inner = static_cast<inner_node*>(node);
 
             for (width_type i = 0; i < inner->slotuse; ++i) {
-                find_lower(updates, begin, end, inner->slotkey[i]);
+                find_lower(begin, end, inner->slotkey[i]);
+
+                // TODO recursive update & eventually starting the reconstruction
             }
         }
     }
 
-    inline int find_lower(const update_list& updates, const size_type begin, const size_type end, const key_type& key) const {
+    inline int find_lower(const size_type begin, const size_type end, const key_type& key) const {
         int lo = begin;
         int hi = end - 1;
 
         while(lo < hi) {
-            size_type mid = (lo + hi) >> 1;
+            size_type mid = (lo + hi) >> 1; // FIXME: Potential integer overflow
 
             if (key_lessequal(key, updates[mid].data)) {
                 hi = mid - 1;
@@ -460,54 +494,68 @@ private:
         return hi;
     }
 
-    void reconstruct(const node* in_node, node*& out_node, const level_type level, key_type& router, 
-            const size_type rank_begin, const size_type rank_end, const update_list& updates,
-            const size_type begin, const size_type end) {
+    void create_subtree(const node* in_node, node*& out_node, const level_type level, key_type& router, 
+            const size_type rank_begin, const size_type rank_end) {
+        BTREE_ASSERT(rank_end - rank_begin > 0);
+        BTREE_PRINT("Creating subtree for range [" << rank_begin << ", " << rank_end << ")" << " on level " << level << std::endl);
+
         if (level == 0) { // create leaf
             leaf_node* result = allocate_leaf();
 
             result->slotuse = rank_end - rank_begin;
-            stats.itemcount += result->slotuse;
-            BTREE_PRINT("Constructing child for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
-
-
 
             router = result->slotkey[result->slotuse-1];
             out_node = result;
 
         } else {
-            size_type designated_treesize = (maxweight(level-1) + minweight(level-1)) / 2;
+            size_type designated_treesize = designated_subtreesize(level);
             size_type n = rank_end - rank_begin;
 
-            width_type num_subtrees = n / designated_treesize;
-            // Squeeze remaining elements into last subtree or place in own subtree? 
-            // Choose what is closer to our designated subtree size
-            size_type remaining = n % designated_treesize;
-            num_subtrees += ( remaining > designated_treesize-(designated_treesize+remaining)/2 );
-            BTREE_PRINT("n " << n << " elements into tree on level " << level << " placed in " << num_subtrees << " subtrees of designated size " << designated_treesize << std::endl);
+            width_type subtrees = num_subtrees(n, designated_treesize);
+            //BTREE_PRINT("n " << n << " elements into tree on level " << level << " placed in " << num_subtrees << " subtrees of designated size " << designated_treesize << std::endl);
 
             inner_node* result = allocate_inner(level);
-            result->slotuse = num_subtrees-1;
+            result->slotuse = subtrees-1;
 
             size_type rank = rank_begin;
             for (width_type i = 0; i < result->slotuse; ++i) {
                 result->weight[i] = designated_treesize;
-                reconstruct(in_node, result->childid[i], level-1, result->slotkey[i], rank, rank+designated_treesize, updates, begin, end);
+                create_subtree(in_node, result->childid[i], level-1, result->slotkey[i], rank, rank+designated_treesize);
                 rank+= designated_treesize;
             }
-            reconstruct(in_node, result->childid[result->slotuse], level-1, router, rank, rank_end, updates, begin, end);
+            create_subtree(in_node, result->childid[result->slotuse], level-1, router, rank, rank_end);
             result->weight[result->slotuse] = rank_end - rank;
-
-
             out_node = result;
         }
-
-
     }
 
-    void updateLeaf(const leaf_node* in_leaf, leaf_node* out_leaf, key_type& router, const update_list& updates, const size_type begin, const size_type end) {
+    static size_type designated_subtreesize(level_type level) {
+        return (maxweight(level-1) + minweight(level-1)) / 2;
+    }
+
+    static width_type num_subtrees(size_type n, size_type subtreesize) {
+        width_type num_subtrees = n / subtreesize;
+        // Squeeze remaining elements into last subtree or place in own subtree? 
+        // Choose what is closer to our designated subtree size
+        size_type remaining = n % subtreesize;
+        num_subtrees += ( remaining > subtreesize-(subtreesize+remaining)/2 );
+        return num_subtrees;
+    }
+
+    static level_type num_optimal_levels(size_type n) {
+        return (n <= leafslotmax) ? 0 : ceil( log(((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
+    }
+
+    void create_leave(const leaf_node* in_leaf, leaf_node* out_leaf, key_type& router, const size_type begin, const size_type end) {
         int in = 0; // existing key to read
         int out = 0; // position where to write
+        std::cout << "begin " << begin << " end " << end << std::endl;
+
+        size_type weight = in_leaf->slotuse + weightdelta[end] - weightdelta[begin];
+        if (weight > maxweight(0)) {
+            std::cout << "need to create lazy update leaf " <<  std::endl;
+            return;
+        }
 
         for (size_type i = begin; i != end; ++i) {
             switch (updates[i].type) {
@@ -527,11 +575,11 @@ private:
             }
         } 
         while (in < in_leaf->slotuse) {
+            std::cout << "in " << in << " out " << out << std::endl;
             out_leaf->slotkey[out++] = in_leaf->slotkey[in++];
         }
         out_leaf->slotuse = out;
-        stats.itemcount += out - in;
-        router = out_leaf->slotkey[out_leaf->slotuse-1];  
+        router = out_leaf->slotkey[out-1];  
     }
 
 
