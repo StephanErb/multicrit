@@ -60,7 +60,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	assertTrue(btree.size() == 0, "Empty");
 }
 
-void testSplitLeaf() {
+void testSplitLeafInto2() {
 	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -84,10 +84,42 @@ void testSplitLeaf() {
 	assertTrue(btree.height() == 1, "9 elements need 2 leaves");
 }
 
+void testSplitLeafInto3() {
+	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+	assertTrue(btree.size() == 0, "Empty");
+
+	std::vector<Operation<int> > updates;
+	updates.push_back({Operation<int>::INSERT, 10});
+	updates.push_back({Operation<int>::INSERT, 20});
+	updates.push_back({Operation<int>::INSERT, 30});
+	updates.push_back({Operation<int>::INSERT, 40});
+	updates.push_back({Operation<int>::INSERT, 50});
+	updates.push_back({Operation<int>::INSERT, 60});
+	updates.push_back({Operation<int>::INSERT, 70});
+	updates.push_back({Operation<int>::INSERT, 80});
+
+	btree.apply_updates(updates);
+	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
+
+	updates.clear();
+	updates.push_back({Operation<int>::INSERT, 1});
+	updates.push_back({Operation<int>::INSERT, 2});
+	updates.push_back({Operation<int>::INSERT, 3});
+	updates.push_back({Operation<int>::INSERT, 4});
+	updates.push_back({Operation<int>::INSERT, 5});
+
+
+
+	btree.apply_updates(updates);
+	assertTrue(btree.height() == 1, "13 elements need 3 leaves");
+}
+
 
 int main() {
 	testBulkUpdatesOfSingleLeaf();
-	testSplitLeaf();
+	testSplitLeafInto2();
+	testSplitLeafInto3();
+
 
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;
