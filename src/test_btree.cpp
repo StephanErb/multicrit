@@ -127,12 +127,28 @@ void testSplitLeafInto3() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 1, "All elements still fit into 3 leaves");
 	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
+	assertTrue(btree.get_stats().avgfill_leaves() == 0.75, "Should have 6 elements per leaf");
+}
+
+void testSplitDeepRebalancingInsert() {
+	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+	assertTrue(btree.size() == 0, "Empty");
+
+	std::vector<Operation<int> > updates;
+	for (int i=0; i<60; ++i) {
+		updates.push_back({Operation<int>::INSERT, i});
+	}
+	btree.apply_updates(updates);
+
+	assertTrue(btree.height() == 2, "For n>40 (in an optimal tree) we need 2 inner node layers");
+
 }
 
 int main() {
 	testBulkUpdatesOfSingleLeaf();
 	testSplitLeafInto2();
 	testSplitLeafInto3();
+	testSplitDeepRebalancingInsert();
 
 
 	std::cout << "Tests passed successfully." << std::endl;
