@@ -109,6 +109,9 @@ public:
     static const width_type         leafslotmax =  traits::leafparameter_k;
     static const width_type         leafslotmin =  traits::leafparameter_k / 4;
 
+    // The number of keys per leaf in a perfectly re-balanced tree
+    static const width_type         designated_leafsize = (leafslotmax + leafslotmin) / 2;
+
     /// The number of key slots in each inner node,
     static const width_type         innerslotmax =  traits::branchingparameter_b * 4;
     static const width_type         innerslotmin =  traits::branchingparameter_b / 4;
@@ -474,7 +477,7 @@ private:
 
     void allocate_new_nodes(size_type n) {
         BTREE_PRINT("Allocating new nodes for tree of size " << n << std::endl);
-        size_type leaf_count = num_subtrees(n, designated_leafsize());
+        size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.resize(leaf_count);
         for (size_type i = 0; i < leaf_count; ++i) {
             leaves[i] = allocate_leaf();
@@ -548,9 +551,7 @@ private:
         return hi;
     }
 
-    static inline size_type designated_leafsize() {
-        return (leafslotmax + leafslotmin) / 2;
-    }
+
 
     static inline size_type designated_subtreesize(level_type level) {
         return (maxweight(level-1) + minweight(level-1)) / 2;
@@ -572,8 +573,8 @@ private:
     void write_updated_leaf_to_new_tree(node*& node, const size_type rank, const size_type begin, const size_type end) {
         BTREE_PRINT("Rewriting updated leaf " << node);
 
-        size_type leaf_number = rank / designated_leafsize();
-        width_type offset_in_leaf = rank % designated_leafsize();
+        size_type leaf_number = rank / designated_leafsize;
+        width_type offset_in_leaf = rank % designated_leafsize;
 
         width_type in = 0; // existing key to read
         width_type out = offset_in_leaf; // position where to write
@@ -588,7 +589,7 @@ private:
                 while (!key_equal(leaf->slotkey[in], updates[i].data)) {
                     result->slotkey[out++] = leaf->slotkey[in++];
 
-                    if (out == designated_leafsize() && hasNextLeaf(leaf_number)) {
+                    if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
                         result->slotuse = out;
                         result = leaves[++leaf_number];
                         out = 0;
@@ -600,7 +601,7 @@ private:
                 while(in < leaf->slotuse && key_less(leaf->slotkey[in], updates[i].data)) {
                     result->slotkey[out++] = leaf->slotkey[in++];
 
-                    if (out == designated_leafsize() && hasNextLeaf(leaf_number)) {
+                    if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
                         result->slotuse = out;
                         result = leaves[++leaf_number];
                         out = 0;
@@ -608,7 +609,7 @@ private:
                 }
                 result->slotkey[out++] = updates[i].data;
 
-                if (out == designated_leafsize() && hasNextLeaf(leaf_number)) {
+                if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
                     result->slotuse = out;
                     result = leaves[++leaf_number];
                     out = 0;
@@ -619,7 +620,7 @@ private:
         while (in < leaf->slotuse) {
             result->slotkey[out++] = leaf->slotkey[in++];
 
-            if (out == designated_leafsize() && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
+            if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
                 result->slotuse = out;
                 result = leaves[++leaf_number];
                 out = 0;
@@ -627,7 +628,7 @@ private:
         }
         result->slotuse = out;
 
-        BTREE_PRINT(" as range [" << rank << ", " << (leaf_number-rank/designated_leafsize())*designated_leafsize() 
+        BTREE_PRINT(" as range [" << rank << ", " << (leaf_number-rank/designated_leafsize*designated_leafsize)
             + out << ") into " << leaves.size() << " leaves " << std::endl);
     }
 
