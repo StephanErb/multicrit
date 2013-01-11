@@ -67,7 +67,7 @@ clean:
 #TODO make shellscript as a callable function
 $(DEPDIR)%.par.d : %.cpp | $(DEPDIR)
 	@echo [STATUS] generating dependency file for parallel: $(@F)
-	@$(CXX) -MM -MD $< -MF $(DEPDIR)$(@F)
+	@$(CXX) $(CXXPFLAGS) -MM -MD $< -MF $(DEPDIR)$(@F)
 	@sed -i 's|\(.*\)\.o:|$(OBJDIR)\1.par.o $(DEPDIR)\1.par.d:|' $(DEPDIR)$(@F)
 #rename existing .h files to .o files if the cpp exists (dependency file for .d and .o)
 	@for i in `cat $(DEPDIR)$(@F)`; do \
@@ -93,7 +93,7 @@ $(DEPDIR)%.par.d : %.cpp | $(DEPDIR)
 
 $(DEPDIR)%.par.dbg.d : %.cpp | $(DEPDIR)
 	@echo [STATUS] generating dependency file for parallel debug: $(@F)
-	@$(CXX) -MM -MD $< -MF $(DEPDIR)$(@F)
+	@$(CXX) $(CXXPFLAGSDBG) -MM -MD $< -MF $(DEPDIR)$(@F)
 	@sed -i 's|\(.*\)\.o:|$(OBJDIR)\1.par.dbg.o $(DEPDIR)\1.par.dbg.d:|' $(DEPDIR)$(@F)
 #rename existing .h files to .o files if the cpp exists (dependency file for .d and .o)
 	@for i in `cat $(DEPDIR)$(@F)`; do \
@@ -119,7 +119,7 @@ $(DEPDIR)%.par.dbg.d : %.cpp | $(DEPDIR)
 
 $(DEPDIR)%.dbg.d : %.cpp | $(DEPDIR)
 	@echo [STATUS] generating dependency file for debug: $(@F)
-	@$(CXX) -MM -MD $< -MF $(DEPDIR)$(@F)
+	@$(CXX) $(CXXFLAGSDBG) -MM -MD $< -MF $(DEPDIR)$(@F)
 	@sed -i 's|\(.*\)\.o:|$(OBJDIR)\1.dbg.o $(DEPDIR)\1.dbg.d:|' $(DEPDIR)$(@F)
 #rename existing .h files to .o files if the cpp exists (dependency file for .d and .o)
 	@for i in `cat $(DEPDIR)$(@F)`; do \
@@ -145,7 +145,7 @@ $(DEPDIR)%.dbg.d : %.cpp | $(DEPDIR)
 
 $(DEPDIR)%.d : %.cpp | $(DEPDIR)
 	@echo [STATUS] generating dependency file: $(@F)
-	@$(CXX) -MM -MD $< -MF $(DEPDIR)$(@F)
+	@$(CXX) $(CXXFLAGS) -MM -MD $< -MF $(DEPDIR)$(@F)
 	@sed -i 's|\(.*\)\.o:|$(OBJDIR)\1.o $(DEPDIR)\1.d:|' $(DEPDIR)$(@F)
 #rename existing .h files to .o files if the cpp exists (dependency file for .d and .o)
 	@for i in `cat $(DEPDIR)$(@F)`; do \
