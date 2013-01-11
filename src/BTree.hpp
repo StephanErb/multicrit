@@ -389,13 +389,12 @@ public:
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
         std::vector<size_type> weightdelta;
-        weightdelta.reserve(updates.size()+1);
-        partial_sum(updates.begin(), updates.end(), weightdelta.begin());
+        prefix_sum(updates, weightdelta);
 
         // Find out if the root node needs rebalancing
         double n = size() + weightdelta[updates.size()];
         level_type optimal_level = (n <= leafslotmax) ? 0 : ceil( log(n/traits::leafparameter_k) / log(traits::branchingparameter_b) );
-        BTREE_PRINT("n: " << n << " optimal level: " << optimal_level << " actual level: " << root->level << std::endl);
+        BTREE_PRINT(n << "elements with optimal level " << optimal_level << ", but actual level " << root->level << std::endl);
 
         if (n == 0) {
             clear();
@@ -418,16 +417,16 @@ public:
         }
     }
 
-
-
 private:
 
-    /* Exclusive prefix sum */
-    static void partial_sum(typename update_list::const_iterator first, typename update_list::const_iterator last, std::vector<size_type>::iterator result) {
-        long val = 0;
+    static void prefix_sum(const update_list& updates, std::vector<size_type>& weightdelta) {
+        weightdelta.reserve(updates.size()+1);
+        auto result = weightdelta.begin();
+
+        long val = 0; // exclusive prefix sum
         *result++ = val;
-        while (first != last) {
-            *result++ = val = val + ((first++)->type == Operation<key_type>::INSERT ? 1 : -1);
+        for (auto update : updates) {
+            *result++ = val = val + (update.type == Operation<key_type>::INSERT ? 1 : -1);
         }
     }
 
@@ -461,8 +460,9 @@ private:
         return hi;
     }
 
-    void reconstruct(const node* in_node, node*& out_node, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end,
-            const update_list& updates, const size_type begin, const size_type end) {
+    void reconstruct(const node* in_node, node*& out_node, const level_type level, key_type& router, 
+            const size_type rank_begin, const size_type rank_end, const update_list& updates,
+            const size_type begin, const size_type end) {
         if (level == 0) { // create leaf
             leaf_node* result = allocate_leaf();
 
@@ -477,7 +477,6 @@ private:
 
         } else {
             size_type designated_treesize = (maxweight(level-1) + minweight(level-1)) / 2;
-            std::cout << maxweight(level-1) << " " << minweight(level-1) << std::endl;
             size_type n = rank_end - rank_begin;
 
             width_type num_subtrees = n / designated_treesize;
