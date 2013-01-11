@@ -28,7 +28,7 @@ TESTS=test_labelset test_labelsetting test_btree
 TARGETS = $(TESTS) $(CODE)
 PARALLEL =
 
-DEFAULT_OPS =  -Wall -Wextra -std=c++11
+DEFAULT_OPS =  -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE)
 
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)

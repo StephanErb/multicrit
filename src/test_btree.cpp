@@ -8,9 +8,8 @@
 template <typename _Key>
 struct btree_test_set_traits {
     static const bool   selfverify = true;
-    static const bool   debug = false;
-    static const int    leafslots = BTREE_MAX( 8, 256 / (sizeof(_Key)) );
-    static const int    innerslots = BTREE_MAX( 8, 256 / (sizeof(_Key) + sizeof(void*)) );
+    static const int    leafparameter_k = 16;
+    static const int    branchingparameter_b = 8;
 };
 
 void assertTrue(bool cond, std::string msg) {
@@ -20,8 +19,8 @@ void assertTrue(bool cond, std::string msg) {
 	}
 }
 
-int main() {
-	stx::btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+void testBulkUpdatesOfSingleLeaf() {
+	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -59,6 +58,10 @@ int main() {
 
 	btree.applyUpdates(updates);
 	assertTrue(btree.size() == 0, "Empty");
+}
+
+int main() {
+	testBulkUpdatesOfSingleLeaf();
 
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;
