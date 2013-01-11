@@ -28,10 +28,10 @@ TESTS=test_labelset test_labelsetting
 TARGETS = $(TESTS) $(CODE)
 PARALLEL =
 
-CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra
-CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra -fopenmp
-CXXFLAGSDBG = -O3 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fno-inline -fno-default-inline
-CXXPFLAGSDBG = -O3 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fopenmp
+CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra -std=c++11
+CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG -Wall -Wextra -std=c++11
+CXXFLAGSDBG = -O3 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fno-inline -fno-default-inline -std=c++11
+CXXPFLAGSDBG = -O3 -g3 -W -Wall -Wunused -Wextra -DPARANOID -fno-inline -fno-default-inline -std=c++11
 
 CXXLIBS= -lrt
 CXXPLIBS= -lrt
