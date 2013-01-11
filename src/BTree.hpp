@@ -101,16 +101,18 @@ public:
     typedef size_t                      size_type;
 
     typedef unsigned short              level_type;
+
+    typedef unsigned short              width_type;
 public:
     // *** Static Constant Options and Values of the B+ Tree
 
     /// The number of key/data slots in each leaf
-    static const unsigned short         leafslotmax =  traits::leafparameter_k;
-    static const unsigned short         leafslotmin =  traits::leafparameter_k / 4;
+    static const width_type         leafslotmax =  traits::leafparameter_k;
+    static const width_type         leafslotmin =  traits::leafparameter_k / 4;
 
     /// The number of key slots in each inner node,
-    static const unsigned short         innerslotmax =  traits::branchingparameter_b * 4;
-    static const unsigned short         innerslotmin =  traits::branchingparameter_b / 4;
+    static const width_type         innerslotmax =  traits::branchingparameter_b * 4;
+    static const width_type         innerslotmin =  traits::branchingparameter_b / 4;
 
 private:
     // *** Node Classes for In-Memory Nodes
@@ -123,10 +125,10 @@ private:
 
         /// Number of key slotuse use, so number of valid children or data
         /// pointers
-        unsigned short slotuse;
+        width_type slotuse;
 
         /// Delayed initialisation of constructed node
-        inline void initialize(const unsigned short l) {
+        inline void initialize(const level_type l) {
             level = l;
             slotuse = 0;
         }
@@ -150,7 +152,7 @@ private:
         size_type       weight[innerslotmax+1];
 
         /// Set variables to initial values
-        inline void initialize(const unsigned short l) {
+        inline void initialize(const level_type l) {
             node::initialize(l);
         }
 
@@ -169,11 +171,11 @@ private:
         }
     };
 
-    static size_type minweight(unsigned short level) {
+    static size_type minweight(level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k / 4;
     }
 
-    static size_type maxweight(unsigned short level) {
+    static size_type maxweight(level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k;
     }
 
@@ -259,12 +261,12 @@ private:
     // *** Convenient Key Comparison Functions Generated From key_less
 
     /// True if a <= b ? constructed from key_less()
-    inline bool key_lessequal(const key_type &a, const key_type b) const {
+    inline bool key_lessequal(const key_type &a, const key_type &b) const {
         return !key_less(b, a);
     }
 
-    /// True if a >= ßb ? constructed from key_less()
-    inline bool key_greaterequal(const key_type &a, const key_type b) const {
+    /// True if a >= b ? constructed from key_less()
+    inline bool key_greaterequal(const key_type &a, const key_type &b) const {
         return !key_less(a, b);
     }
 
@@ -296,7 +298,7 @@ private:
     }
 
     /// Allocate and initialize an inner node
-    inline inner_node* allocate_inner(unsigned short level) {
+    inline inner_node* allocate_inner(level_type level) {
         inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
         n->initialize(level);
         stats.innernodes++;
@@ -341,7 +343,7 @@ private:
         if (!n->isleafnode()) {
             inner_node *innernode = static_cast<inner_node*>(n);
 
-            for (unsigned short slot = 0; slot < innernode->slotuse + 1; ++slot) {
+            for (width_type slot = 0; slot < innernode->slotuse + 1; ++slot) {
                 clear_recursive(innernode->childid[slot]);
                 free_node(innernode->childid[slot]);
             }
@@ -364,7 +366,7 @@ public:
         return (size() == size_type(0));
     }
 
-    inline size_type height() const {
+    inline level_type height() const {
         if (root == NULL) {
             return 0; 
         } else {
@@ -386,7 +388,7 @@ public:
         }
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
-        std::vector<long> weightdelta;
+        std::vector<size_type> weightdelta;
         weightdelta.reserve(updates.size()+1);
         partial_sum(updates.begin(), updates.end(), weightdelta.begin());
 
@@ -400,6 +402,9 @@ public:
         } else if (optimal_level != root->level) {
             key_type router; // unused
             node* newroot = NULL;
+
+            // FIXME: correct height needed
+
             reconstruct(root, newroot, optimal_level, router, 0, n, updates, 0, updates.size());
             clear_recursive(root);
             root = newroot;
@@ -413,10 +418,12 @@ public:
         }
     }
 
+
+
 private:
 
     /* Exclusive prefix sum */
-    static void partial_sum(typename update_list::const_iterator first, typename update_list::const_iterator last, std::vector<long>::iterator result) {
+    static void partial_sum(typename update_list::const_iterator first, typename update_list::const_iterator last, std::vector<size_type>::iterator result) {
         long val = 0;
         *result++ = val;
         while (first != last) {
@@ -429,9 +436,29 @@ private:
             updateLeaf(static_cast<leaf_node*>(node), static_cast<leaf_node*>(spare_leaf), router, updates, begin, end);
             std::swap(node, spare_leaf);
         } else {
+            inner_node* inner = static_cast<inner_node*>(node);
 
-
+            for (width_type i = 0; i < inner->slotuse; ++i) {
+                find_lower(updates, begin, end, inner->slotkey[i]);
+            }
         }
+    }
+
+    inline int find_lower(const update_list& updates, const size_type begin, const size_type end, const key_type& key) const {
+        int lo = begin;
+        int hi = end - 1;
+
+        while(lo < hi) {
+            size_type mid = (lo + hi) >> 1;
+
+            if (key_lessequal(key, updates[mid].data)) {
+                hi = mid - 1;
+            } else {
+                lo = mid + 1;
+            }
+        }
+        hi += (hi < 0 || key_less(updates[hi].data, key));
+        return hi;
     }
 
     void reconstruct(const node* in_node, node*& out_node, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end,
@@ -443,6 +470,8 @@ private:
             stats.itemcount += result->slotuse;
             BTREE_PRINT("Constructing child for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
 
+
+
             router = result->slotkey[result->slotuse-1];
             out_node = result;
 
@@ -451,7 +480,7 @@ private:
             std::cout << maxweight(level-1) << " " << minweight(level-1) << std::endl;
             size_type n = rank_end - rank_begin;
 
-            unsigned short num_subtrees = n / designated_treesize;
+            width_type num_subtrees = n / designated_treesize;
             // Squeeze remaining elements into last subtree or place in own subtree? 
             // Choose what is closer to our designated subtree size
             size_type remaining = n % designated_treesize;
@@ -462,7 +491,7 @@ private:
             result->slotuse = num_subtrees-1;
 
             size_type rank = rank_begin;
-            for (unsigned short i = 0; i < result->slotuse; ++i) {
+            for (width_type i = 0; i < result->slotuse; ++i) {
                 result->weight[i] = designated_treesize;
                 reconstruct(in_node, result->childid[i], level-1, result->slotkey[i], rank, rank+designated_treesize, updates, begin, end);
                 rank+= designated_treesize;
@@ -509,29 +538,29 @@ private:
 
 #ifdef BTREE_DEBUG
     /// Recursively descend down the tree and print out nodes.
-    static void print_node(std::ostream &os, const node* node, unsigned int depth=0, bool recursive=false) {
-        for(unsigned int i = 0; i < depth; i++) os << "  ";
+    static void print_node(std::ostream &os, const node* node, level_type depth=0, bool recursive=false) {
+        for(level_type i = 0; i < depth; i++) os << "  ";
         os << "node " << node << " level " << node->level << " slotuse " << node->slotuse << std::endl;
 
         if (node->isleafnode()) {
             const leaf_node *leafnode = static_cast<const leaf_node*>(node);
-            for(unsigned int i = 0; i < depth; i++) os << "  ";
+            for(level_type i = 0; i < depth; i++) os << "  ";
 
-            for (unsigned int slot = 0; slot < leafnode->slotuse; ++slot) {
+            for (width_type slot = 0; slot < leafnode->slotuse; ++slot) {
                 os << leafnode->slotkey[slot] << "  "; // << "(data: " << leafnode->slotdata[slot] << ") ";
             }
             os << std::endl;
         } else {
             const inner_node *innernode = static_cast<const inner_node*>(node);
-            for(unsigned int i = 0; i < depth; i++) os << "  ";
+            for(level_type i = 0; i < depth; i++) os << "  ";
 
-            for (unsigned short slot = 0; slot < innernode->slotuse; ++slot) {
+            for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
                 os << "(" << innernode->childid[slot] << ") " << innernode->slotkey[slot] << " ";
             }
             os << "(" << innernode->childid[innernode->slotuse] << ")" << std::endl;
 
             if (recursive) {
-                for (unsigned short slot = 0; slot < innernode->slotuse + 1; ++slot) {
+                for (width_type slot = 0; slot < innernode->slotuse + 1; ++slot) {
                     print_node(os, innernode->childid[slot], depth + 1, recursive);
                 }
             }
@@ -569,7 +598,7 @@ private:
             assert( leaf == root || leaf->slotuse >= minweight(leaf->level) );
             assert( leaf->slotuse <= maxweight(leaf->level) );
 
-            for(unsigned short slot = 0; slot < leaf->slotuse - 1; ++slot) {
+            for(width_type slot = 0; slot < leaf->slotuse - 1; ++slot) {
                 assert(key_lessequal(leaf->slotkey[slot], leaf->slotkey[slot + 1]));
             }
 
@@ -587,11 +616,11 @@ private:
             assert( inner == root || weight >= minweight(inner->level) );
             assert( weight <= maxweight(inner->level) );
 
-            for(unsigned short slot = 0; slot < inner->slotuse - 1; ++slot) {
+            for(width_type slot = 0; slot < inner->slotuse - 1; ++slot) {
                 assert(key_lessequal(inner->slotkey[slot], inner->slotkey[slot + 1]));
             }
 
-            for(unsigned short slot = 0; slot <= inner->slotuse; ++slot) {
+            for(width_type slot = 0; slot <= inner->slotuse; ++slot) {
                 const node *subnode = inner->childid[slot];
                 key_type subminkey = key_type();
                 key_type submaxkey = key_type();
