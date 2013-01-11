@@ -94,29 +94,6 @@ struct btree_default_set_traits
     static const int    innerslots = BTREE_MAX( 8, 256 / (sizeof(_Key) + sizeof(void*)) );
 };
 
-/** Generates default traits for a B+ tree used as a map. It estimates leaf and
- * inner node sizes by assuming a cache line size of 256 bytes. */
-template <typename _Key, typename _Data>
-struct btree_default_map_traits
-{
-    /// If true, the tree will self verify it's invariants after each insert()
-    /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
-    static const bool   selfverify = false;
-
-    /// If true, the tree will print out debug information and a tree dump
-    /// during insert() or erase() operation. The header must have been
-    /// compiled with BTREE_DEBUG defined and key_type must be std::ostream
-    /// printable.
-    static const bool   debug = false;
-
-    /// Number of slots in each leaf of the tree. Estimated so that each node
-    /// has a size of about 256 bytes.
-    static const int    leafslots = BTREE_MAX( 8, 256 / (sizeof(_Key) + sizeof(_Data)) );
-
-    /// Number of slots in each inner node of the tree. Estimated so that each node
-    /// has a size of about 256 bytes.
-    static const int    innerslots = BTREE_MAX( 8, 256 / (sizeof(_Key) + sizeof(void*)) );
-};
 
 /** @brief Basic class implementing a base B+ tree data structure in memory.
  *
@@ -132,9 +109,9 @@ struct btree_default_map_traits
  * btree_multimap using default template parameters and facade functions.
  */
 template <typename _Key, typename _Data,
-          typename _Value = std::pair<_Key, _Data>,
+          typename _Value = _Key,
           typename _Compare = std::less<_Key>,
-          typename _Traits = btree_default_map_traits<_Key, _Data>,
+          typename _Traits = btree_default_set_traits<_Key>,
           bool _Duplicates = false,
           typename _Alloc = std::allocator<_Value> >
 class btree
@@ -1669,204 +1646,9 @@ public:
         return stats;
     }
 
-public:
-    // *** Standard Access Functions Querying the Tree by Descending to a Leaf
 
-    /// Non-STL function checking whether a key is in the B+ tree. The same as
-    /// (find(k) != end()) or (count() != 0).
-    bool exists(const key_type &key) const
-    {
-        const node *n = root;
-        if (!n) return false;
 
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_lower(inner, key);
 
-            n = inner->childid[slot];
-        }
-
-        const leaf_node *leaf = static_cast<const leaf_node*>(n);
-
-        int slot = find_lower(leaf, key);
-        return (slot < leaf->slotuse && key_equal(key, leaf->slotkey[slot]));
-    }
-
-    /// Tries to locate a key in the B+ tree and returns an iterator to the
-    /// key/data slot if found. If unsuccessful it returns end().
-    iterator find(const key_type &key)
-    {
-        node *n = root;
-        if (!n) return end();
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_lower(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        leaf_node *leaf = static_cast<leaf_node*>(n);
-
-        int slot = find_lower(leaf, key);
-        return (slot < leaf->slotuse && key_equal(key, leaf->slotkey[slot]))
-            ? iterator(leaf, slot) : end();
-    }
-
-    /// Tries to locate a key in the B+ tree and returns an constant iterator
-    /// to the key/data slot if found. If unsuccessful it returns end().
-    const_iterator find(const key_type &key) const
-    {
-        const node *n = root;
-        if (!n) return end();
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_lower(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        const leaf_node *leaf = static_cast<const leaf_node*>(n);
-
-        int slot = find_lower(leaf, key);
-        return (slot < leaf->slotuse && key_equal(key, leaf->slotkey[slot]))
-            ? const_iterator(leaf, slot) : end();
-    }
-
-    /// Tries to locate a key in the B+ tree and returns the number of
-    /// identical key entries found.
-    size_type count(const key_type &key) const
-    {
-        const node *n = root;
-        if (!n) return 0;
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_lower(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        const leaf_node *leaf = static_cast<const leaf_node*>(n);
-
-        int slot = find_lower(leaf, key);
-        size_type num = 0;
-
-        while (leaf && slot < leaf->slotuse && key_equal(key, leaf->slotkey[slot]))
-        {
-            ++num;
-            if (++slot >= leaf->slotuse)
-            {
-                leaf = leaf->nextleaf;
-                slot = 0;
-            }
-        }
-
-        return num;
-    }
-
-    /// Searches the B+ tree and returns an iterator to the first pair
-    /// equal to or greater than key, or end() if all keys are smaller.
-    iterator lower_bound(const key_type& key)
-    {
-        node *n = root;
-        if (!n) return end();
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_lower(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        leaf_node *leaf = static_cast<leaf_node*>(n);
-
-        int slot = find_lower(leaf, key);
-        return iterator(leaf, slot);
-    }
-
-    /// Searches the B+ tree and returns a constant iterator to the
-    /// first pair equal to or greater than key, or end() if all keys
-    /// are smaller.
-    const_iterator lower_bound(const key_type& key) const
-    {
-        const node *n = root;
-        if (!n) return end();
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_lower(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        const leaf_node *leaf = static_cast<const leaf_node*>(n);
-
-        int slot = find_lower(leaf, key);
-        return const_iterator(leaf, slot);
-    }
-
-    /// Searches the B+ tree and returns an iterator to the first pair
-    /// greater than key, or end() if all keys are smaller or equal.
-    iterator upper_bound(const key_type& key)
-    {
-        node *n = root;
-        if (!n) return end();
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_upper(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        leaf_node *leaf = static_cast<leaf_node*>(n);
-
-        int slot = find_upper(leaf, key);
-        return iterator(leaf, slot);
-    }
-
-    /// Searches the B+ tree and returns a constant iterator to the
-    /// first pair greater than key, or end() if all keys are smaller
-    /// or equal.
-    const_iterator upper_bound(const key_type& key) const
-    {
-        const node *n = root;
-        if (!n) return end();
-
-        while(!n->isleafnode())
-        {
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            int slot = find_upper(inner, key);
-
-            n = inner->childid[slot];
-        }
-
-        const leaf_node *leaf = static_cast<const leaf_node*>(n);
-
-        int slot = find_upper(leaf, key);
-        return const_iterator(leaf, slot);
-    }
-
-    /// Searches the B+ tree and returns both lower_bound() and upper_bound().
-    inline std::pair<iterator, iterator> equal_range(const key_type& key)
-    {
-        return std::pair<iterator, iterator>(lower_bound(key), upper_bound(key));
-    }
-
-    /// Searches the B+ tree and returns both lower_bound() and upper_bound().
-    inline std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const
-    {
-        return std::pair<const_iterator, const_iterator>(lower_bound(key), upper_bound(key));
-    }
 
 public:
     // *** B+ Tree Object Comparison Functions
