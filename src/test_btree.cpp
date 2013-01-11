@@ -135,13 +135,55 @@ void testSplitDeepRebalancingInsert() {
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
-	for (int i=0; i<60; ++i) {
-		updates.push_back({Operation<int>::INSERT, i});
+	for (int i=0; i<12; ++i) {
+		for (int j=0; j<5; j++) {
+			updates.push_back({Operation<int>::INSERT, i*10});
+		}
 	}
 	btree.apply_updates(updates);
+	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
+	assertTrue(btree.get_stats().leaves == 12, "Initial Leafcount");
 
-	assertTrue(btree.height() == 2, "For n>40 (in an optimal tree) we need 2 inner node layers");
 
+	// Underflow one leaf. Element should be moved to neihgbor node
+	updates.clear();
+	updates.push_back({Operation<int>::DELETE, 40});
+	updates.push_back({Operation<int>::DELETE, 40});
+	updates.push_back({Operation<int>::DELETE, 40});
+	updates.push_back({Operation<int>::DELETE, 40});
+	btree.apply_updates(updates);
+
+	assertTrue(btree.get_stats().leaves == 11, "Leafcount after leaf underflow");
+
+	// Overflow one leaf 
+	updates.clear();
+	updates.push_back({Operation<int>::INSERT, 40});
+	updates.push_back({Operation<int>::INSERT, 40});
+	updates.push_back({Operation<int>::INSERT, 40});
+	btree.apply_updates(updates);
+	assertTrue(btree.get_stats().leaves == 12, "Leafcount after leaf overflow");
+
+
+	// Overflow one leaf and underflow its neighbor
+	updates.clear();
+	updates.push_back({Operation<int>::INSERT, 20});
+	updates.push_back({Operation<int>::INSERT, 20});
+	updates.push_back({Operation<int>::INSERT, 20});
+	updates.push_back({Operation<int>::INSERT, 20});
+	updates.push_back({Operation<int>::DELETE, 30});
+	updates.push_back({Operation<int>::DELETE, 30});
+	updates.push_back({Operation<int>::DELETE, 30});
+	updates.push_back({Operation<int>::DELETE, 30});
+	btree.apply_updates(updates);
+	assertTrue(btree.get_stats().leaves == 12, "Leafcount after leaf overflow");
+
+	// Bulk insertion into leaf which oveflows the parent node
+	updates.clear();
+	for (int i=0; i<45; ++i) {
+		updates.push_back({Operation<int>::INSERT, 95});
+	}
+	btree.apply_updates(updates);
+	assertTrue(btree.get_stats().innernodes == 1 + 3, "Innernode count after heavy leaf overflow");
 }
 
 int main() {
@@ -149,7 +191,6 @@ int main() {
 	testSplitLeafInto2();
 	testSplitLeafInto3();
 	testSplitDeepRebalancingInsert();
-
 
 	std::cout << "Tests passed successfully." << std::endl;
 	return 0;
