@@ -263,7 +263,7 @@ private:
 
     /// True if a >= ßb ? constructed from key_less()
     inline bool key_greaterequal(const key_type &a, const key_type b) const {
-        return !key_lessequal(a, b);
+        return !key_less(a, b);
     }
 
     /// True if a == b ? constructed from key_less(). This requires the <
@@ -343,7 +343,10 @@ private:
                 clear_recursive(innernode->childid[slot]);
                 free_node(innernode->childid[slot]);
             }
+        } else {
+            stats.itemcount -= n->slotuse;
         }
+        stats.leaves--;
     }
 
 public:
@@ -357,6 +360,14 @@ public:
     /// Returns true if there is at least one key/data pair in the B+ tree
     inline bool empty() const {
         return (size() == size_type(0));
+    }
+
+    inline size_type height() const {
+        if (root == NULL) {
+            return 0; 
+        } else {
+            return root->level;
+        }
     }
 
     /// Return a const reference to the current statistics.
@@ -379,13 +390,17 @@ public:
 
         // Find out if the root node needs rebalancing
         double n = size() + weightdelta[updates.size()];
-        level_type optimal_level = n <= leafslotmax < 0 ? 0 : ceil( log(n/traits::leafparameter_k) / log(traits::branchingparameter_b) );
-        BTREE_PRINT("optimal level " << optimal_level << " actual level " << root->level << std::endl);
+        level_type optimal_level = (n <= leafslotmax) ? 0 : ceil( log(n/traits::leafparameter_k) / log(traits::branchingparameter_b) );
+        BTREE_PRINT("n: " << n << " optimal level: " << optimal_level << " actual level: " << root->level << std::endl);
 
         if (n == 0) {
             clear();
         } else if (optimal_level != root->level) {
-            //reconstruct()
+            key_type router; // unused
+            node* newroot = NULL;
+            reconstruct(root, newroot, optimal_level, router, 0, n, updates, 0, updates.size());
+            clear_recursive(root);
+            root = newroot;
         } else {
             key_type router; // unused
             insert(root, router, updates, 0, updates.size());
@@ -415,6 +430,41 @@ private:
 
 
         }
+    }
+
+    void reconstruct(const node* in_node, node*& out_node, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end,
+            const update_list& updates, const size_type begin, const size_type end) {
+        if (level == 0) { // create leaf
+            out_node = allocate_leaf();
+            out_node->slotuse = rank_end - rank_begin;
+            stats.itemcount += out_node->slotuse;
+            BTREE_PRINT("Constructing child for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
+        } else {
+            size_type designated_treesize = (maxweight(level-1) + minweight(level-1)) / 2;
+            std::cout << maxweight(level-1) << " " << minweight(level-1) << std::endl;
+            size_type n = rank_end - rank_begin;
+
+            unsigned short num_subtrees = n / designated_treesize;
+            // Squeeze remaining elements into last subtree or place in own subtree? 
+            // Choose what is closer to our designated subtree size
+            size_type remaining = n % designated_treesize;
+            num_subtrees += ( remaining > designated_treesize-(designated_treesize+remaining)/2 );
+            BTREE_PRINT("n " << n << " elements into tree on level " << level << " placed in " << num_subtrees << " subtrees of designated size " << designated_treesize << std::endl);
+
+            inner_node* result = allocate_inner(level);
+            result->slotuse = num_subtrees-1;
+
+            size_type rank = rank_begin;
+            for (unsigned short i = 0; i < result->slotuse; ++i) {
+                reconstruct(in_node, result->childid[i], level-1, result->slotkey[i], rank, rank+designated_treesize, updates, begin, end);
+                rank+= designated_treesize;
+            }
+            reconstruct(in_node, result->childid[result->slotuse], level-1, router, rank, rank_end, updates, begin, end);
+
+            out_node = result;
+        }
+
+
     }
 
     void updateLeaf(const leaf_node* in_leaf, leaf_node* out_leaf, key_type& router, const update_list& updates, const size_type begin, const size_type end) {
