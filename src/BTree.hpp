@@ -402,7 +402,7 @@ public:
             root = allocate_leaf();
         }
         level_type level = num_optimal_levels(new_size);
-        bool rebuild_needed = level < root->level || size() > maxweight(root->level);
+        bool rebuild_needed = (level < root->level && size() < minweight(root->level)) || size() > maxweight(root->level);
 
         if (rebuild_needed) {
             for (level_type i = root->level; i <= level; ++i) {
@@ -547,6 +547,7 @@ private:
                         ++in;
                     }
                     if (weight_of_defective_range > 0) {
+                        BTREE_PRINT("Rewrite session started on level " << inner->level << " of " << height() << " for subtree count " << in-rebalancing_range_start<< std::endl);
                         allocate_new_leaves(weight_of_defective_range);
                         updateSubTreesInRange(inner, rebalancing_range_start, in, 0, true, subtree_updates);
 
@@ -633,7 +634,10 @@ private:
         // Squeeze remaining elements into last subtree or place in own subtree? 
         // Choose what is closer to our designated subtree size
         size_type remaining = n % subtreesize;
-        num_subtrees += ( remaining > subtreesize-(subtreesize+remaining)/2 );
+        const size_type diff_in_single_tree_case = remaining;
+        const size_type diff_in_extra_tree_case = subtreesize-remaining;
+
+        num_subtrees += diff_in_single_tree_case >= diff_in_extra_tree_case;
         return num_subtrees;
         
     }
@@ -751,7 +755,7 @@ private:
         node = result;
     }
 
-#ifdef BTREE_DEBUG
+
     /// Recursively descend down the tree and print out nodes.
     static void print_node(const node* node, level_type depth=0, bool recursive=false) {
         for(level_type i = 0; i < depth; i++) std::cout  << "  ";
@@ -781,7 +785,7 @@ private:
             }
         }
     }
-#endif
+
 
 public:
     // *** Verification of B+ Tree Invariants
@@ -813,12 +817,15 @@ private:
         if (n->isleafnode()) {
             const leaf_node *leaf = static_cast<const leaf_node*>(n);
 
-            assert( leaf == root || leaf->slotuse >= minweight(leaf->level) );
-            assert( leaf->slotuse <= maxweight(leaf->level) );
-
             for(width_type slot = 0; slot < leaf->slotuse - 1; ++slot) {
                 assert(key_lessequal(leaf->slotkey[slot], leaf->slotkey[slot + 1]));
             }
+            if ((leaf != root && !(leaf->slotuse >= minweight(leaf->level))) || !( leaf->slotuse <= maxweight(leaf->level))) {
+                std::cout << leaf->slotuse << " min " << minweight(0) << " max " <<maxweight(0) << std::endl;
+                print_node(leaf);
+            }
+            assert( leaf == root || leaf->slotuse >= minweight(leaf->level) );
+            assert( leaf->slotuse <= maxweight(leaf->level) );
 
             *minkey = leaf->slotkey[0];
             *maxkey = leaf->slotkey[leaf->slotuse - 1];
@@ -831,6 +838,9 @@ private:
             vstats.innernodes++;
 
             for(width_type slot = 0; slot < inner->slotuse-1; ++slot) {
+                if (!key_lessequal(inner->slotkey[slot], inner->slotkey[slot + 1])) {
+                    print_node(inner, 0, true);
+                }
                 assert(key_lessequal(inner->slotkey[slot], inner->slotkey[slot + 1]));
             }
 
@@ -841,6 +851,10 @@ private:
 
                 assert(subnode->level + 1 == inner->level);
 
+                if ((inner != root && !(inner->weight[slot] >= minweight(inner->level-1))) || !(inner->weight[slot] <= maxweight(inner->level-1))) {
+                    std::cout << inner->weight[slot] << " min " << minweight(inner->level-1) << " max " <<maxweight(inner->level-1) << std::endl;
+                    print_node(inner, 0, true);
+                }
                 assert( inner == root || inner->weight[slot] >= minweight(inner->level-1) );
                 assert( inner->weight[slot] <= maxweight(inner->level-1) );
 
