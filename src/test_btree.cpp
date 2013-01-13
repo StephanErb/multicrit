@@ -1,5 +1,5 @@
-#undef NDEBUG
-#define BTREE_DEBUG
+#undef NDEBUG // uncomment to enable assertions
+//#define BTREE_DEBUG // uncomment to enable debug print
 
 #include "BTree.hpp"
 #include <iostream>

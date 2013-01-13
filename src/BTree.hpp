@@ -36,14 +36,12 @@
 
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
+#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
 #define BTREE_ASSERT(x)         do { assert(x); } while(0)
 #else
+#define BTREE_PRINT(x)          do { } while(0)
 #define BTREE_ASSERT(x)         do { } while(0)
 #endif
-
-//#define BTREE_PRINT(x)          do { } while(0)
-#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
-
 
 /// The maximum of a and b. Used in some compile-time formulas.
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
@@ -410,7 +408,9 @@ public:
         if (rebuild_needed) {
             create_subtree_from_leaves(root, false, level, router, 0, new_size);
         }
-        print_node(root, 0, true);
+        #ifdef BTREE_DEBUG
+            print_node(root, 0, true);
+        #endif
 
         if (traits::selfverify) {
             verify();
@@ -743,6 +743,7 @@ private:
         node = result;
     }
 
+#ifdef BTREE_DEBUG
     /// Recursively descend down the tree and print out nodes.
     static void print_node(const node* node, level_type depth=0, bool recursive=false) {
         for(level_type i = 0; i < depth; i++) std::cout  << "  ";
@@ -772,6 +773,7 @@ private:
             }
         }
     }
+#endif
 
 public:
     // *** Verification of B+ Tree Invariants
@@ -781,6 +783,10 @@ public:
     void verify() const {
         key_type minkey, maxkey;
         tree_stats vstats;
+
+        #ifdef NDEBUG
+            std::cout << "WARNING: Trying to verify, but all assertions have been disabled" << std::endl;
+        #endif
 
         if (root) {
             verify_node(root, &minkey, &maxkey, vstats);
