@@ -408,7 +408,7 @@ public:
         update(root, router, /*rank*/0, /*update_begin*/0, updates_size, rebuild_needed);
 
         if (rebuild_needed) {
-            create_subtree_from_leaves(root, level, router, 0, new_size);
+            create_subtree_from_leaves(root, false, level, router, 0, new_size);
         }
         print_node(root, 0, true);
 
@@ -444,7 +444,7 @@ private:
         }
     }
 
-    void create_subtree_from_leaves(node*& out_node, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end) {
+    width_type create_subtree_from_leaves(node*& out_node, const bool reuse_outnode, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end) {
         BTREE_ASSERT(rank_end - rank_begin > 0);
         BTREE_PRINT("Creating tree on level " << level << " for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
 
@@ -453,6 +453,7 @@ private:
             BTREE_ASSERT(rank_end - rank_begin == result->slotuse);
             router = result->slotkey[result->slotuse-1];
             out_node = result;
+            return 1;
         } else {
             const size_type n = rank_end - rank_begin;
             const size_type designated_treesize = designated_subtreesize(level);
@@ -461,18 +462,23 @@ private:
             BTREE_PRINT("Creating inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
                 << designated_treesize << std::endl);
 
-            inner_node* result = allocate_inner(level);
+            inner_node* result = reuse_outnode ? static_cast<inner_node*>(out_node) : allocate_inner(level);
+            const width_type old_slotuse = reuse_outnode ? result->slotuse : 0;
+            const width_type new_slotuse = subtrees+old_slotuse;
+
+            BTREE_ASSERT(new_slotuse <= innerslotmax);
 
             size_type rank = rank_begin;
-            for (width_type i = 0; i < subtrees; ++i) {
-                const size_type weight = (i != subtrees-1) ? designated_treesize : (rank_end - rank);
+            for (width_type i = old_slotuse; i < new_slotuse; ++i) {
+                const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
                 result->weight[i] = weight;
-                create_subtree_from_leaves(result->childid[i], level-1, result->slotkey[i], rank, rank+weight);
+                create_subtree_from_leaves(result->childid[i], false, level-1, result->slotkey[i], rank, rank+weight);
                 rank += weight;
             }
-            result->slotuse = subtrees;
-            router = result->slotkey[subtrees-1];
+            result->slotuse = new_slotuse;
+            router = result->slotkey[new_slotuse-1];
             out_node = result;
+            return subtrees;
          }
     }
 
@@ -522,45 +528,36 @@ private:
 
                 while (in < inner->slotuse) {
                     width_type rebalancing_range_start = in;
-                    size_type weight = 0;
+                    size_type weight_of_defective_range = 0;
                     bool openrebalancing_region = false;
 
                     // Find non-empty consecutive run of subtrees that need rebalancing
                     while (in < inner->slotuse && (subtree_updates[in].rebalancing_needed 
-                            || (openrebalancing_region && weight != 0 && weight < designated_treesize))) {
+                            || (openrebalancing_region && weight_of_defective_range != 0 && weight_of_defective_range < designated_treesize))) {
                         openrebalancing_region = true;
-                        weight += subtree_updates[in].weight;
+                        weight_of_defective_range += subtree_updates[in].weight;
                         ++in;
                     }
-                    if (weight > 0) {
-                        allocate_new_leaves(weight);
+                    if (weight_of_defective_range > 0) {
+                        allocate_new_leaves(weight_of_defective_range);
                         updateSubTreesInRange(inner, rebalancing_range_start, in, 0, true, subtree_updates);
 
-                        node* _new_subtree = NULL;
-                        create_subtree_from_leaves(_new_subtree, inner->level, result->slotkey[out], 0, weight);
-                        print_node(_new_subtree, 0, true);
-                        inner_node* new_subtree = static_cast<inner_node*>(_new_subtree);
-
-                        for (int sub_in = 0; sub_in < new_subtree->slotuse; ++sub_in) {
-                            BTREE_PRINT("Writing new subtree " << sub_in << " to " << out << " " << new_subtree->childid[sub_in] << std::endl);
-
-                            result->childid[out] = new_subtree->childid[sub_in];
-                            result->weight[out] = new_subtree->weight[sub_in];
-                            result->slotkey[out] = new_subtree->slotkey[sub_in];
-                            ++out;
-                        }
-                        free_node(_new_subtree); // FIXME: should learn to directly place into baad
+                        result->slotuse = out;
+                        node* result_as_node = result;
+                        key_type unused_router;
+                        out += create_subtree_from_leaves(result_as_node, /*write into result node*/ true, result->level, unused_router, 0, weight_of_defective_range);
+                        result = static_cast<inner_node*>(result_as_node);
 
                     } else {
                         BTREE_PRINT("Copying " << in << " to " << out << " " << inner->childid[in] << std::endl);
                         if (hasUpdates(in, subtree_updates)) {
-                            update(inner->childid[in], inner->slotkey[in], /*unused rank*/ -1, subtree_updates[in].upd_begin,
+                            update(inner->childid[in], result->slotkey[out], /*unused rank*/ -1, subtree_updates[in].upd_begin,
                                 subtree_updates[in].upd_end, false);
-                        } 
-                        // FIXME router forwarding
-                        result->childid[out] = inner->childid[in];
+                        } else {
+                            result->slotkey[out] = inner->slotkey[in];
+                        }
                         result->weight[out] = subtree_updates[in].weight;
-                        result->slotkey[out] = inner->slotkey[in];
+                        result->childid[out] = inner->childid[in];
 
                         ++out;
                         ++in;
@@ -571,7 +568,6 @@ private:
                 free_node(_node);
                 _node = result;
             }
-
         }
         if (rewrite_subtree) {
             free_node(_node);
@@ -788,7 +784,6 @@ public:
 
         if (root) {
             verify_node(root, &minkey, &maxkey, vstats);
-            std::cout << vstats.itemcount << " vs " << stats.itemcount << std::endl;
             assert( vstats.itemcount == stats.itemcount );
             assert( vstats.leaves == stats.leaves );
             assert( vstats.innernodes == stats.innernodes );
