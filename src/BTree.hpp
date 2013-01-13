@@ -31,6 +31,8 @@
 #include <array>
 #include <unistd.h>
 #include <cmath>
+#include <string.h>
+
 
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
@@ -766,12 +768,11 @@ private:
                 result->slotkey[out++] = updates[i].data;
                 break;
             }
-        } 
-        while (in < leaf->slotuse) {
-            result->slotkey[out++] = leaf->slotkey[in++];
         }
-        result->slotuse = out;
-        router = result->slotkey[out-1]; 
+        memcpy(result->slotkey + out, leaf->slotkey + in, sizeof(key_type) * (leaf->slotuse - in));
+
+        result->slotuse = out + leaf->slotuse - in;
+        router = result->slotkey[result->slotuse-1]; 
 
         BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);
 
