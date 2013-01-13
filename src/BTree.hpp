@@ -24,9 +24,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <istream>
 #include <iostream>
-#include <ostream>
 #include <memory>
 #include <cstddef>
 #include <assert.h>
@@ -41,8 +39,8 @@
 #define BTREE_ASSERT(x)         do { } while(0)
 #endif
 
-//#define BTREE_PRINT(x)          do { } while(0)
-#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
+#define BTREE_PRINT(x)          do { } while(0)
+//#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
 
 
 /// The maximum of a and b. Used in some compile-time formulas.
@@ -50,7 +48,7 @@
 
 // Widht of nodes given as number of cache-lines
 #ifndef NODE_WIDTH
-#define NODE_WIDTH 8
+#define NODE_WIDTH 12
 #endif
 #ifndef DCACHE_LINESIZE
 #define DCACHE_LINESIZE 64
@@ -71,9 +69,8 @@ struct btree_default_traits {
 
     /// Configure nodes to have a fixed size of 8 cache lines. 
     static const int    leafparameter_k = BTREE_MAX( 8, NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 8, NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key) + sizeof(void*)) );
+    static const int    branchingparameter_b = BTREE_MAX( 8,  (NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key) + sizeof(size_t) + sizeof(void*)))/4 );
 };
-
 
 /** 
  * Basic class implementing a base B+ tree data structure in memory.
@@ -258,7 +255,7 @@ private:
         size_type upd_begin;
         size_type upd_end;
     };
-    UpdateDescriptor subtree_updates[innerslotmax+1];
+    
 
 
 public:
@@ -271,6 +268,8 @@ public:
     {
         spare_leaf = allocate_leaf();
         stats = tree_stats(); // reset stats after leaf creation
+
+        std::cout << "# Btree: leafslotmax " <<  leafslotmax << " innerslotmax " << innerslotmax << std::endl;
     }
 
     /// Frees up all used B+ tree memory pages
@@ -423,7 +422,7 @@ public:
         if (rebuild_needed) {
             build_tree_from_nodes(root, router, level);
         }
-        print_node(std::cout, root, 0, true);
+        //print_node(root, 0, true);
 
         if (traits::selfverify) {
             verify();
@@ -440,12 +439,11 @@ private:
         // computes the weight delta realized by the updates in range [begin, end)
         weightdelta.clear();
         weightdelta.reserve(updates_size+1);
-        auto result = weightdelta.begin();
 
         long val = 0; // exclusive prefix sum
-        *result++ = val;
+        weightdelta[0] = val;
         for (size_type i = 0; i < updates_size; ++i) {
-            *result++ = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
+            weightdelta[i+1] = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
         }
     }
 
@@ -498,7 +496,9 @@ private:
     }
 
     void update(node*& _node, key_type& router, const size_type rank, const size_type upd_begin, const size_type upd_end, const bool rewrite_subtree) {
-        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << std::endl);
+        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << " on level " << _node->level << std::endl);
+
+        UpdateDescriptor subtree_updates[innerslotmax+1];
 
         if (_node->isleafnode()) {
             if (rewrite_subtree) {
@@ -519,23 +519,24 @@ private:
             for (width_type i = 0; i < inner->slotuse; ++i) {
                 size_type subupd_end = find_lower(subupd_begin, upd_end, inner->slotkey[i]);
 
-                rebalancing_needed |= scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end);
+                rebalancing_needed |= scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                 subupd_begin = subupd_end;
             } 
             width_type last = inner->slotuse;
-            rebalancing_needed |= scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd_end);
+            rebalancing_needed |= scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd_end, subtree_updates);
 
             // If no rewrite session is starting on this node, then just push down all updates
             if (!rebalancing_needed || rewrite_subtree) {
                 size_type subtree_rank = rank;
                 for (width_type i = 0; i < inner->slotuse; ++i) {
-                    if (rewrite_subtree || needsUpdate(i)) {
+                    BTREE_PRINT("About to update " << i << " on level " << inner->level << std::endl);
+                    if (rewrite_subtree || needsUpdate(i, subtree_updates)) {
                         update(inner->childid[i], inner->slotkey[i], subtree_rank, subtree_updates[i].upd_begin,
                             subtree_updates[i].upd_end, rewrite_subtree);
                     }
                     subtree_rank += subtree_updates[i].weight;
                 }
-                if (rewrite_subtree || needsUpdate(last)) {
+                if (rewrite_subtree || needsUpdate(last, subtree_updates)) {
                     update(inner->childid[last], router, subtree_rank, subtree_updates[last].upd_begin,
                         subtree_updates[last].upd_end, rewrite_subtree);
                 }
@@ -593,7 +594,7 @@ private:
                         if (in < innerslotmax) {
                             local_router = inner->slotkey[in];
                         }
-                        if (needsUpdate(in)) {
+                        if (needsUpdate(in, subtree_updates)) {
                             update(inner->childid[in], local_router, /*unused rank*/ -1, subtree_updates[in].upd_begin,
                                 subtree_updates[in].upd_end, false);
                         } 
@@ -619,13 +620,13 @@ private:
         }
     }
 
-    inline bool needsUpdate(width_type i) {
+    inline bool needsUpdate(width_type i, UpdateDescriptor* subtree_updates) {
         return subtree_updates[i].upd_begin != subtree_updates[i].upd_end && subtree_updates[i].weight > 0;
     }
 
     // also rewrites the subtree weight!
     inline bool scheduleSubTreeUpdate(const width_type i, size_type& weight, const size_type minweight,
-            const size_type maxweight, const size_type subupd_begin, const size_type subupd_end) {
+            const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) {
         subtree_updates[i].upd_begin = subupd_begin;
         subtree_updates[i].upd_end = subupd_end;
         subtree_updates[i].weight = weight = weight + weightdelta[subupd_end] - weightdelta[subupd_begin];
@@ -778,38 +779,35 @@ private:
         node = result;
     }
 
-
-#ifdef BTREE_DEBUG
     /// Recursively descend down the tree and print out nodes.
-    static void print_node(std::ostream &os, const node* node, level_type depth=0, bool recursive=false) {
-        for(level_type i = 0; i < depth; i++) os << "  ";
-        os << "node " << node << " level " << node->level << " slotuse " << node->slotuse << std::endl;
+    static void print_node(const node* node, level_type depth=0, bool recursive=false) {
+        for(level_type i = 0; i < depth; i++) std::cout  << "  ";
+        std::cout << "node " << node << " level " << node->level << " slotuse " << node->slotuse << std::endl;
 
         if (node->isleafnode()) {
             const leaf_node *leafnode = static_cast<const leaf_node*>(node);
-            for(level_type i = 0; i < depth; i++) os << "  ";
+            for(level_type i = 0; i < depth; i++) std::cout  << "  ";
 
             for (width_type slot = 0; slot < leafnode->slotuse; ++slot) {
-                os << leafnode->slotkey[slot] << "  "; // << "(data: " << leafnode->slotdata[slot] << ") ";
+                std::cout << leafnode->slotkey[slot] << "  "; // << "(data: " << leafnode->slotdata[slot] << ") ";
             }
-            os << std::endl;
+            std::cout  << std::endl;
         } else {
             const inner_node *innernode = static_cast<const inner_node*>(node);
-            for(level_type i = 0; i < depth; i++) os << "  ";
+            for(level_type i = 0; i < depth; i++) std::cout  << "  ";
 
             for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                os << "(" << innernode->childid[slot] << ": " << innernode->weight[slot] << ") " << innernode->slotkey[slot] << " ";
+                std::cout  << "(" << innernode->childid[slot] << ": " << innernode->weight[slot] << ") " << innernode->slotkey[slot] << " ";
             }
-            os << "(" << innernode->childid[innernode->slotuse] << ": " << innernode->weight[innernode->slotuse] << ")" << std::endl;
+            std::cout  << "(" << innernode->childid[innernode->slotuse] << ": " << innernode->weight[innernode->slotuse] << ")" << std::endl;
 
             if (recursive) {
                 for (width_type slot = 0; slot < innernode->slotuse + 1; ++slot) {
-                    print_node(os, innernode->childid[slot], depth + 1, recursive);
+                    print_node(innernode->childid[slot], depth + 1, recursive);
                 }
             }
         }
     }
-#endif
 
 public:
     // *** Verification of B+ Tree Invariants
