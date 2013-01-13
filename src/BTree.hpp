@@ -253,7 +253,9 @@ private:
         size_type upd_begin;
         size_type upd_end;
     };
-    
+
+    // For each level, one array to store the updates needed to push down to the individual subtrees
+    std::vector<UpdateDescriptor*> subtree_updates_per_level;
 
 
 public:
@@ -272,6 +274,9 @@ public:
     inline ~btree() {
         clear();
         free_node(spare_leaf);
+        for (auto updates : subtree_updates_per_level) {
+            delete[] updates;
+        }
     }
 
 private:
@@ -400,6 +405,9 @@ public:
         bool rebuild_needed = level < root->level || size() > maxweight(root->level);
 
         if (rebuild_needed) {
+            for (level_type i = root->level; i <= level; ++i) {
+                subtree_updates_per_level.push_back(new UpdateDescriptor[innerslotmax]);
+            }
             allocate_new_leaves(new_size);
         }
         key_type router; // unused on this level
@@ -485,8 +493,6 @@ private:
     void update(node*& _node, key_type& router, const size_type rank, const size_type upd_begin, const size_type upd_end, const bool rewrite_subtree) {
         BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << " on level " << _node->level << ". Rewrite = " << rewrite_subtree << std::endl);
 
-        UpdateDescriptor subtree_updates[innerslotmax];
-
         if (_node->isleafnode()) {
             if (rewrite_subtree) {
                 write_updated_leaf_to_new_tree(_node, rank, upd_begin, upd_end);
@@ -496,6 +502,8 @@ private:
 
         } else {
             inner_node* inner = static_cast<inner_node*>(_node);
+            UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
+
             const size_type min_weight = minweight(inner->level-1);
             const size_type max_weight = maxweight(inner->level-1);
 
