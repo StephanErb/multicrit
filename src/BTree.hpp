@@ -628,8 +628,8 @@ private:
         return (maxweight(level-1) + minweight(level-1)) / 2;
     }
 
-    static inline  width_type num_subtrees(size_type n, size_type subtreesize) {
-        width_type num_subtrees = n / subtreesize;
+    static inline  size_type num_subtrees(size_type n, size_type subtreesize) {
+        size_type num_subtrees = n / subtreesize;
         // Squeeze remaining elements into last subtree or place in own subtree? 
         // Choose what is closer to our designated subtree size
         size_type remaining = n % subtreesize;
