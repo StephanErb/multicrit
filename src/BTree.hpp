@@ -391,8 +391,8 @@ public:
 public:
 
     void apply_updates(const std::vector<Operation<key_type>>& _updates) {
-        setOperationsAndComputeWeightDelta(_updates);
-        size_type new_size = stats.itemcount = size() + weightdelta[updates_size];
+        size_type new_size = setOperationsAndComputeWeightDelta(_updates);
+        stats.itemcount = new_size;
         
         if (new_size == 0) {
             clear(); // Tree will become empty. Just finish early.
@@ -427,7 +427,7 @@ public:
 
 private:
 
-    void setOperationsAndComputeWeightDelta(const std::vector<Operation<key_type>>& _updates) {
+    size_type setOperationsAndComputeWeightDelta(const std::vector<Operation<key_type>>& _updates) {
         updates = _updates.data();
         updates_size = _updates.size();
 
@@ -436,10 +436,15 @@ private:
         weightdelta.clear();
         weightdelta.reserve(updates_size+1);
 
-        long val = 0; // exclusive prefix sum
-        weightdelta[0] = val;
-        for (size_type i = 0; i < updates_size; ++i) {
-            weightdelta[i+1] = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
+        if (size() == 0) {
+            return updates_size;
+        } else {
+            long val = 0; // exclusive prefix sum
+            weightdelta[0] = val;
+            for (size_type i = 0; i < updates_size; ++i) {
+                weightdelta[i+1] = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
+            }
+            return size() + weightdelta[updates_size];
         }
     }
 
