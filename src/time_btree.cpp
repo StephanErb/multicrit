@@ -196,6 +196,7 @@ int main(int argc, char ** args) {
 	std::cout << "# Bulk Construction" << std::endl;
 	timeBulkConstruction(100, iterations);
 	timeBulkConstruction(1000, iterations);
+	timeBulkConstruction(10000, iterations);
 	timeBulkConstruction(100000, iterations);
 	timeBulkConstruction(1000000, iterations);
 	timeBulkConstruction(10000000, iterations);
@@ -203,6 +204,7 @@ int main(int argc, char ** args) {
 	std::cout << "\n# Bulk Insertion" << std::endl;
 	timeBulkInsertion(100, ratio, skew, iterations);
 	timeBulkInsertion(1000, ratio, skew, iterations);
+	timeBulkInsertion(10000, ratio, skew, iterations);
 	timeBulkInsertion(100000, ratio, skew, iterations);
 	timeBulkInsertion(1000000, ratio, skew, iterations);
 	timeBulkInsertion(10000000, ratio, skew, iterations);
