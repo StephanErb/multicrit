@@ -242,7 +242,7 @@ private:
     size_type updates_size;
 
     // Weight delta of currently running updates
-    std::vector<size_type> weightdelta;
+    std::vector<unsigned long> weightdelta;
 
     // Leaves created during the current reconstruction effort
     std::vector<leaf_node*> leaves;
