@@ -484,14 +484,17 @@ private:
         }
     }
 
-    void allocate_new_leaves(size_type n) {
+    void allocate_new_leaves(const size_type n) {
         BTREE_PRINT("Allocating new nodes for tree of size " << n << std::endl);
-        size_type leaf_count = num_subtrees(n, designated_leafsize);
+        const size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.resize(leaf_count);
         tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count),
-            [this](const tbb::blocked_range<size_type>& r) {
+            [this, leaf_count, n](const tbb::blocked_range<size_type>& r) {
                 for (size_type i = r.begin(); i < r.end(); ++i) {
-                    this->leaves[i] = this->allocate_leaf();
+                    leaf_node* leaf = this->allocate_leaf();
+                    const size_type last_leaf = leaf_count-1;
+                    leaf->slotuse = (i == last_leaf) ? n - last_leaf*designated_leafsize : designated_leafsize;
+                    this->leaves[i] = leaf;
                 }
             }
         );
@@ -717,7 +720,6 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result->slotuse = out;
                         result = leaves[++leaf_number];
                         out = 0;
                     }
@@ -729,7 +731,6 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result->slotuse = out;
                         result = leaves[++leaf_number];
                         out = 0;
                     }
@@ -737,7 +738,6 @@ private:
                 result->slotkey[out++] = updates[i].data;
 
                 if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                    result->slotuse = out;
                     result = leaves[++leaf_number];
                     out = 0;
                 }
@@ -748,12 +748,10 @@ private:
             result->slotkey[out++] = leaf->slotkey[in++];
 
             if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
-                result->slotuse = out;
                 result = leaves[++leaf_number];
                 out = 0;
             }
         }
-        result->slotuse = out;
 
         BTREE_PRINT(" as range [" << rank << ", " << ((leaf_number-(rank/designated_leafsize))*designated_leafsize)
             + out << ") into " << leaves.size() << " leaves " << std::endl);
