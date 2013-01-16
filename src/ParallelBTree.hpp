@@ -34,8 +34,10 @@
 #include <string.h>
 
 #include "tbb/parallel_scan.h"
+#include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"
 #include "tbb/partitioner.h"
+#include "tbb/atomic.h"
 
 
 // *** Debugging Macros
@@ -199,16 +201,16 @@ public:
      * fetched using get_stats(). */
     struct tree_stats {
         /// Number of items in the B+ tree
-        size_type       itemcount;
+        size_type                    itemcount;
 
         /// Number of leaves in the B+ tree
-        size_type       leaves;
+        tbb::atomic<size_type>       leaves;
 
         /// Number of inner nodes in the B+ tree
-        size_type       innernodes;
+        tbb::atomic<size_type>       innernodes;
 
         inline tree_stats()
-            : itemcount(0), leaves(0), innernodes(0)
+            : itemcount(0), leaves(), innernodes()
         { }
 
         /// Return the total number of nodes
@@ -316,14 +318,14 @@ private:
     inline leaf_node* allocate_leaf() {
         leaf_node *n = new (leaf_node_allocator().allocate(1)) leaf_node();
         n->initialize();
-        stats.leaves++;
+        stats.leaves.fetch_and_increment();
         return n;
     }
 
     inline inner_node* allocate_inner(level_type level) {
         inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
         n->initialize(level);
-        stats.innernodes++;
+        stats.innernodes.fetch_and_increment();
         return n;
     }
 
@@ -333,13 +335,13 @@ private:
             typename leaf_node::alloc_type a(leaf_node_allocator());
             a.destroy(ln);
             a.deallocate(ln, 1);
-            stats.leaves--;
+            stats.leaves.fetch_and_decrement();
         } else {
             inner_node *in = static_cast<inner_node*>(n);
             typename inner_node::alloc_type a(inner_node_allocator());
             a.destroy(in);
             a.deallocate(in, 1);
-            stats.innernodes--;
+            stats.innernodes.fetch_and_decrement();
         }
     }
 
@@ -444,16 +446,16 @@ private:
             : sum(0), out(b.out), in(b.in) {}
 
         template<typename Tag>
-        void operator() (const tbb::blocked_range<int>& r, Tag) {
+        void operator() (const tbb::blocked_range<size_type>& r, Tag) {
             TOut temp = sum;
             if (Tag::is_final_scan()) {
                 out[0] = 0;
-                for(int i=r.begin(); i<r.end(); ++i) {
+                for(size_type i=r.begin(); i<r.end(); ++i) {
                     temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
                     out[i+1] = temp;
                 }
             } else {
-                for(int i=r.begin(); i<r.end(); ++i) {
+                for(size_type i=r.begin(); i<r.end(); ++i) {
                     temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
                 }
             }
@@ -477,7 +479,7 @@ private:
         } else {
             weightdelta.reserve(updates_size+1);
             PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
-            tbb::parallel_scan(tbb::blocked_range<int>(0, _updates.size()), body);
+            tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size()), body);
             return size() + body.get_sum();
         }
     }
@@ -486,9 +488,13 @@ private:
         BTREE_PRINT("Allocating new nodes for tree of size " << n << std::endl);
         size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.resize(leaf_count);
-        for (size_type i = 0; i < leaf_count; ++i) {
-            leaves[i] = allocate_leaf();
-        }
+        tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count),
+            [this](const tbb::blocked_range<size_type>& r) {
+                for (size_type i = r.begin(); i < r.end(); ++i) {
+                    this->leaves[i] = this->allocate_leaf();
+                }
+            }
+        );
     }
 
     width_type create_subtree_from_leaves(node*& out_node, const bool reuse_outnode, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end) {
