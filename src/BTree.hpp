@@ -434,11 +434,12 @@ private:
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
         weightdelta.clear();
-        weightdelta.reserve(updates_size+1);
 
         if (size() == 0) {
             return updates_size;
         } else {
+            weightdelta.reserve(updates_size+1);
+
             long val = 0; // exclusive prefix sum
             weightdelta[0] = val;
             for (size_type i = 0; i < updates_size; ++i) {
