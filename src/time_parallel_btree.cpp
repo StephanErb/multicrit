@@ -157,7 +157,6 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 
-
 		CALLGRIND_START_INSTRUMENTATION;
 		tree.apply_updates(updates);
 		CALLGRIND_STOP_INSTRUMENTATION;
@@ -179,6 +178,7 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 	double ratio = 0.1;
 	double skew = 1;
+	int num_cores = tbb::task_scheduler_init::default_num_threads();
 
 	int c;
 	while( (c = getopt( argc, args, "c:r:s:") ) != -1  ){
@@ -189,6 +189,9 @@ int main(int argc, char ** args) {
 		case 'r':
 			ratio = atof(optarg);
 			break;
+		case 'p':
+			num_cores = atoi(optarg);
+			break;
 		case 's':
 			skew = atof(optarg);
 			break;
@@ -196,8 +199,8 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	std::cout << "# Running on " << tbb::task_scheduler_init::default_num_threads() << " threads" << std::endl;
-	tbb::task_scheduler_init init(tbb::task_scheduler_init::default_num_threads());
+	std::cout << "# Running on " << num_cores << " threads" << std::endl;
+	tbb::task_scheduler_init init(num_cores);
 
 	std::cout << "# Bulk Construction" << std::endl;
 	timeBulkConstruction(100, iterations);
