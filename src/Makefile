@@ -26,7 +26,7 @@ TESTS=test_labelset test_labelsetting test_btree
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)
-PARALLEL =
+PARALLEL = time_parallel_btree test_btree
 
 DEFAULT_OPS =  -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE)
 
@@ -36,7 +36,7 @@ CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OP
 CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
 
 CXXLIBS= -lrt
-CXXPLIBS= -lrt
+CXXPLIBS= -lrt -ltbb -ltbbmalloc
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
 DEPENDENCYDIRS=.
