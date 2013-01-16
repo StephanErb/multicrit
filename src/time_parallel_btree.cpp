@@ -120,7 +120,7 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 			tree.verify();
 		#endif
 	}
-	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0)/1024 << " "  << getPeakMemorySize()/1024
+	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
 		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b
 		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, " << std::endl;
 }
@@ -170,7 +170,7 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 			tree.verify();
 		#endif
 	}
-	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0)/1024 << " "  << getPeakMemorySize()/1024
+	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
 		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew
 		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, ratio, skew" << std::endl;
 }
