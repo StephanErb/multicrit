@@ -1,4 +1,5 @@
 //#undef NDEBUG // uncomment to enable assertions
+//#define BTREE_DEBUG
 
 #include <unistd.h>
 #include <iostream>
@@ -181,7 +182,7 @@ int main(int argc, char ** args) {
 	int num_cores = tbb::task_scheduler_init::default_num_threads();
 
 	int c;
-	while( (c = getopt( argc, args, "c:r:s:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:r:s:p:") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
