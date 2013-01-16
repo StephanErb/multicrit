@@ -9,6 +9,7 @@
 
 #include "tbb/task_scheduler_init.h"
 #include "tbb/scalable_allocator.h"
+#include "tbb/tick_count.h"
 
 #include "ParallelBTree.hpp"
 
@@ -104,15 +105,14 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 		std::sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
-		utility::tool::TimeOfDayTimer timer;
-		timer.start();
+		tbb::tick_count start = tbb::tick_count::now();
 
 		CALLGRIND_START_INSTRUMENTATION;
 		tree.apply_updates(updates);
 		CALLGRIND_STOP_INSTRUMENTATION;
 
-		timer.stop();
-		timings[i] = timer.getTime() / 1000.0;
+		tbb::tick_count stop = tbb::tick_count::now();
+		timings[i] = (stop-start).seconds() * 1000.0;
 		memory[i] = getCurrentMemorySize() - memory[i];
 
 		#ifndef NDEBUG
@@ -155,15 +155,15 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		std::sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
-		utility::tool::TimeOfDayTimer timer;
-		timer.start();
+		tbb::tick_count start = tbb::tick_count::now();
+
 
 		CALLGRIND_START_INSTRUMENTATION;
 		tree.apply_updates(updates);
 		CALLGRIND_STOP_INSTRUMENTATION;
 
-		timer.stop();
-		timings[i] = timer.getTime() / 1000.0;
+		tbb::tick_count stop = tbb::tick_count::now();
+		timings[i] = (stop-start).seconds() * 1000.0;
 		memory[i] = getCurrentMemorySize() - memory[i];
 
 		#ifndef NDEBUG
