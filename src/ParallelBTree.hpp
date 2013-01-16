@@ -214,10 +214,6 @@ public:
         /// Number of inner nodes in the B+ tree
         tbb::atomic<size_type>       innernodes;
 
-        inline tree_stats()
-            : itemcount(0), leaves(), innernodes()
-        { }
-
         /// Return the total number of nodes
         inline size_type nodes() const {
             return innernodes + leaves;
@@ -227,6 +223,16 @@ public:
         inline double avgfill_leaves() const {
             return static_cast<double>(itemcount) / (leaves * leafslotmax);
         }
+
+        inline tree_stats()
+            : itemcount(0), leaves(), innernodes()
+        { }
+
+#ifdef NDEBUG
+        static const bool gather_stats = false;
+#else 
+        static const bool gather_stats = true;
+#endif
     };
 
 private:
@@ -323,14 +329,14 @@ private:
     inline leaf_node* allocate_leaf() {
         leaf_node *n = new (leaf_node_allocator().allocate(1)) leaf_node();
         n->initialize();
-        stats.leaves.fetch_and_increment();
+        if (stats.gather_stats) stats.leaves.fetch_and_increment();
         return n;
     }
 
     inline inner_node* allocate_inner(level_type level) {
         inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
         n->initialize(level);
-        stats.innernodes.fetch_and_increment();
+        if (stats.gather_stats) stats.innernodes.fetch_and_increment();
         return n;
     }
 
@@ -340,13 +346,13 @@ private:
             typename leaf_node::alloc_type a(leaf_node_allocator());
             a.destroy(ln);
             a.deallocate(ln, 1);
-            stats.leaves.fetch_and_decrement();
+            if (stats.gather_stats) stats.leaves.fetch_and_decrement();
         } else {
             inner_node *in = static_cast<inner_node*>(n);
             typename inner_node::alloc_type a(inner_node_allocator());
             a.destroy(in);
             a.deallocate(in, 1);
-            stats.innernodes.fetch_and_decrement();
+            if (stats.gather_stats) stats.innernodes.fetch_and_decrement();
         }
     }
 
@@ -454,7 +460,6 @@ private:
         void operator() (const tbb::blocked_range<size_type>& r, Tag) {
             TOut temp = sum;
             if (Tag::is_final_scan()) {
-                out[0] = 0;
                 for(size_type i=r.begin(); i<r.end(); ++i) {
                     temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
                     out[i+1] = temp;
