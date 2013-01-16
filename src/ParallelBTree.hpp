@@ -63,6 +63,11 @@
 #define DCACHE_LINESIZE 64
 #endif
 
+// Number of leaves that need to be written before we try perform it in parallel
+#ifndef REWRITE_THRESHOLD
+#define REWRITE_THRESHOLD 2
+#endif
+
 template<typename data_type>
 struct Operation {
     enum OpType {INSERT, DELETE};
@@ -238,7 +243,7 @@ private:
 
     /// Key comparison object. More comparison functions are generated from
     /// this < relation.
-    key_compare key_less;
+    static key_compare key_less;
 
     /// Memory allocator.
     allocator_type allocator;
@@ -289,18 +294,18 @@ private:
     // *** Convenient Key Comparison Functions Generated From key_less
 
     /// True if a <= b
-    inline bool key_lessequal(const key_type &a, const key_type &b) const {
+    static inline bool key_lessequal(const key_type &a, const key_type &b) {
         return !key_less(b, a);
     }
 
     /// True if a >= b
-    inline bool key_greaterequal(const key_type &a, const key_type &b) const {
+    static inline bool key_greaterequal(const key_type &a, const key_type &b) {
         return !key_less(a, b);
     }
 
     /// True if a == b. This requires the < relation to be a total order,
     /// otherwise the B+ tree cannot be sorted.
-    inline bool key_equal(const key_type &a, const key_type &b) const {
+    static inline bool key_equal(const key_type &a, const key_type &b) {
         return !key_less(a, b) && !key_less(b, a);
     }
 
@@ -474,14 +479,13 @@ private:
         // computes the weight delta realized by the updates in range [begin, end)
         weightdelta.clear();
 
-        if (size() == 0) {
-            return updates_size;
-        } else {
-            weightdelta.reserve(updates_size+1);
-            PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
-            tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size()), body);
-            return size() + body.get_sum();
-        }
+        weightdelta.reserve(updates_size+1);
+        weightdelta[0] = 0;
+        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
+        tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size()), body);
+
+        return size() + body.get_sum();
+
     }
 
     void allocate_new_leaves(const size_type n) {
@@ -489,7 +493,7 @@ private:
         const size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.resize(leaf_count);
         tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count),
-            [this, leaf_count, n](const tbb::blocked_range<size_type>& r) {
+            [this, &leaf_count, &n](const tbb::blocked_range<size_type>& r) {
                 for (size_type i = r.begin(); i < r.end(); ++i) {
                     leaf_node* leaf = this->allocate_leaf();
                     const size_type last_leaf = leaf_count-1;
@@ -700,17 +704,59 @@ private:
         }
     }
 
-    void write_updated_leaf_to_new_tree(node*& node, const size_type rank, const size_type begin, const size_type end) {
+    void write_updated_leaf_to_new_tree(const node* const node, const size_type rank, const size_type begin, const size_type end) {
+        if (weightdelta[end] - weightdelta[begin] < designated_leafsize * REWRITE_THRESHOLD) {
+            write_updated_leaf_to_new_tree_sequential(node, /*read start index*/0, rank, begin, end, /*write remaining*/ true);
+        } else {
+            const leaf_node* const leaf = (leaf_node*)(node);
+
+            tbb::parallel_for(tbb::blocked_range<size_type>(begin, end),
+                [&, this](const tbb::blocked_range<size_type>& r) {
+                    const signed long delta = this->weightdelta[r.begin()] - this->weightdelta[begin];
+                    const width_type key_index = find_index_of_lower_key(leaf, updates[r.begin()].data);
+                    const size_type corrected_rank = rank + key_index + delta;
+                    this->write_updated_leaf_to_new_tree_sequential(node, key_index, corrected_rank, r.begin(), r.end(), r.end() == end);
+                }
+            );
+        }
+    }
+
+    static inline int find_index_of_lower_key(const leaf_node* const leaf, const key_type& key) {
+        int lo = 0;
+        int hi = leaf->slotuse - 1;
+
+        while(lo < hi) {
+            size_type mid = (lo + hi) >> 1; // FIXME: Potential integer overflow
+
+            if (key_less(key, leaf->slotkey[mid])) {
+                hi = mid - 1;
+            } else {
+                lo = mid + 1;
+            }
+        }
+        hi += (hi < 0 || key_lessequal(leaf->slotkey[hi], key));
+        return hi;
+    }
+
+
+    void write_updated_leaf_to_new_tree_sequential(const node* const node, width_type in, const size_type rank, const size_type begin, const size_type end, const bool write_remaining) {
         BTREE_PRINT("Rewriting updated leaf " << node << " starting with rank " << rank);
 
         size_type leaf_number = rank / designated_leafsize;
         width_type offset_in_leaf = rank % designated_leafsize;
 
-        width_type in = 0; // existing key to read
+        if (leaf_number >= leaves.size()) {
+            // elements are squeezed into the previous leaf
+            leaf_number = leaves.size()-1; 
+            offset_in_leaf = rank - leaf_number*designated_leafsize;
+        }
+
+        // in is the existing key to read
         width_type out = offset_in_leaf; // position where to write
 
+
         leaf_node* result = leaves[leaf_number];
-        const leaf_node* leaf = static_cast<leaf_node*>(node);
+        const leaf_node* const leaf = (leaf_node*)(node);
 
         for (size_type i = begin; i != end; ++i) {
             switch (updates[i].type) {
@@ -744,12 +790,14 @@ private:
                 break;
             }
         } 
-        while (in < leaf->slotuse) {
-            result->slotkey[out++] = leaf->slotkey[in++];
+        if (write_remaining) {
+            while (in < leaf->slotuse) {
+                result->slotkey[out++] = leaf->slotkey[in++];
 
-            if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
-                result = leaves[++leaf_number];
-                out = 0;
+                if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
+                    result = leaves[++leaf_number];
+                    out = 0;
+                }
             }
         }
 
