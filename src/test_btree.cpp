@@ -1,7 +1,9 @@
 #undef NDEBUG // uncomment to enable assertions
 //#define BTREE_DEBUG // uncomment to enable debug print
 
-#include "BTree.hpp"
+//#include "BTree.hpp"
+#include "ParallelBTree.hpp"
+
 #include <iostream>
 #include <algorithm>
 
