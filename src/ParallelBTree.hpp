@@ -33,6 +33,10 @@
 #include <cmath>
 #include <string.h>
 
+#include "tbb/parallel_scan.h"
+#include "tbb/blocked_range.h"
+#include "tbb/partitioner.h"
+
 
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
@@ -242,7 +246,7 @@ private:
     size_type updates_size;
 
     // Weight delta of currently running updates
-    std::vector<unsigned long> weightdelta;
+    std::vector<signed long> weightdelta;
 
     // Leaves created during the current reconstruction effort
     std::vector<leaf_node*> leaves;
@@ -427,6 +431,39 @@ public:
 
 private:
 
+    template<typename TIn, typename TOut>
+    class PrefixSum {
+        TOut sum;
+        TOut* const out;
+        const TIn* const in;
+    public:
+        PrefixSum(TOut* out_, const TIn* in_)
+            : sum(0), out(out_), in(in_) {}
+
+        PrefixSum(PrefixSum& b, tbb::split)
+            : sum(0), out(b.out), in(b.in) {}
+
+        template<typename Tag>
+        void operator() (const tbb::blocked_range<int>& r, Tag) {
+            TOut temp = sum;
+            if (Tag::is_final_scan()) {
+                out[0] = 0;
+                for(int i=r.begin(); i<r.end(); ++i) {
+                    temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
+                    out[i+1] = temp;
+                }
+            } else {
+                for(int i=r.begin(); i<r.end(); ++i) {
+                    temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
+                }
+            }
+            sum = temp;
+        }
+        void reverse_join(PrefixSum& a) {sum = a.sum + sum;}
+        void assign(PrefixSum& b) {sum = b.sum;}
+        TOut get_sum() const { return sum; }
+    };
+
     size_type setOperationsAndComputeWeightDelta(const std::vector<Operation<key_type>>& _updates) {
         updates = _updates.data();
         updates_size = _updates.size();
@@ -439,13 +476,9 @@ private:
             return updates_size;
         } else {
             weightdelta.reserve(updates_size+1);
-
-            long val = 0; // exclusive prefix sum
-            weightdelta[0] = val;
-            for (size_type i = 0; i < updates_size; ++i) {
-                weightdelta[i+1] = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
-            }
-            return size() + weightdelta[updates_size];
+            PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
+            tbb::parallel_scan(tbb::blocked_range<int>(0, _updates.size()), body);
+            return size() + body.get_sum();
         }
     }
 
