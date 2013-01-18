@@ -38,6 +38,7 @@
 #include "tbb/blocked_range.h"
 #include "tbb/partitioner.h"
 #include "tbb/atomic.h"
+#include "tbb/task.h"
 
 
 // *** Debugging Macros
@@ -94,6 +95,7 @@ template <typename _Key,
           typename _Traits = btree_default_traits<_Key>,
           typename _Alloc = std::allocator<_Key>>
 class btree {
+    friend class TreeCreationTask;
 public:
     /// The key type of the B+ tree. This is stored  in inner nodes and leaves
     typedef _Key                        key_type;
@@ -431,7 +433,8 @@ public:
         update(root, router, /*rank*/0, /*update_begin*/0, updates_size, rebuild_needed);
 
         if (rebuild_needed) {
-            create_subtree_from_leaves(root, false, level, router, 0, new_size);
+            TreeCreationTask& task = *new(tbb::task::allocate_root()) TreeCreationTask(root, false, level, router, 0, new_size, leaves, this);
+            tbb::task::spawn_root_and_wait(task);
         }
         #ifdef BTREE_DEBUG
             print_node(root, 0, true);
@@ -509,43 +512,64 @@ private:
         );
     }
 
-    width_type create_subtree_from_leaves(node*& out_node, const bool reuse_outnode, const level_type level, key_type& router, const size_type rank_begin, const size_type rank_end) {
-        BTREE_ASSERT(rank_end - rank_begin > 0);
-        BTREE_PRINT("Creating tree on level " << level << " for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
+    class TreeCreationTask: public tbb::task {
+        node*& out_node;
+        const bool reuse_outnode;
+        const level_type level;
+        key_type& router;
+        const size_type rank_begin;
+        const size_type rank_end;
+        const std::vector<leaf_node*>& leaves;
+        btree* const tree;
 
-        if (level == 0) { // reached leaf level
-            leaf_node* result = leaves[rank_begin / designated_leafsize];
-            BTREE_ASSERT(rank_end - rank_begin == result->slotuse);
-            router = result->slotkey[result->slotuse-1];
-            out_node = result;
-            return 1;
-        } else {
-            const size_type n = rank_end - rank_begin;
-            const size_type designated_treesize = designated_subtreesize(level);
-            const width_type subtrees = num_subtrees(n, designated_treesize);
+    public:
+        size_type num_of_created_subtrees;
 
-            BTREE_PRINT("Creating inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
-                << designated_treesize << std::endl);
+        TreeCreationTask(node*& _out_node, const bool _reuse_outnode, const level_type _level, key_type& _router, const size_type _rank_begin, const size_type _rank_end, const std::vector<leaf_node*>& _leaves, btree* const _tree) 
+        : out_node(_out_node), reuse_outnode(_reuse_outnode), level(_level), router(_router), rank_begin(_rank_begin), rank_end(_rank_end), leaves(_leaves), tree(_tree)
+        {}
 
-            inner_node* result = reuse_outnode ? static_cast<inner_node*>(out_node) : allocate_inner(level);
-            const width_type old_slotuse = reuse_outnode ? result->slotuse : 0;
-            const width_type new_slotuse = subtrees+old_slotuse;
+        tbb::task* execute() {
+            if (level == 0) { // reached leaf level
+                leaf_node* result = leaves[rank_begin / designated_leafsize];
+                BTREE_ASSERT(rank_end - rank_begin == result->slotuse);
+                router = result->slotkey[result->slotuse-1];
+                out_node = result;
+                num_of_created_subtrees = 1;
+            } else {
+                const size_type n = rank_end - rank_begin;
+                const size_type designated_treesize = designated_subtreesize(level);
+                const width_type subtrees = num_subtrees(n, designated_treesize);
 
-            BTREE_ASSERT(new_slotuse <= innerslotmax);
+                BTREE_PRINT("Creating inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
+                    << designated_treesize << std::endl);
 
-            size_type rank = rank_begin;
-            for (width_type i = old_slotuse; i < new_slotuse; ++i) {
-                const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
-                result->weight[i] = weight;
-                create_subtree_from_leaves(result->childid[i], false, level-1, result->slotkey[i], rank, rank+weight);
-                rank += weight;
-            }
-            result->slotuse = new_slotuse;
-            router = result->slotkey[new_slotuse-1];
-            out_node = result;
-            return subtrees;
-         }
-    }
+                inner_node* result = reuse_outnode ? static_cast<inner_node*>(out_node) : tree->allocate_inner(level);
+                const width_type old_slotuse = reuse_outnode ? result->slotuse : 0;
+                const width_type new_slotuse = subtrees+old_slotuse;
+
+                BTREE_ASSERT(new_slotuse <= innerslotmax);
+
+                tbb::task_list tasks;
+
+                size_type rank = rank_begin;
+                for (width_type i = old_slotuse; i < new_slotuse; ++i) {
+                    const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
+                    result->weight[i] = weight;
+                    tasks.push_back(*new(allocate_child()) TreeCreationTask(
+                        result->childid[i], false, level-1, result->slotkey[i], rank, rank+weight, leaves, tree));
+                    rank += weight;
+                }
+                set_ref_count(new_slotuse-old_slotuse+1);
+                spawn_and_wait_for_all(tasks);
+                result->slotuse = new_slotuse;
+                router = result->slotkey[new_slotuse-1];
+                out_node = result;
+                num_of_created_subtrees = subtrees;
+             }
+            return NULL;
+        }
+    };
 
     void update(node*& _node, key_type& router, const size_type rank, const size_type upd_begin, const size_type upd_end, const bool rewrite_subtree) {
         BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << " on level " << _node->level << ". Rewrite = " << rewrite_subtree << std::endl);
@@ -611,7 +635,11 @@ private:
                         result->slotuse = out;
                         node* result_as_node = result;
                         key_type unused_router;
-                        out += create_subtree_from_leaves(result_as_node, /*write into result node*/ true, result->level, unused_router, 0, weight_of_defective_range);
+
+                        TreeCreationTask& task = *new(tbb::task::allocate_root())
+                             TreeCreationTask(result_as_node, /*write into result node*/ true, result->level, unused_router, 0, weight_of_defective_range, leaves, this);
+                        tbb::task::spawn_root_and_wait(task);
+                        out += task.num_of_created_subtrees;
                         result = static_cast<inner_node*>(result_as_node);
 
                     } else {
@@ -718,7 +746,7 @@ private:
             tbb::parallel_for(tbb::blocked_range<size_type>(begin, end),
                 [&, this](const tbb::blocked_range<size_type>& r) {
                     const signed long delta = this->weightdelta[r.begin()] - this->weightdelta[begin];
-                    const width_type key_index = find_index_of_lower_key(leaf, updates[r.begin()].data);
+                    const width_type key_index = this->find_index_of_lower_key(leaf, updates[r.begin()].data);
                     const size_type corrected_rank = rank + key_index + delta;
                     this->write_updated_leaf_to_new_tree_sequential(node, key_index, corrected_rank, r.begin(), r.end(), r.end() == end);
                 }
