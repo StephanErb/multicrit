@@ -496,7 +496,7 @@ private:
         weightdelta.resize(_updates.size() + 1);
         weightdelta[0] = 0;
         PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates.data());
-        tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size()), body);
+        tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size(), traits::leafparameter_k), body);
 
         return size() + body.get_sum();
     }
@@ -541,7 +541,7 @@ private:
             const size_type leaf_count = num_subtrees(n, designated_leafsize);
             leaves.resize(leaf_count);
 
-            tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count),
+            tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count, traits::branchingparameter_b),
                 [this, &leaf_count, &n](const tbb::blocked_range<size_type>& r) {
 
                     for (size_type i = r.begin(); i < r.end(); ++i) {
@@ -646,7 +646,7 @@ private:
                 } else {
                     const leaf_node* const leaf = (leaf_node*)(source_node);
 
-                    tbb::parallel_for(tbb::blocked_range<size_type>(upd.upd_begin, upd.upd_end),
+                    tbb::parallel_for(tbb::blocked_range<size_type>(upd.upd_begin, upd.upd_end, traits::leafparameter_k),
                         [&, this](const tbb::blocked_range<size_type>& r) {
 
                             const signed long delta = tree->weightdelta[r.begin()] - tree->weightdelta[upd.upd_begin];
