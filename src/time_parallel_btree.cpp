@@ -99,9 +99,10 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 	std::fill_n(memory, iterations, 0);
 
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
+	tbb::scalable_allocator<Label> allocator;
 
 	for (int i = 0; i < iterations; ++i) {
-		Tree tree(n);
+		Tree tree(n, allocator);
 
 		std::vector<Operation<Label> > updates(n);
 		for (size_t i=0; i < updates.size(); ++i) {
@@ -137,9 +138,10 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
+	tbb::scalable_allocator<Label> allocator;
 
 	for (int i = 0; i < iterations; ++i) {
-		Tree tree(n);
+		Tree tree(n, allocator);
 
 		// Bulk Construct the initial tree
 		std::vector<Operation<Label> > updates(n);
