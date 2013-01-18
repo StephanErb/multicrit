@@ -72,7 +72,7 @@
 
 template<typename data_type>
 struct Operation {
-    enum OpType {INSERT, DELETE};
+    enum OpType {INSERT=1, DELETE=-1};
     OpType type;
     data_type data;
 };
@@ -472,13 +472,13 @@ private:
         void operator() (const tbb::blocked_range<size_type>& r, Tag) {
             TOut temp = sum;
             if (Tag::is_final_scan()) {
-                for(size_type i=r.begin(); i<r.end(); ++i) {
-                    temp += (in[i].type == TIn::INSERT ? 1 : -1);
-                    out[i+1] = temp;
+                for(size_type i=r.begin(); i<r.end(); ) {
+                    temp += in[i].type;
+                    out[++i] = temp;
                 }
             } else {
                 for(size_type i=r.begin(); i<r.end(); ++i) {
-                    temp += (in[i].type == TIn::INSERT ? 1 : -1);
+                    temp += in[i].type;
                 }
             }
             sum = temp;
