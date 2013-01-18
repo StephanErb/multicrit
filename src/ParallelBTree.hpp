@@ -461,27 +461,40 @@ private:
         TOut sum;
         TOut* const out;
         const TIn* const in;
+        const signed char all_ops_identical;
     public:
-        inline PrefixSum(TOut* out_, const TIn* in_)
-            : sum(0), out(out_), in(in_) {}
+        inline PrefixSum(TOut* _out, const TIn* _in, const signed char _all_ops_identical)
+            : sum(0), out(_out), in(_in), all_ops_identical(_all_ops_identical) {}
 
         inline PrefixSum(const PrefixSum& b, tbb::split)
-            : sum(0), out(b.out), in(b.in) {}
+            : sum(0), out(b.out), in(b.in), all_ops_identical(b.all_ops_identical) {}
 
         template<typename Tag>
         void operator() (const tbb::blocked_range<size_type>& r, Tag) {
-            TOut temp = sum;
-            if (Tag::is_final_scan()) {
-                for(size_type i=r.begin(); i<r.end(); ++i) {
-                    temp += in[i].type;
-                    out[i] = temp;
+
+            if (!all_ops_identical) {
+                // Mixed insertions and deletions. Need to perform full prefix sum.
+                TOut temp = sum;
+                if (Tag::is_final_scan()) {
+                    for(size_type i=r.begin(); i<r.end(); ++i) {
+                        temp += in[i].type;
+                        out[i] = temp;
+                    }
+                } else {
+                    for(size_type i=r.begin(); i<r.end(); ++i) {
+                        temp += in[i].type;
+                    }
                 }
+                sum = temp;                
             } else {
-                for(size_type i=r.begin(); i<r.end(); ++i) {
-                    temp += in[i].type;
+                // All operations are either deletes or all are inserts
+                if (Tag::is_final_scan()) {
+                    for(size_type i=r.begin(); i<r.end(); ++i) {
+                        out[i] = (i+1) * all_ops_identical;
+                    }
                 }
+                sum += all_ops_identical * (r.end() - r.begin());  
             }
-            sum = temp;
         }
         void reverse_join(const PrefixSum& a) {sum = a.sum + sum;}
         void assign(const PrefixSum& b) {sum = b.sum;}
@@ -495,7 +508,10 @@ private:
         // computes the weight delta realized by the updates in range [begin, end)
         weightdelta.resize(_updates.size() + 1);
         weightdelta[0] = 0;
-        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates.data());
+        // If the tree is empty, then the updates can only contain insertions.
+        const signed char all_ops_identical = size() == 0; 
+
+        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates.data(), all_ops_identical);
         tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size(), traits::leafparameter_k), body);
 
         return size() + body.get_sum();
