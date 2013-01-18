@@ -472,9 +472,9 @@ private:
         void operator() (const tbb::blocked_range<size_type>& r, Tag) {
             TOut temp = sum;
             if (Tag::is_final_scan()) {
-                for(size_type i=r.begin(); i<r.end(); ) {
+                for(size_type i=r.begin(); i<r.end(); ++i) {
                     temp += in[i].type;
-                    out[++i] = temp;
+                    out[i] = temp;
                 }
             } else {
                 for(size_type i=r.begin(); i<r.end(); ++i) {
@@ -495,7 +495,7 @@ private:
         // computes the weight delta realized by the updates in range [begin, end)
         weightdelta.resize(_updates.size() + 1);
         weightdelta[0] = 0;
-        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
+        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates.data());
         tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size()), body);
 
         return size() + body.get_sum();
