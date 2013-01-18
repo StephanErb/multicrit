@@ -264,7 +264,8 @@ private:
     const Operation<key_type>* updates;
 
     // Weight delta of currently running updates
-    std::vector<signed long> weightdelta;
+    typedef std::vector<signed long> weightdelta_list;
+    weightdelta_list weightdelta;
 
     struct UpdateDescriptor {
         bool rebalancing_needed;
@@ -282,8 +283,8 @@ public:
 
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
-    explicit inline btree(const allocator_type &alloc = allocator_type())
-        : root(NULL), allocator(alloc) 
+    explicit inline btree(size_type size_hint=0, const allocator_type &alloc = allocator_type())
+        : root(NULL), allocator(alloc), weightdelta(size_hint+1)
     { }
 
     /// Frees up all used B+ tree memory pages
