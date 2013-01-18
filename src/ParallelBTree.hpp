@@ -273,6 +273,9 @@ private:
         size_type upd_end;
     };
 
+    typedef std::vector<Operation<key_type>> update_list;
+    typedef std::vector<leaf_node*> leaf_list;
+
 
 public:
     // *** Constructors and Destructor
@@ -408,7 +411,7 @@ public:
 
 public:
 
-    void apply_updates(const std::vector<Operation<key_type>>& _updates) {
+    void apply_updates(const update_list& _updates) {
         size_type new_size = setOperationsAndComputeWeightDelta(_updates);
         stats.itemcount = new_size;
         
@@ -484,13 +487,11 @@ private:
         TOut get_sum() const { return sum; }
     };
 
-    size_type setOperationsAndComputeWeightDelta(const std::vector<Operation<key_type>>& _updates) {
+    size_type setOperationsAndComputeWeightDelta(const update_list& _updates) {
         updates = _updates.data();
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
-        weightdelta.clear();
-
         weightdelta.resize(_updates.size() + 1);
         weightdelta[0] = 0;
         PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
@@ -511,7 +512,7 @@ private:
         tbb::task_list subtasks;
         width_type subtask_count;
 
-        std::vector<leaf_node*> leaves;
+        leaf_list leaves;
         const width_type subtrees;
 
 
@@ -566,12 +567,12 @@ private:
         const size_type rank_end;
 
         btree* const tree;
-        const std::vector<leaf_node*>& leaves;
+        const leaf_list& leaves;
 
     public:
 
 
-        inline TreeCreationTask(node*& _out_node, const width_type _old_slotuse, const bool _reuse_node, const level_type _level, key_type& _router, const size_type _rank_begin, const size_type _rank_end, const std::vector<leaf_node*>& _leaves, btree* const _tree) 
+        inline TreeCreationTask(node*& _out_node, const width_type _old_slotuse, const bool _reuse_node, const level_type _level, key_type& _router, const size_type _rank_begin, const size_type _rank_end, const leaf_list& _leaves, btree* const _tree) 
             : out_node(_out_node), old_slotuse(_old_slotuse), reuse_node(_reuse_node), level(_level), router(_router), rank_begin(_rank_begin), rank_end(_rank_end), tree(_tree), leaves(_leaves)
         { }
 
@@ -625,12 +626,12 @@ private:
         node* const source_node;
         const size_type rank;
         const UpdateDescriptor& upd;
-        std::vector<leaf_node*>& leaves;
+        leaf_list& leaves;
         btree* const tree;
 
     public:
 
-        inline TreeRewriteTask(node* const _source_node, const size_type _rank, const UpdateDescriptor& _upd, std::vector<leaf_node*>& _leaves, btree* const _tree)
+        inline TreeRewriteTask(node* const _source_node, const size_type _rank, const UpdateDescriptor& _upd, leaf_list& _leaves, btree* const _tree)
             : source_node(_source_node), rank(_rank), upd(_upd), leaves(_leaves), tree(_tree)
         {}
 
