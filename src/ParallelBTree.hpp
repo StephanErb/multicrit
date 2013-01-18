@@ -453,10 +453,10 @@ private:
         TOut* const out;
         const TIn* const in;
     public:
-        PrefixSum(TOut* out_, const TIn* in_)
+        inline PrefixSum(TOut* out_, const TIn* in_)
             : sum(0), out(out_), in(in_) {}
 
-        PrefixSum(PrefixSum& b, tbb::split)
+        inline PrefixSum(PrefixSum& b, tbb::split)
             : sum(0), out(b.out), in(b.in) {}
 
         template<typename Tag>
@@ -525,7 +525,7 @@ private:
     public:
         size_type num_of_created_subtrees;
 
-        TreeCreationTask(node*& _out_node, const bool _reuse_outnode, const level_type _level, key_type& _router, const size_type _rank_begin, const size_type _rank_end, const std::vector<leaf_node*>& _leaves, btree* const _tree) 
+        inline TreeCreationTask(node*& _out_node, const bool _reuse_outnode, const level_type _level, key_type& _router, const size_type _rank_begin, const size_type _rank_end, const std::vector<leaf_node*>& _leaves, btree* const _tree) 
         : out_node(_out_node), reuse_outnode(_reuse_outnode), level(_level), router(_router), rank_begin(_rank_begin), rank_end(_rank_end), leaves(_leaves), tree(_tree)
         {}
 
@@ -710,11 +710,11 @@ private:
         return hi;
     }
 
-    static inline size_type designated_subtreesize(level_type level) {
+    static inline size_type designated_subtreesize(const level_type level) {
         return (maxweight(level-1) + minweight(level-1)) / 2;
     }
 
-    static inline  size_type num_subtrees(size_type n, size_type subtreesize) {
+    static inline  size_type num_subtrees(const size_type n, const size_type subtreesize) {
         size_type num_subtrees = n / subtreesize;
         // Squeeze remaining elements into last subtree or place in own subtree? 
         // Choose what is closer to our designated subtree size
@@ -727,7 +727,7 @@ private:
         
     }
 
-    static inline level_type num_optimal_levels(size_type n) {
+    static inline level_type num_optimal_levels(const size_type n) {
         if (n <= leafslotmax) {
             return 0;
         } else {
