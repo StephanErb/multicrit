@@ -89,6 +89,7 @@ struct OpComparator {
 	}
 } opCmp;
 
+
 boost::mt19937 gen;
 
 void timeBulkConstruction(unsigned int n, int iterations) {
@@ -103,13 +104,9 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 		Tree tree;
 
 		std::vector<Operation<Label> > updates(n);
-		tbb::parallel_for(tbb::blocked_range<Label>(0, updates.size()), 
-			[&](const tbb::blocked_range<Label>& r) {
-				for (size_t i = r.begin(); i < r.end(); ++i) {
-					updates[i] = {Operation<Label>::INSERT, dist(gen)};
-				}
-			}
-		);
+		for (size_t i=0; i < updates.size(); ++i) {
+			updates[i] = {Operation<Label>::INSERT, dist(gen)};
+		}
 		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
@@ -146,13 +143,9 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 
 		// Bulk Construct the initial tree
 		std::vector<Operation<Label> > updates(n);
-		tbb::parallel_for(tbb::blocked_range<Label>(0, updates.size()), 
-			[&](const tbb::blocked_range<Label>& r) {
-				for (size_t i = r.begin(); i < r.end(); ++i) {
-					updates[i] = {Operation<Label>::INSERT, dist(gen)};
-				}
-			}
-		);
+		for (size_t i=0; i < updates.size(); ++i) {
+			updates[i] = {Operation<Label>::INSERT, dist(gen)};
+		}
 		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
 		tree.apply_updates(updates);
 		#ifndef NDEBUG
@@ -161,13 +154,9 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 
 		// Generate insert updates depending on the ratio & skew
 		updates.resize(n * ratio);
-		tbb::parallel_for(tbb::blocked_range<Label>(0, n * ratio), 
-		[&](const tbb::blocked_range<Label>& r) {
-				for (size_t i = r.begin(); i < r.end(); ++i) {
-					updates[i] = {Operation<Label>::INSERT, dist(gen)};
-				}
-			}
-		);
+		for (size_t i=0; i < updates.size(); ++i) {
+			updates[i] = {Operation<Label>::INSERT, dist(gen)};
+		}
 		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
