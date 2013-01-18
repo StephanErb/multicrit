@@ -456,7 +456,7 @@ private:
         inline PrefixSum(TOut* out_, const TIn* in_)
             : sum(0), out(out_), in(in_) {}
 
-        inline PrefixSum(PrefixSum& b, tbb::split)
+        inline PrefixSum(const PrefixSum& b, tbb::split)
             : sum(0), out(b.out), in(b.in) {}
 
         template<typename Tag>
@@ -464,18 +464,18 @@ private:
             TOut temp = sum;
             if (Tag::is_final_scan()) {
                 for(size_type i=r.begin(); i<r.end(); ++i) {
-                    temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
+                    temp += (in[i].type == TIn::INSERT ? 1 : -1);
                     out[i+1] = temp;
                 }
             } else {
                 for(size_type i=r.begin(); i<r.end(); ++i) {
-                    temp = temp + (in[i].type == TIn::INSERT ? 1 : -1);
+                    temp += (in[i].type == TIn::INSERT ? 1 : -1);
                 }
             }
             sum = temp;
         }
-        void reverse_join(PrefixSum& a) {sum = a.sum + sum;}
-        void assign(PrefixSum& b) {sum = b.sum;}
+        void reverse_join(const PrefixSum& a) {sum = a.sum + sum;}
+        void assign(const PrefixSum& b) {sum = b.sum;}
         TOut get_sum() const { return sum; }
     };
 
@@ -487,7 +487,7 @@ private:
         // computes the weight delta realized by the updates in range [begin, end)
         weightdelta.clear();
 
-        weightdelta.reserve(updates_size+1);
+        weightdelta.resize(updates_size+1);
         weightdelta[0] = 0;
         PrefixSum<Operation<key_type>, signed long> body(weightdelta.data(), _updates.data());
         tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size()), body);
@@ -500,8 +500,10 @@ private:
         BTREE_PRINT("Allocating new nodes for tree of size " << n << std::endl);
         const size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.resize(leaf_count);
+
         tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count),
             [this, &leaf_count, &n](const tbb::blocked_range<size_type>& r) {
+                
                 for (size_type i = r.begin(); i < r.end(); ++i) {
                     leaf_node* leaf = this->allocate_leaf();
                     const size_type last_leaf = leaf_count-1;
