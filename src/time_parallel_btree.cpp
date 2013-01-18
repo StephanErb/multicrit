@@ -11,6 +11,9 @@
 #include "tbb/task_scheduler_init.h"
 #include "tbb/scalable_allocator.h"
 #include "tbb/tick_count.h"
+#include "tbb/parallel_sort.h"
+#include "tbb/parallel_for.h"
+#include "tbb/blocked_range.h"
 
 #include "ParallelBTree.hpp"
 
@@ -99,11 +102,15 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 	for (int i = 0; i < iterations; ++i) {
 		Tree tree;
 
-		std::vector<Operation<Label> > updates;
-		for (unsigned int i=0; i<n; ++i) {
-			updates.push_back({Operation<Label>::INSERT, dist(gen)});
-		}
-		std::sort(updates.begin(), updates.end(), opCmp);
+		std::vector<Operation<Label> > updates(n);
+		tbb::parallel_for(tbb::blocked_range<Label>(0, updates.size()), 
+			[&](const tbb::blocked_range<Label>& r) {
+				for (size_t i = r.begin(); i < r.end(); ++i) {
+					updates[i] = {Operation<Label>::INSERT, dist(gen)};
+				}
+			}
+		);
+		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
@@ -138,22 +145,30 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		Tree tree;
 
 		// Bulk Construct the initial tree
-		std::vector<Operation<Label> > updates;
-		for (unsigned int i=0; i<n; ++i) {
-			updates.push_back({Operation<Label>::INSERT, dist(gen)});
-		}
-		std::sort(updates.begin(), updates.end(), opCmp);
+		std::vector<Operation<Label> > updates(n);
+		tbb::parallel_for(tbb::blocked_range<Label>(0, updates.size()), 
+			[&](const tbb::blocked_range<Label>& r) {
+				for (size_t i = r.begin(); i < r.end(); ++i) {
+					updates[i] = {Operation<Label>::INSERT, dist(gen)};
+				}
+			}
+		);
+		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
 		tree.apply_updates(updates);
 		#ifndef NDEBUG
 			tree.verify();
 		#endif
 
 		// Generate insert updates depending on the ratio & skew
-		updates.clear();
-		for (unsigned int i=0; i < n * ratio; ++i) {
-			updates.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
-		}
-		std::sort(updates.begin(), updates.end(), opCmp);
+		updates.resize(n * ratio);
+		tbb::parallel_for(tbb::blocked_range<Label>(0, n * ratio), 
+		[&](const tbb::blocked_range<Label>& r) {
+				for (size_t i = r.begin(); i < r.end(); ++i) {
+					updates[i] = {Operation<Label>::INSERT, dist(gen)};
+				}
+			}
+		);
+		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
