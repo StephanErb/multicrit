@@ -275,7 +275,7 @@ private:
     };
 
     typedef std::vector<Operation<key_type>> update_list;
-    typedef std::vector<leaf_node*> leaf_list;
+    typedef std::vector<tbb::atomic<leaf_node*>> leaf_list;
 
 
 public:
@@ -534,40 +534,21 @@ private:
 
 
         inline TreeRootCreationTask(node*& _out_node, const width_type _old_slotuse, const level_type _level, const size_type _size, btree* const _tree) 
-            : out_node(_out_node), old_slotuse(_old_slotuse), level(_level), size(_size), tree(_tree), subtrees(num_subtrees(_size, designated_subtreesize(_level)))
+            : out_node(_out_node), old_slotuse(_old_slotuse), level(_level), size(_size), tree(_tree), leaves(num_subtrees(_size, designated_leafsize)),
+                subtrees(num_subtrees(_size, designated_subtreesize(_level)))
         { }
 
         tbb::task* execute() {
-            allocate_new_leaves(size);
-            // Fill leaves
+            // Fill leaves via TreeRewriteTask
             set_ref_count(subtask_count+1);
             spawn_and_wait_for_all(subtasks);
+
             // Reconstruct new tree from the filled leaves
             key_type unused_router;
             TreeCreationTask& task = *new(allocate_child()) TreeCreationTask(out_node, old_slotuse, out_node != NULL, level, unused_router, 0, size, leaves, tree);
             set_ref_count(2);
             spawn_and_wait_for_all(task); // wait to keep the leaves data structure alive
             return NULL;
-        }
-
-    private:
-
-        void allocate_new_leaves(const size_type n) {
-            BTREE_PRINT("Allocating new nodes for tree of size " << n << std::endl);
-            const size_type leaf_count = num_subtrees(n, designated_leafsize);
-            leaves.resize(leaf_count);
-
-            tbb::parallel_for(tbb::blocked_range<size_type>(0, leaf_count, traits::branchingparameter_b),
-                [this, &leaf_count, &n](const tbb::blocked_range<size_type>& r) {
-
-                    for (size_type i = r.begin(); i < r.end(); ++i) {
-                        leaf_node* leaf = tree->allocate_leaf();
-                        const size_type last_leaf = leaf_count-1;
-                        leaf->slotuse = (i == last_leaf) ? n - last_leaf*designated_leafsize : designated_leafsize;
-                        this->leaves[i] = leaf;
-                    }
-                }
-            );
         }
 
     };
@@ -597,7 +578,7 @@ private:
             if (level == 0) {
                 // Just re-use the pre-alloced and filled leaf
                 leaf_node* result = leaves[rank_begin / designated_leafsize];
-                BTREE_ASSERT(rank_end - rank_begin == result->slotuse);
+                result->slotuse = rank_end - rank_begin;
                 router = result->slotkey[result->slotuse-1];
                 out_node = result;
 
@@ -630,8 +611,6 @@ private:
              }
             return NULL;
         }
-
-
     };
 
 
@@ -702,11 +681,10 @@ private:
                     }
                     subtree_rank += subtree_updates[i].weight;
                 }
-                tbb::task& task = tasks.pop_front();
-                set_ref_count(task_count);
-                if (task_count > 1) spawn(tasks);
+                set_ref_count(task_count+1);
+                spawn_and_wait_for_all(tasks);
                 tree->free_node(source_node);
-                return &task;
+                return NULL;
             }
         }
 
@@ -746,7 +724,7 @@ private:
             }
             width_type out = offset_in_leaf; // position where to write
 
-            leaf_node* result = leaves[leaf_number];
+            leaf_node* result = getOrCreateLeaf(leaf_number);
             const leaf_node* const leaf = (leaf_node*)(source_node);
 
             for (size_type i = upd_begin; i != upd_end; ++i) {
@@ -757,7 +735,7 @@ private:
                         result->slotkey[out++] = leaf->slotkey[in++];
 
                         if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                            result = leaves[++leaf_number];
+                            result = getOrCreateLeaf(++leaf_number);
                             out = 0;
                         }
                     }
@@ -768,14 +746,14 @@ private:
                         result->slotkey[out++] = leaf->slotkey[in++];
 
                         if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                            result = leaves[++leaf_number];
+                            result = getOrCreateLeaf(++leaf_number);
                             out = 0;
                         }
                     }
                     result->slotkey[out++] = tree->updates[i].data;
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result = leaves[++leaf_number];
+                        result = getOrCreateLeaf(++leaf_number);
                         out = 0;
                     }
                     break;
@@ -787,7 +765,7 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
-                        result = leaves[++leaf_number];
+                        result = getOrCreateLeaf(++leaf_number);
                         out = 0;
                     }
                 }
@@ -798,6 +776,17 @@ private:
 
         inline bool hasNextLeaf(const size_type leaf_count) const {
             return leaf_count+1 < leaves.size();
+        }
+
+        leaf_node* getOrCreateLeaf(size_type leaf_number) {
+            if (leaves[leaf_number] == NULL) {
+
+                leaf_node* tmp = tree->allocate_leaf();
+                if (leaves[leaf_number].compare_and_swap(tmp, NULL) != NULL)
+                    // Another thread installed the value, so throw away mine.
+                    tree->free_node(tmp);
+            }
+            return leaves[leaf_number];
         }
 
     };
