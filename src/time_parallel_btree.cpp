@@ -108,7 +108,7 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 		for (size_t i=0; i < updates.size(); ++i) {
 			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
-		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
+		std::sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
@@ -148,7 +148,7 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		for (size_t i=0; i < updates.size(); ++i) {
 			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
-		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
+		std::sort(updates.begin(), updates.end(), opCmp);
 		tree.apply_updates(updates);
 		#ifndef NDEBUG
 			tree.verify();
@@ -159,7 +159,7 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		for (size_t i=0; i < updates.size(); ++i) {
 			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
-		tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
+		std::sort(updates.begin(), updates.end(), opCmp);
 
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
