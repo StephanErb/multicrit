@@ -656,7 +656,6 @@ private:
            BTREE_PRINT("Rewriting tree " << source_node << " on level " << source_node->level << " while applying updates [" << upd.upd_begin << ", " << upd.upd_end << ")" << std::endl);
 
             if (source_node->isleafnode()) {
-
                 if (resultTreeIsSmall()) {
                     write_updated_leaf_to_new_tree(/*start index*/0, rank, upd.upd_begin, upd.upd_end);
                 } else {
@@ -672,6 +671,8 @@ private:
                         }
                     );
                 }
+                tree->free_node(source_node);
+                return NULL;
             } else {
                 const inner_node* const inner = (inner_node*) source_node;
                 const size_type min_weight = minweight(inner->level-1);
@@ -701,11 +702,12 @@ private:
                     }
                     subtree_rank += subtree_updates[i].weight;
                 }
-                set_ref_count(task_count+1);
-                spawn_and_wait_for_all(tasks);
+                tbb::task& task = tasks.pop_front();
+                set_ref_count(task_count);
+                if (task_count > 1) spawn(tasks);
+                tree->free_node(source_node);
+                return &task;
             }
-            tree->free_node(source_node);
-            return NULL;
         }
 
     private:
