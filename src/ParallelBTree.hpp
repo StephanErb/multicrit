@@ -428,10 +428,7 @@ public:
         level_type level = num_optimal_levels(new_size);
         bool rebuild_needed = (level < root->level && size() < minweight(root->level)) || size() > maxweight(root->level);
 
-        UpdateDescriptor upd;
-        upd.upd_begin = 0;
-        upd.upd_end = _updates.size();
-        upd.weight = new_size;
+        UpdateDescriptor upd = {rebuild_needed, new_size, 0, _updates.size()};
 
         if (rebuild_needed) {
             node* new_root = NULL; 
@@ -587,18 +584,18 @@ private:
                 const size_type designated_treesize = designated_subtreesize(level);
                 const width_type subtrees = num_subtrees(rank_end - rank_begin, designated_treesize);
 
-                BTREE_PRINT("Creating inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
+                BTREE_PRINT((reuse_node ? "Filling" : "Creating") << " inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
                     << designated_treesize << std::endl);
 
                 const width_type new_slotuse = subtrees+old_slotuse;
                 inner_node* result = reuse_node ? static_cast<inner_node*>(out_node) : tree->allocate_inner(level);
+                if (!reuse_node) result->slotuse = new_slotuse;
                 out_node = result;
-                out_node->slotuse = new_slotuse;
 
                 BTREE_ASSERT(new_slotuse <= innerslotmax);
                 tbb::task_list tasks;
 
-                auto& c = *new(allocate_continuation()) TreeCreationContinuationTask(result, new_slotuse, router);
+                auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(result, router, new_slotuse);
                 c.set_ref_count(subtrees);
 
                 size_type rank = rank_begin;
@@ -619,14 +616,13 @@ private:
         }
     };
 
-    class TreeCreationContinuationTask: public tbb::task {
+    class NodeFinalizerContinuationTask: public tbb::task {
         const inner_node* const result;
         const width_type slotuse;
         key_type& router;
-
     public:
 
-        TreeCreationContinuationTask(const inner_node* const _result, const width_type _slotuse, key_type& _router)
+        NodeFinalizerContinuationTask(const inner_node* const _result, key_type& _router, const width_type _slotuse)
             : result(_result), slotuse(_slotuse), router(_router)
         { }
 
@@ -634,6 +630,7 @@ private:
             router = result->slotkey[slotuse-1];
             return NULL;
         }
+
     };
 
 
@@ -824,11 +821,11 @@ private:
 
         node*& upd_node;
         key_type& router;
-        const UpdateDescriptor& upd;
+        const UpdateDescriptor upd;
         btree* const tree;
 
     public:
-        inline TreeUpdateTask(node*& _node, key_type& _router, const UpdateDescriptor& _upd, btree* const _tree)
+        inline TreeUpdateTask(node*& _node, key_type& _router, const UpdateDescriptor _upd, btree* const _tree)
             : upd_node(_node), router(_router), upd(_upd), tree(_tree)
         {}
 
@@ -837,6 +834,7 @@ private:
 
             if (upd_node->isleafnode()) {
                 update_leaf_in_current_tree();
+                return NULL;
             } else {
                 inner_node* const inner = static_cast<inner_node*>(upd_node);
                 const size_type min_weight = minweight(inner->level-1);
@@ -860,17 +858,20 @@ private:
                 width_type task_count = 0;
 
                 if (!rebalancing_needed) {
+                    auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(inner, router, inner->slotuse);
+
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(subtree_updates[i])) {
-                            tasks.push_back(*new(allocate_child()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], subtree_updates[i], tree));
+                            tasks.push_back(*new(c.allocate_child()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], subtree_updates[i], tree));
                             ++task_count;                            
                             inner->weight[i] = subtree_updates[i].weight;
                         }
                     }
-                    set_ref_count(task_count+1);
-                    spawn_and_wait_for_all(tasks);
-                    router = inner->slotkey[inner->slotuse-1];
+                    c.set_ref_count(task_count);
+                    auto& task = tasks.pop_front();
+                    spawn(tasks);
+                    return &task;
                 } else {
                     BTREE_PRINT("Rewrite session started for " << inner << " on level " << inner->level << std::endl);
 
@@ -911,30 +912,30 @@ private:
                             tasks.push_back(task);
                             ++task_count;
                         } else {
-                            BTREE_PRINT("Copying " << in << " to " << out << " " << inner->childid[in] << std::endl);
+                            BTREE_PRINT("Copying " << inner->childid[in] << " from " << in << " to " << out << " in " << result << std::endl);
 
+                            result->weight[out] = subtree_updates[in].weight;
+                            result->childid[out] = inner->childid[in];
                             if (hasUpdates(subtree_updates[in])) {
-                                tasks.push_back(*new(allocate_child()) TreeUpdateTask(inner->childid[in], result->slotkey[out], subtree_updates[in], tree));
+                                tasks.push_back(*new(allocate_child()) TreeUpdateTask(result->childid[out], result->slotkey[out], subtree_updates[in], tree));
                                 ++task_count;
                             } else {
                                 result->slotkey[out] = inner->slotkey[in];
                             }
-                            result->weight[out] = subtree_updates[in].weight;
-                            result->childid[out] = inner->childid[in];
                             ++out;
                             ++in;
                         }
                     }
+                    result->slotuse = out;
                     set_ref_count(task_count+1);
                     spawn_and_wait_for_all(tasks);
-
                     router = result->slotkey[out-1];
-                    result->slotuse = out;
                     tree->free_node(upd_node);
                     upd_node = result;
+
+                    return NULL;
                 }
             }
-            return NULL;
         }
 
     private:
@@ -1145,6 +1146,9 @@ private:
                 size_type itemcount = vstats.itemcount;
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
 
+                if (inner->weight[slot] != vstats.itemcount - itemcount) {
+                    print_node(inner, 0, true);
+                }
                 assert(inner->weight[slot] == vstats.itemcount - itemcount);
 
                 BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
