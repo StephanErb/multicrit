@@ -644,13 +644,13 @@ private:
 
         node* const source_node;
         const size_type rank;
-        const UpdateDescriptor& upd;
+        const UpdateDescriptor upd;
         leaf_list& leaves;
         btree* const tree;
 
     public:
 
-        inline TreeRewriteTask(node* const _source_node, const size_type _rank, const UpdateDescriptor& _upd, leaf_list& _leaves, btree* const _tree)
+        TreeRewriteTask(node* const _source_node, const size_type _rank, const UpdateDescriptor _upd, leaf_list& _leaves, btree* const _tree)
             : source_node(_source_node), rank(_rank), upd(_upd), leaves(_leaves), tree(_tree)
         {}
 
@@ -696,18 +696,21 @@ private:
                 tbb::task_list tasks;
                 width_type task_count = 0;
 
+                auto& c = *new(allocate_continuation()) tbb::empty_task(); // our parent will wait for this one
+
                 size_type subtree_rank = rank;
                 for (width_type i = 0; i < inner->slotuse; ++i) {
                     if (subtree_updates[i].weight > 0) {
-                        tasks.push_back(*new(allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], leaves, tree));
+                        tasks.push_back(*new(c.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], leaves, tree));
                         ++task_count;
                     }
                     subtree_rank += subtree_updates[i].weight;
                 }
-                set_ref_count(task_count+1);
-                spawn_and_wait_for_all(tasks);
+                c.set_ref_count(task_count);
+                auto& task = tasks.pop_front(); // use scheduler bypass for one task
+                spawn(tasks);
                 tree->free_node(source_node);
-                return NULL;
+                return &task;
             }
         }
 
