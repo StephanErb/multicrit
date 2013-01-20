@@ -40,6 +40,7 @@
 #include "tbb/atomic.h"
 #include "tbb/task.h"
 #include "tbb/enumerable_thread_specific.h"
+#include "tbb/cache_aligned_allocator.h"
 
 
 // *** Debugging Macros
@@ -275,7 +276,7 @@ private:
     };
 
     typedef std::vector<Operation<key_type>> update_list;
-    typedef std::vector<tbb::atomic<leaf_node*>> leaf_list;
+    typedef std::vector<tbb::atomic<leaf_node*>, tbb::cache_aligned_allocator<tbb::atomic<leaf_node*>>> leaf_list;
 
 
 public:
@@ -581,7 +582,7 @@ private:
                 result->slotuse = rank_end - rank_begin;
                 router = result->slotkey[result->slotuse-1];
                 out_node = result;
-
+                return NULL;
             } else {
                 const size_type designated_treesize = designated_subtreesize(level);
                 const width_type subtrees = num_subtrees(rank_end - rank_begin, designated_treesize);
@@ -589,26 +590,48 @@ private:
                 BTREE_PRINT("Creating inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
                     << designated_treesize << std::endl);
 
-                inner_node* result = reuse_node ? static_cast<inner_node*>(out_node) : tree->allocate_inner(level);
                 const width_type new_slotuse = subtrees+old_slotuse;
+                inner_node* result = reuse_node ? static_cast<inner_node*>(out_node) : tree->allocate_inner(level);
+                out_node = result;
+                out_node->slotuse = new_slotuse;
 
                 BTREE_ASSERT(new_slotuse <= innerslotmax);
                 tbb::task_list tasks;
 
+                auto& c = *new(allocate_continuation()) TreeCreationContinuationTask(result, new_slotuse, router);
+                c.set_ref_count(subtrees);
+
                 size_type rank = rank_begin;
-                for (width_type i = old_slotuse; i < new_slotuse; ++i) {
-                    const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
-                    result->weight[i] = weight;
-                    tasks.push_back(*new(allocate_child()) TreeCreationTask(
-                        result->childid[i], 0, false, level-1, result->slotkey[i], rank, rank+weight, leaves, tree));
-                    rank += weight;
+                for (width_type i = old_slotuse; i < new_slotuse-1; ++i) {
+                    result->weight[i] = designated_treesize;
+                    tasks.push_back(*new(c.allocate_child()) TreeCreationTask(
+                        result->childid[i], 0, false, level-1, result->slotkey[i], rank, rank+designated_treesize, leaves, tree));
+                    rank += designated_treesize;
                 }
-                set_ref_count(subtrees+1);
-                spawn_and_wait_for_all(tasks);
-                result->slotuse = new_slotuse;
-                router = result->slotkey[new_slotuse-1];
-                out_node = result;
+                // Use scheduler bypass for the last task
+                result->weight[new_slotuse-1] = rank_end - rank;
+                auto& task = *new(c.allocate_child()) TreeCreationTask(
+                        result->childid[new_slotuse-1], 0, false, level-1, result->slotkey[new_slotuse-1], rank, rank_end, leaves, tree);
+
+                spawn(tasks);
+                return &task;
              }
+        }
+    };
+
+    class TreeCreationContinuationTask: public tbb::task {
+        const inner_node* const result;
+        const width_type slotuse;
+        key_type& router;
+
+    public:
+
+        TreeCreationContinuationTask(const inner_node* const _result, const width_type _slotuse, key_type& _router)
+            : result(_result), slotuse(_slotuse), router(_router)
+        { }
+
+        tbb::task* execute() {
+            router = result->slotkey[slotuse-1];
             return NULL;
         }
     };
