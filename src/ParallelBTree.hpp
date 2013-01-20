@@ -41,6 +41,7 @@
 #include "tbb/task.h"
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"
+#include "tbb/scalable_allocator.h"
 
 
 // *** Debugging Macros
@@ -68,7 +69,7 @@
 
 // Number of leaves that need to be written before we try perform it in parallel
 #ifndef REWRITE_THRESHOLD
-#define REWRITE_THRESHOLD 2
+#define REWRITE_THRESHOLD 1
 #endif
 
 template<typename data_type>
@@ -84,9 +85,9 @@ struct btree_default_traits {
     /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
     static const bool   selfverify = false;
 
-    /// Configure nodes to have a fixed size of 8 cache lines. 
-    static const int    leafparameter_k = BTREE_MAX( 8, LEAF_NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 8,  (INNER_NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key) + sizeof(size_t) + sizeof(void*)))/4 );
+    /// Configure nodes to have a fixed size of X cache lines. 
+    static const int    leafparameter_k = BTREE_MAX( 8, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
+    static const int    branchingparameter_b = BTREE_MAX( 8, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key) + sizeof(size_t) + sizeof(void*)))/4 );
 };
 
 /** 
@@ -95,7 +96,7 @@ struct btree_default_traits {
 template <typename _Key,
           typename _Compare = std::less<_Key>,
           typename _Traits = btree_default_traits<_Key>,
-          typename _Alloc = std::allocator<_Key>>
+          typename _Alloc = tbb::scalable_allocator<_Key>>
 class btree {
     friend class TreeCreationTask;
     friend class TreeRewriteTask;
@@ -276,7 +277,9 @@ private:
     };
 
     typedef std::vector<Operation<key_type>> update_list;
-    typedef std::vector<tbb::atomic<leaf_node*>, tbb::cache_aligned_allocator<tbb::atomic<leaf_node*>>> leaf_list;
+
+    typedef typename _Alloc::template rebind<tbb::atomic<leaf_node*>>::other leaf_listalloc_type;
+    typedef std::vector<tbb::atomic<leaf_node*>, leaf_listalloc_type> leaf_list;
 
 
 public:

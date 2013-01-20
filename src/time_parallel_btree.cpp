@@ -80,7 +80,7 @@ Comparator cmp;
 	};
 	typedef RedBlackTree Tree;
 #else
-	typedef btree<Label, Comparator, btree_default_traits<Label>, tbb::scalable_allocator<Label>> Tree;
+	typedef btree<Label, Comparator, btree_default_traits<Label>> Tree;
 #endif
 
 struct OpComparator {
@@ -99,10 +99,9 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 	std::fill_n(memory, iterations, 0);
 
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
-	tbb::scalable_allocator<Label> allocator;
 
 	for (int i = 0; i < iterations; ++i) {
-		Tree tree(n, allocator);
+		Tree tree(n);
 
 		std::vector<Operation<Label> > updates(n);
 		for (size_t i=0; i < updates.size(); ++i) {
@@ -138,10 +137,9 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
-	tbb::scalable_allocator<Label> allocator;
 
 	for (int i = 0; i < iterations; ++i) {
-		Tree tree(n, allocator);
+		Tree tree(n);
 
 		// Bulk Construct the initial tree
 		std::vector<Operation<Label> > updates(n);
