@@ -145,7 +145,6 @@ int main(int argc, char ** args) {
 	double ratio = 0;
 	double skew = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
-	int test_mode = 0;
 
 	int c;
 	while( (c = getopt( argc, args, "c:r:s:p:t:") ) != -1  ){
@@ -170,12 +169,12 @@ int main(int argc, char ** args) {
 		std::cout << "# Bulk Insertion" << std::endl;
 	} else {
 		std::cout << "# Bulk Construction" << std::endl;
-		timeBulkConstruction(100, iterations, p);
-		timeBulkConstruction(1000, iterations, p);
-		timeBulkConstruction(10000, iterations, p);
-		timeBulkConstruction(100000, iterations, p);
-		timeBulkConstruction(1000000, iterations, p);
-		timeBulkConstruction(10000000, iterations, p);
+		timeBulkInsertion(100, ratio, skew, iterations, p);
+		timeBulkInsertion(1000, ratio, skew, iterations, p);
+		timeBulkInsertion(10000, ratio, skew, iterations, p);
+		timeBulkInsertion(100000, ratio, skew, iterations, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations, p);
+		timeBulkInsertion(10000000, ratio, skew, iterations, p);
 	}
 	return 0;
 }
