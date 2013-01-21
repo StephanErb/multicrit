@@ -1,5 +1,8 @@
 #undef NDEBUG // uncomment to enable assertions
 //#define BTREE_DEBUG // uncomment to enable debug print
+#define TBB_USE_DEBUG 1
+#define TBB_USE_ASSERT 1
+#define TBB_USE_THREADING_TOOLS 1
 
 //#include "BTree.hpp"
 #include "ParallelBTree.hpp"
