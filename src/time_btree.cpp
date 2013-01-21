@@ -19,6 +19,8 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
+#include "tbb/scalable_allocator.h"
+
 #include <valgrind/callgrind.h>
 
 /*struct Label {
@@ -73,7 +75,7 @@ Comparator cmp;
 	};
 	typedef RedBlackTree Tree;
 #else
-	typedef btree<Label, Comparator> Tree;
+	typedef btree<Label, Comparator, btree_default_traits<Label>, tbb::scalable_allocator<Label>> Tree;
 #endif
 
 struct OpComparator {
@@ -178,9 +180,10 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 	double ratio = 0.1;
 	double skew = 1;
+	int test_mode = 0;
 
 	int c;
-	while( (c = getopt( argc, args, "c:r:s:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:r:s:t:") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
@@ -191,26 +194,31 @@ int main(int argc, char ** args) {
 		case 's':
 			skew = atof(optarg);
 			break;
+		case 't':
+			test_mode = atoi(optarg);
+			break;
 		case '?':
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	std::cout << "# Bulk Construction" << std::endl;
-	timeBulkConstruction(100, iterations);
-	timeBulkConstruction(1000, iterations);
-	timeBulkConstruction(10000, iterations);
-	timeBulkConstruction(100000, iterations);
-	timeBulkConstruction(1000000, iterations);
-	timeBulkConstruction(10000000, iterations);
-
-	std::cout << "\n# Bulk Insertion" << std::endl;
-	timeBulkInsertion(100, ratio, skew, iterations);
-	timeBulkInsertion(1000, ratio, skew, iterations);
-	timeBulkInsertion(10000, ratio, skew, iterations);
-	timeBulkInsertion(100000, ratio, skew, iterations);
-	timeBulkInsertion(1000000, ratio, skew, iterations);
-	timeBulkInsertion(10000000, ratio, skew, iterations);
-
+	if (test_mode == 1) {
+		std::cout << "# Bulk Construction" << std::endl;
+		timeBulkConstruction(100, iterations);
+		timeBulkConstruction(1000, iterations);
+		timeBulkConstruction(10000, iterations);
+		timeBulkConstruction(100000, iterations);
+		timeBulkConstruction(1000000, iterations);
+		timeBulkConstruction(10000000, iterations);
+	}
+	if (test_mode == 2) {
+		std::cout << "# Bulk Insertion" << std::endl;
+		timeBulkInsertion(100, ratio, skew, iterations);
+		timeBulkInsertion(1000, ratio, skew, iterations);
+		timeBulkInsertion(10000, ratio, skew, iterations);
+		timeBulkInsertion(100000, ratio, skew, iterations);
+		timeBulkInsertion(1000000, ratio, skew, iterations);
+		timeBulkInsertion(10000000, ratio, skew, iterations);
+	}
 	return 0;
 }
 

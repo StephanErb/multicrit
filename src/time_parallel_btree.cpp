@@ -88,7 +88,7 @@ struct OpComparator {
 
 boost::mt19937 gen;
 
-void timeBulkConstruction(unsigned int n, int iterations) {
+void timeBulkConstruction(unsigned int n, int iterations, int p) {
 	double timings[iterations];
 	double memory[iterations];
 	std::fill_n(timings, iterations, 0);
@@ -121,11 +121,11 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 		#endif
 	}
 	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
-		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b
-		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, " << std::endl;
+		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << p
+		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, p" << std::endl;
 }
 
-void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations) {
+void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations, int p) {
 	double timings[iterations];
 	double memory[iterations];
 	std::fill_n(timings, iterations, 0);
@@ -171,18 +171,19 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		#endif
 	}
 	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
-		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew
-		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, ratio, skew" << std::endl;
+		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
+		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, ratio, skew, p" << std::endl;
 }
 
 int main(int argc, char ** args) {
 	int iterations = 1;
 	double ratio = 0.1;
 	double skew = 1;
-	int num_cores = tbb::task_scheduler_init::default_num_threads();
+	int p = tbb::task_scheduler_init::default_num_threads();
+	int test_mode = 0;
 
 	int c;
-	while( (c = getopt( argc, args, "c:r:s:p:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:r:s:p:t:") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
@@ -191,34 +192,39 @@ int main(int argc, char ** args) {
 			ratio = atof(optarg);
 			break;
 		case 'p':
-			num_cores = atoi(optarg);
+			p = atoi(optarg);
 			break;
 		case 's':
 			skew = atof(optarg);
+			break;
+		case 't':
+			test_mode = atoi(optarg);
 			break;
 		case '?':
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	std::cout << "# Running on " << num_cores << " threads" << std::endl;
-	tbb::task_scheduler_init init(num_cores);
+	std::cout << "# Running on " << p << " threads" << std::endl;
+	tbb::task_scheduler_init init(p);
 
-	std::cout << "# Bulk Construction" << std::endl;
-	timeBulkConstruction(100, iterations);
-	timeBulkConstruction(1000, iterations);
-	timeBulkConstruction(10000, iterations);
-	timeBulkConstruction(100000, iterations);
-	timeBulkConstruction(1000000, iterations);
-	timeBulkConstruction(10000000, iterations);
-
-	std::cout << "\n# Bulk Insertion" << std::endl;
-	timeBulkInsertion(100, ratio, skew, iterations);
-	timeBulkInsertion(1000, ratio, skew, iterations);
-	timeBulkInsertion(10000, ratio, skew, iterations);
-	timeBulkInsertion(100000, ratio, skew, iterations);
-	timeBulkInsertion(1000000, ratio, skew, iterations);
-	timeBulkInsertion(10000000, ratio, skew, iterations);
-
+	if (test_mode == 1) {
+		std::cout << "# Bulk Construction" << std::endl;
+		timeBulkConstruction(100, iterations, p);
+		timeBulkConstruction(1000, iterations, p);
+		timeBulkConstruction(10000, iterations, p);
+		timeBulkConstruction(100000, iterations, p);
+		timeBulkConstruction(1000000, iterations, p);
+		timeBulkConstruction(10000000, iterations, p);
+	}
+	if (test_mode == 2) {
+		std::cout << "# Bulk Insertion" << std::endl;
+		timeBulkInsertion(100, ratio, skew, iterations, p);
+		timeBulkInsertion(1000, ratio, skew, iterations, p);
+		timeBulkInsertion(10000, ratio, skew, iterations, p);
+		timeBulkInsertion(100000, ratio, skew, iterations, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations, p);
+		timeBulkInsertion(10000000, ratio, skew, iterations, p);
+	}
 	return 0;
 }
 
