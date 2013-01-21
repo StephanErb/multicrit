@@ -59,7 +59,7 @@
 
 template<typename data_type>
 struct Operation {
-    enum OpType {INSERT, DELETE};
+    enum OpType {INSERT=1, DELETE=-1};
     OpType type;
     data_type data;
 };
@@ -70,9 +70,9 @@ struct btree_default_traits {
     /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
     static const bool   selfverify = false;
 
-    /// Configure nodes to have a fixed size of 8 cache lines. 
-    static const int    leafparameter_k = BTREE_MAX( 8, LEAF_NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 8,  (INNER_NODE_WIDTH * DCACHE_LINESIZE / (sizeof(_Key) + sizeof(size_t) + sizeof(void*)))/4 );
+    /// Configure nodes to have a fixed size of X cache lines. 
+    static const int    leafparameter_k = BTREE_MAX( 8, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
+    static const int    branchingparameter_b = BTREE_MAX( 8, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key) + sizeof(size_t) + sizeof(void*)))/4 );
 };
 
 /** 
@@ -216,6 +216,12 @@ public:
         inline double avgfill_leaves() const {
             return static_cast<double>(itemcount) / (leaves * leafslotmax);
         }
+
+#ifdef NDEBUG
+        static const bool gather_stats = false;
+#else 
+        static const bool gather_stats = true;
+#endif
     };
 
 private:
@@ -232,7 +238,7 @@ private:
 
     /// Key comparison object. More comparison functions are generated from
     /// this < relation.
-    key_compare key_less;
+    static key_compare key_less;
 
     /// Memory allocator.
     allocator_type allocator;
@@ -240,12 +246,13 @@ private:
     // Currently running updates
     const Operation<key_type>* updates;
     size_type updates_size;
-
-    // Weight delta of currently running updates
-    std::vector<unsigned long> weightdelta;
-
+    
     // Leaves created during the current reconstruction effort
     std::vector<leaf_node*> leaves;
+
+    // Weight delta of currently running updates
+    typedef std::vector<signed long> weightdelta_list;
+    weightdelta_list weightdelta;
 
     struct UpdateDescriptor {
         bool rebalancing_needed;
@@ -263,8 +270,8 @@ public:
 
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
-    explicit inline btree(const allocator_type &alloc = allocator_type())
-        : root(NULL), allocator(alloc) 
+    explicit inline btree(size_type size_hint=0, const allocator_type &alloc = allocator_type())
+        : root(NULL), allocator(alloc), weightdelta(size_hint+1)
     {
         spare_leaf = allocate_leaf();
         stats = tree_stats(); // reset stats after leaf creation
@@ -283,18 +290,18 @@ private:
     // *** Convenient Key Comparison Functions Generated From key_less
 
     /// True if a <= b
-    inline bool key_lessequal(const key_type &a, const key_type &b) const {
+    static inline bool key_lessequal(const key_type &a, const key_type &b) {
         return !key_less(b, a);
     }
 
     /// True if a >= b
-    inline bool key_greaterequal(const key_type &a, const key_type &b) const {
+    static inline bool key_greaterequal(const key_type &a, const key_type &b) {
         return !key_less(a, b);
     }
 
     /// True if a == b. This requires the < relation to be a total order,
     /// otherwise the B+ tree cannot be sorted.
-    inline bool key_equal(const key_type &a, const key_type &b) const {
+    static inline bool key_equal(const key_type &a, const key_type &b) {
         return !key_less(a, b) && !key_less(b, a);
     }
 
@@ -312,14 +319,14 @@ private:
     inline leaf_node* allocate_leaf() {
         leaf_node *n = new (leaf_node_allocator().allocate(1)) leaf_node();
         n->initialize();
-        stats.leaves++;
+        if (stats.gather_stats) stats.leaves++;
         return n;
     }
 
     inline inner_node* allocate_inner(level_type level) {
         inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
         n->initialize(level);
-        stats.innernodes++;
+        if (stats.gather_stats) stats.innernodes++;
         return n;
     }
 
@@ -329,13 +336,13 @@ private:
             typename leaf_node::alloc_type a(leaf_node_allocator());
             a.destroy(ln);
             a.deallocate(ln, 1);
-            stats.leaves--;
+            if (stats.gather_stats) stats.leaves--;
         } else {
             inner_node *in = static_cast<inner_node*>(n);
             typename inner_node::alloc_type a(inner_node_allocator());
             a.destroy(in);
             a.deallocate(in, 1);
-            stats.innernodes--;
+            if (stats.gather_stats) stats.innernodes--;
         }
     }
 
@@ -443,7 +450,7 @@ private:
             long val = 0; // exclusive prefix sum
             weightdelta[0] = val;
             for (size_type i = 0; i < updates_size; ++i) {
-                weightdelta[i+1] = val = val + (updates[i].type == Operation<key_type>::INSERT ? 1 : -1);
+                weightdelta[i+1] = val = val + updates[i].type;
             }
             return size() + weightdelta[updates_size];
         }
@@ -645,10 +652,9 @@ private:
 
         num_subtrees += diff_in_single_tree_case >= diff_in_extra_tree_case;
         return num_subtrees;
-        
     }
 
-    static inline level_type num_optimal_levels(size_type n) {
+    static inline level_type num_optimal_levels(const size_type n) {
         if (n <= leafslotmax) {
             return 0;
         } else {
@@ -659,7 +665,7 @@ private:
     }
 
     void write_updated_leaf_to_new_tree(node*& node, const size_type rank, const size_type begin, const size_type end) {
-        BTREE_PRINT("Rewriting updated leaf " << node << " starting with rank " << rank);
+        BTREE_PRINT("Rewriting updated leaf " << node << " starting with rank " << rank << " upd range" << begin << " " << end);
 
         size_type leaf_number = rank / designated_leafsize;
         width_type offset_in_leaf = rank % designated_leafsize;
@@ -668,7 +674,7 @@ private:
         width_type out = offset_in_leaf; // position where to write
 
         leaf_node* result = leaves[leaf_number];
-        const leaf_node* leaf = static_cast<leaf_node*>(node);
+        const leaf_node* leaf = (leaf_node*)(node);
 
         for (size_type i = begin; i != end; ++i) {
             switch (updates[i].type) {
@@ -867,6 +873,9 @@ private:
                 size_type itemcount = vstats.itemcount;
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
 
+                if (inner->weight[slot] != vstats.itemcount - itemcount) {
+                    print_node(inner, 0, true);
+                }
                 assert(inner->weight[slot] == vstats.itemcount - itemcount);
 
                 BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
