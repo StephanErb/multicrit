@@ -28,14 +28,14 @@ TESTS=test_labelset test_labelsetting test_btree
 TARGETS = $(TESTS) $(CODE)
 PARALLEL = time_parallel_btree test_btree
 
-DEFAULT_OPS =  -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE)
+DEFAULT_OPS =  -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
 
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
 CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
 CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
 
-CXXLIBS= -lrt
+CXXLIBS= -lrt -ltbbmalloc
 CXXPLIBS= -lrt -ltbb -ltbbmalloc
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
