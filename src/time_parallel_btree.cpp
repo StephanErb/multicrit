@@ -136,7 +136,7 @@ void timeBulkInsertion(unsigned int k, double ratio, double skew, int iterations
 		#endif
 	}
 	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
-		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
+		<< " " << k << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
 		<< " # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p" << std::endl;
 }
 
