@@ -1,5 +1,5 @@
 //#undef NDEBUG // uncomment to enable assertions
-//#define BTREE_DEBUG
+#define BTREE_DEBUG
 
 #include <unistd.h>
 #include <iostream>
@@ -9,11 +9,7 @@
 #include <set>
 
 #include "tbb/task_scheduler_init.h"
-#include "tbb/scalable_allocator.h"
 #include "tbb/tick_count.h"
-#include "tbb/parallel_sort.h"
-#include "tbb/parallel_for.h"
-#include "tbb/blocked_range.h"
 
 #include "ParallelBTree.hpp"
 
@@ -80,7 +76,7 @@ Comparator cmp;
 	};
 	typedef RedBlackTree Tree;
 #else
-	typedef btree<Label, Comparator, btree_default_traits<Label>> Tree;
+	typedef btree<Label, Comparator> Tree;
 #endif
 
 struct OpComparator {

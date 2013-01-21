@@ -1,4 +1,5 @@
 //#undef NDEBUG // uncomment to enable assertions
+//#define BTREE_DEBUG
 
 #include <unistd.h>
 #include <iostream>
@@ -81,6 +82,7 @@ struct OpComparator {
 	}
 } opCmp;
 
+
 boost::mt19937 gen;
 
 void timeBulkConstruction(unsigned int n, int iterations) {
@@ -92,11 +94,11 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
 
 	for (int i = 0; i < iterations; ++i) {
-		Tree tree;
+		Tree tree(n);
 
-		std::vector<Operation<Label> > updates;
-		for (unsigned int i=0; i<n; ++i) {
-			updates.push_back({Operation<Label>::INSERT, dist(gen)});
+		std::vector<Operation<Label> > updates(n);
+		for (size_t i=0; i < updates.size(); ++i) {
+			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 
@@ -116,7 +118,7 @@ void timeBulkConstruction(unsigned int n, int iterations) {
 			tree.verify();
 		#endif
 	}
-	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0)/1024 << " "  << getPeakMemorySize()/1024
+	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
 		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b
 		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, " << std::endl;
 }
@@ -131,12 +133,12 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
 	for (int i = 0; i < iterations; ++i) {
-		Tree tree;
+		Tree tree(n);
 
 		// Bulk Construct the initial tree
-		std::vector<Operation<Label> > updates;
-		for (unsigned int i=0; i<n; ++i) {
-			updates.push_back({Operation<Label>::INSERT, dist(gen)});
+		std::vector<Operation<Label> > updates(n);
+		for (size_t i=0; i < updates.size(); ++i) {
+			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		tree.apply_updates(updates);
@@ -145,9 +147,9 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		#endif
 
 		// Generate insert updates depending on the ratio & skew
-		updates.clear();
-		for (unsigned int i=0; i < n * ratio; ++i) {
-			updates.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
+		updates.resize(n * ratio);
+		for (size_t i=0; i < updates.size(); ++i) {
+			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 
@@ -167,7 +169,7 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 			tree.verify();
 		#endif
 	}
-	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0)/1024 << " "  << getPeakMemorySize()/1024
+	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
 		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew
 		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, ratio, skew" << std::endl;
 }
