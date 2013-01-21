@@ -88,48 +88,13 @@ struct OpComparator {
 
 boost::mt19937 gen;
 
-void timeBulkConstruction(unsigned int n, int iterations, int p) {
+void timeBulkInsertion(unsigned int k, double ratio, double skew, int iterations, int p) {
 	double timings[iterations];
 	double memory[iterations];
 	std::fill_n(timings, iterations, 0);
 	std::fill_n(memory, iterations, 0);
 
-	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
-
-	for (int i = 0; i < iterations; ++i) {
-		Tree tree(n);
-
-		std::vector<Operation<Label> > updates(n);
-		for (size_t i=0; i < updates.size(); ++i) {
-			updates[i] = {Operation<Label>::INSERT, dist(gen)};
-		}
-		std::sort(updates.begin(), updates.end(), opCmp);
-
-		memory[i] = getCurrentMemorySize();
-		tbb::tick_count start = tbb::tick_count::now();
-
-		CALLGRIND_START_INSTRUMENTATION;
-		tree.apply_updates(updates);
-		CALLGRIND_STOP_INSTRUMENTATION;
-
-		tbb::tick_count stop = tbb::tick_count::now();
-		timings[i] = (stop-start).seconds() * 1000.0;
-		memory[i] = getCurrentMemorySize() - memory[i];
-
-		#ifndef NDEBUG
-			tree.verify();
-		#endif
-	}
-	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
-		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << p
-		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, p" << std::endl;
-}
-
-void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations, int p) {
-	double timings[iterations];
-	double memory[iterations];
-	std::fill_n(timings, iterations, 0);
-	std::fill_n(memory, iterations, 0);
+	size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
 
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
@@ -148,8 +113,8 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 			tree.verify();
 		#endif
 
-		// Generate insert updates depending on the ratio & skew
-		updates.resize(n * ratio);
+		// Generate & insert updates depending on the skew
+		updates.resize(k);
 		for (size_t i=0; i < updates.size(); ++i) {
 			updates[i] = {Operation<Label>::INSERT, dist(gen)};
 		}
@@ -163,7 +128,7 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 		CALLGRIND_STOP_INSTRUMENTATION;
 
 		tbb::tick_count stop = tbb::tick_count::now();
-		timings[i] = (stop-start).seconds() * 1000.0;
+		timings[i] = (stop-start).seconds() * 1000.0 * 1000.0;
 		memory[i] = getCurrentMemorySize() - memory[i];
 
 		#ifndef NDEBUG
@@ -172,12 +137,12 @@ void timeBulkInsertion(unsigned int n, double ratio, double skew, int iterations
 	}
 	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
 		<< " " << n << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
-		<< " # time in [ms], memory [mb], peak memory [mb], n, k, b, ratio, skew, p" << std::endl;
+		<< " # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p" << std::endl;
 }
 
 int main(int argc, char ** args) {
 	int iterations = 1;
-	double ratio = 0.1;
+	double ratio = 0;
 	double skew = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
 	int test_mode = 0;
@@ -197,17 +162,13 @@ int main(int argc, char ** args) {
 		case 's':
 			skew = atof(optarg);
 			break;
-		case 't':
-			test_mode = atoi(optarg);
-			break;
 		case '?':
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	std::cout << "# Running on " << p << " threads" << std::endl;
-	tbb::task_scheduler_init init(p);
-
-	if (test_mode == 1) {
+	if (ratio > 0.0) {
+		std::cout << "# Bulk Insertion" << std::endl;
+	} else {
 		std::cout << "# Bulk Construction" << std::endl;
 		timeBulkConstruction(100, iterations, p);
 		timeBulkConstruction(1000, iterations, p);
@@ -215,15 +176,6 @@ int main(int argc, char ** args) {
 		timeBulkConstruction(100000, iterations, p);
 		timeBulkConstruction(1000000, iterations, p);
 		timeBulkConstruction(10000000, iterations, p);
-	}
-	if (test_mode == 2) {
-		std::cout << "# Bulk Insertion" << std::endl;
-		timeBulkInsertion(100, ratio, skew, iterations, p);
-		timeBulkInsertion(1000, ratio, skew, iterations, p);
-		timeBulkInsertion(10000, ratio, skew, iterations, p);
-		timeBulkInsertion(100000, ratio, skew, iterations, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations, p);
-		timeBulkInsertion(10000000, ratio, skew, iterations, p);
 	}
 	return 0;
 }
