@@ -1,5 +1,5 @@
 //#undef NDEBUG // uncomment to enable assertions
-#define BTREE_DEBUG
+//#define BTREE_DEBUG
 
 #include <unistd.h>
 #include <iostream>
