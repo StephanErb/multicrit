@@ -165,17 +165,21 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
+	std::cout << "# Running on " << p << " threads" << std::endl;
+	tbb::task_scheduler_init init(p);
+
 	if (ratio > 0.0) {
 		std::cout << "# Bulk Insertion" << std::endl;
 	} else {
 		std::cout << "# Bulk Construction" << std::endl;
-		timeBulkInsertion(100, ratio, skew, iterations, p);
-		timeBulkInsertion(1000, ratio, skew, iterations, p);
-		timeBulkInsertion(10000, ratio, skew, iterations, p);
-		timeBulkInsertion(100000, ratio, skew, iterations, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations, p);
-		timeBulkInsertion(10000000, ratio, skew, iterations, p);
 	}
+	timeBulkInsertion(100, ratio, skew, iterations, p);
+	timeBulkInsertion(1000, ratio, skew, iterations, p);
+	timeBulkInsertion(10000, ratio, skew, iterations, p);
+	timeBulkInsertion(100000, ratio, skew, iterations, p);
+	timeBulkInsertion(1000000, ratio, skew, iterations, p);
+	timeBulkInsertion(10000000, ratio, skew, iterations, p);
+	
 	return 0;
 }
 
