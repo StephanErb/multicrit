@@ -638,11 +638,21 @@ private:
         return hi;
     }
 
-    static inline size_type designated_subtreesize(level_type level) {
-        return (maxweight(level-1) + minweight(level-1)) / 2;
+    static inline size_type designated_subtreesize(const level_type level) {
+        size_type num_to_round = (maxweight(level-1) + minweight(level-1)) / 2;
+
+        size_type remaining = num_to_round % designated_leafsize;
+        if (remaining == 0) {
+            return num_to_round;  
+        } else {
+            const size_type diff_in_single_tree_case = remaining;
+            const size_type diff_in_extra_tree_case = designated_leafsize-remaining;
+
+            return num_to_round - remaining + designated_leafsize * (diff_in_single_tree_case >= diff_in_extra_tree_case);
+        }
     }
 
-    static inline  size_type num_subtrees(size_type n, size_type subtreesize) {
+    static inline  size_type num_subtrees(const size_type n, const size_type subtreesize) {
         size_type num_subtrees = n / subtreesize;
         // Squeeze remaining elements into last subtree or place in own subtree? 
         // Choose what is closer to our designated subtree size

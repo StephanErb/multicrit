@@ -19,8 +19,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _BTREE_H_
-#define _BTREE_H
+#ifndef _PARALLEL_BTREE_H_
+#define _PARALLEL_BTREE_H_
 
 #include <algorithm>
 #include <functional>
@@ -633,7 +633,6 @@ private:
             router = result->slotkey[slotuse-1];
             return NULL;
         }
-
     };
 
 
@@ -1016,9 +1015,19 @@ private:
         hi += (hi < 0 || key_lessequal(updates[hi].data, key));
         return hi;
     }
-
+    
     static inline size_type designated_subtreesize(const level_type level) {
-        return (maxweight(level-1) + minweight(level-1)) / 2;
+        size_type num_to_round = (maxweight(level-1) + minweight(level-1)) / 2;
+
+        size_type remaining = num_to_round % designated_leafsize;
+        if (remaining == 0) {
+            return num_to_round;  
+        } else {
+            const size_type diff_in_single_tree_case = remaining;
+            const size_type diff_in_extra_tree_case = designated_leafsize-remaining;
+
+            return num_to_round - remaining + designated_leafsize * (diff_in_single_tree_case >= diff_in_extra_tree_case);
+        }
     }
 
     static inline  size_type num_subtrees(const size_type n, const size_type subtreesize) {
@@ -1031,7 +1040,6 @@ private:
 
         num_subtrees += diff_in_single_tree_case >= diff_in_extra_tree_case;
         return num_subtrees;
-        
     }
 
     static inline level_type num_optimal_levels(const size_type n) {
@@ -1149,9 +1157,6 @@ private:
                 size_type itemcount = vstats.itemcount;
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
 
-                if (inner->weight[slot] != vstats.itemcount - itemcount) {
-                    print_node(inner, 0, true);
-                }
                 assert(inner->weight[slot] == vstats.itemcount - itemcount);
 
                 BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
@@ -1169,4 +1174,4 @@ private:
 };
 
 
-#endif // _BTREE_H_
+#endif // _PARALLEL_BTREE_H_
