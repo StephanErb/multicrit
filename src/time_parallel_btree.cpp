@@ -145,9 +145,10 @@ int main(int argc, char ** args) {
 	double ratio = 0;
 	double skew = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
+	size_t k = 0;
 
 	int c;
-	while( (c = getopt( argc, args, "c:r:s:p:t:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:r:s:p:k:") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
@@ -161,25 +162,31 @@ int main(int argc, char ** args) {
 		case 's':
 			skew = atof(optarg);
 			break;
+		case 'k':
+			k = atoi(optarg);
+			break;
 		case '?':
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	std::cout << "# Running on " << p << " threads" << std::endl;
 	tbb::task_scheduler_init init(p);
 
-	if (ratio > 0.0) {
-		std::cout << "# Bulk Insertion" << std::endl;
+	if (k != 0) {
+		timeBulkInsertion(k, ratio, skew, iterations, p);
 	} else {
-		std::cout << "# Bulk Construction" << std::endl;
+		std::cout << "# Running on " << p << " threads" << std::endl;
+		if (ratio > 0.0) {
+			std::cout << "# Bulk Insertion" << std::endl;
+		} else {
+			std::cout << "# Bulk Construction" << std::endl;
+		}
+		timeBulkInsertion(100, ratio, skew, iterations, p);
+		timeBulkInsertion(1000, ratio, skew, iterations, p);
+		timeBulkInsertion(10000, ratio, skew, iterations, p);
+		timeBulkInsertion(100000, ratio, skew, iterations, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations, p);
+		timeBulkInsertion(10000000, ratio, skew, iterations, p);
 	}
-	timeBulkInsertion(100, ratio, skew, iterations, p);
-	timeBulkInsertion(1000, ratio, skew, iterations, p);
-	timeBulkInsertion(10000, ratio, skew, iterations, p);
-	timeBulkInsertion(100000, ratio, skew, iterations, p);
-	timeBulkInsertion(1000000, ratio, skew, iterations, p);
-	timeBulkInsertion(10000000, ratio, skew, iterations, p);
-	
 	return 0;
 }
 

@@ -143,9 +143,10 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 	double ratio = 0;
 	double skew = 1;
+	size_t k = 0;
 
 	int c;
-	while( (c = getopt( argc, args, "c:r:s:t:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:r:s:k:") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
@@ -156,21 +157,28 @@ int main(int argc, char ** args) {
 		case 's':
 			skew = atof(optarg);
 			break;
+		case 'k':
+			k = atoi(optarg);
+			break;
 		case '?':
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	if (ratio > 0.0) {
-		std::cout << "# Bulk Insertion" << std::endl;
+	if (k != 0) {
+		timeBulkInsertion(k, ratio, skew, iterations);
 	} else {
-		std::cout << "# Bulk Construction" << std::endl;
+		if (ratio > 0.0) {
+			std::cout << "# Bulk Insertion" << std::endl;
+		} else {
+			std::cout << "# Bulk Construction" << std::endl;
+		}
+		timeBulkInsertion(100, ratio, skew, iterations);
+		timeBulkInsertion(1000, ratio, skew, iterations);
+		timeBulkInsertion(10000, ratio, skew, iterations);
+		timeBulkInsertion(100000, ratio, skew, iterations);
+		timeBulkInsertion(1000000, ratio, skew, iterations);
+		timeBulkInsertion(10000000, ratio, skew, iterations);
 	}
-	timeBulkInsertion(100, ratio, skew, iterations);
-	timeBulkInsertion(1000, ratio, skew, iterations);
-	timeBulkInsertion(10000, ratio, skew, iterations);
-	timeBulkInsertion(100000, ratio, skew, iterations);
-	timeBulkInsertion(1000000, ratio, skew, iterations);
-	timeBulkInsertion(10000000, ratio, skew, iterations);
-	return 0;
-}
 
+	return 0;
+} 
