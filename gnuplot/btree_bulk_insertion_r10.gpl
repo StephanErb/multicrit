@@ -5,10 +5,10 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color
 
 # the name of the output file
-set output "btree_parameter_nodewidth.ps"
+set output "btree_bulk_insertion_r10.ps"
 
 # the title above the diagram
-set title "Insertion of k=10000 elements into tree of size n=100 * k"
+set title "Btree Bulk Insertion (into tree of size n = 10 * k)"
 
 # justify the legends to the left;
 # that 'left Left' is no typo, but leaving 'Left' out does not change much
@@ -24,10 +24,10 @@ set label "Runtime [ns] per inserted element" at screen 0.015,0.5 center  rotate
 # the text along the horizontal axis
 # (the numeric values are the results of trial and error experiments)
 set bmargin 4
-set label "Node width in number of cachelines (64 bytes)" at screen 0.5,0.03 center
+set label "Inserted elements (k)" at screen 0.5,0.03 center
 
 # we are using logarithmic scales
-set logscale x 2
+set logscale x 10
 #set logscale y 10
 
 # Grid lines
@@ -37,8 +37,12 @@ set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
 # the tics along the horizontal axis and the labels for them
 #set xtics rotate 
 #set xtics  1,1
-#set format x "10^{%L}"
+set format x "10^{%L}"
 
 # finally the plot command
-plot [:][:] '../timings/btree/insert_sequ_nodewidth' using 1:($2*1000/$5) title 'sequ. Btree' with linespoints pt 7 linetype 7,\
-			'../timings/btree/insert_p_nodewidth' using 1:($2*1000/$5) title 'par. Btree (p=4)' with linespoints pt 8 linetype 8
+plot [:][:] '../timings/btree/insert_sequ_r10' using 4:($1*1000/$4) title 'sequ. Btree' with linespoints pt 7 linetype 7,\
+			'../timings/btree/insert_p_1_r10' using 4:($1*1000/$4) title 'par. Btree (p=1)' with linespoints pt 2 linetype 2,\
+		    '../timings/btree/insert_p_2_r10' using 4:($1*1000/$4) title 'par. Btree (p=2)' with linespoints pt 3 linetype 3,\
+		    '../timings/btree/insert_p_3_r10' using 4:($1*1000/$4) title 'par. Btree (p=3)' with linespoints pt 4 linetype 4,\
+		    '../timings/btree/insert_p_4_r10' using 4:($1*1000/$4) title 'par. Btree (p=4)' with linespoints pt 8 linetype 8
+		    
