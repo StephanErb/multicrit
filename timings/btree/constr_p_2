@@ -1,0 +1,8 @@
+# Running on 2 threads
+# Bulk Construction
+3.99248 0 1 100 191 9 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+12.4658 0 1 1000 191 9 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+55.6902 0 2 10000 191 9 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+520.566 0.636719 4 100000 191 9 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+6130.61 7.50391 24 1000000 191 9 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+62195.1 77.3281 228 10000000 191 9 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
