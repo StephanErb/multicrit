@@ -86,18 +86,16 @@ struct OpComparator {
 
 boost::mt19937 gen;
 
-void timeBulkInsertion(unsigned int k, double ratio, double skew, int iterations) {
-	double timings[iterations];
-	double memory[iterations];
-	std::fill_n(timings, iterations, 0);
-	std::fill_n(memory, iterations, 0);
+void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations) {
+	std::vector<double> timings(iterations);
+	std::vector<double> memory(iterations);
 
 	size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
 
 	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
-	for (int i = 0; i < iterations; ++i) {
+	for (size_t i = 0; i < iterations; ++i) {
 		Tree tree(n);
 
 		// Bulk Construct the initial tree
@@ -137,13 +135,13 @@ void timeBulkInsertion(unsigned int k, double ratio, double skew, int iterations
 			tree.verify();
 		#endif
 	}
-	std::cout << pruned_average(timings, iterations, 0.25) << " " << pruned_average(memory, iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
+	std::cout << pruned_average(timings.data(), iterations, 0.25) << " " << pruned_average(memory.data(), iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
 		<< " " << k << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew
 		<< " # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew" << std::endl;
 }
 
 int main(int argc, char ** args) {
-	int iterations = 1;
+	size_t iterations = 1;
 	double ratio = 0;
 	double skew = 1;
 	size_t k = 0;
@@ -182,6 +180,5 @@ int main(int argc, char ** args) {
 		timeBulkInsertion(1000000, ratio, skew, iterations * 10);
 		if (ratio < 40) timeBulkInsertion(10000000, ratio, skew, iterations);
 	}
-
 	return 0;
 } 
