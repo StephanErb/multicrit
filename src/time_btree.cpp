@@ -110,6 +110,9 @@ void timeBulkInsertion(unsigned int k, double ratio, double skew, int iterations
 		#ifndef NDEBUG
 			tree.verify();
 		#endif
+		#ifndef KEEP_CONSTRUCTED_TREE_IN_CACHE
+			flushDataCache();
+		#endif
 
 		// Generate & insert updates depending on the skew
 		updates.resize(k);

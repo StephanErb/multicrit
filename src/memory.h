@@ -44,3 +44,18 @@ int getPeakMemorySize(){ // this value is in KB!
     fclose(file);
     return result;
 }
+
+// Source:
+// http://stackoverflow.com/questions/3446138/how-to-clear-cpu-l1-and-l2-cache
+
+void flushDataCache() {
+    const size_t size = 20*1024*1024; // Allocate 20M. Set much larger then L2
+    char *c = (char *)malloc(size);
+    for (size_t i = 1; i < 2; i++)
+        for (size_t j = 0; j < size; j++)
+            c[j] = i*c[j];
+    if (c[rand() % size] == 10) {
+        printf(" ");
+    }
+    free(c);
+}
