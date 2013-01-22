@@ -175,12 +175,12 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(100, ratio, skew, iterations);
-		timeBulkInsertion(1000, ratio, skew, iterations);
-		timeBulkInsertion(10000, ratio, skew, iterations);
-		timeBulkInsertion(100000, ratio, skew, iterations);
-		timeBulkInsertion(1000000, ratio, skew, iterations);
-		timeBulkInsertion(10000000, ratio, skew, iterations);
+		timeBulkInsertion(100, ratio, skew, iterations * 100000);
+		timeBulkInsertion(1000, ratio, skew, iterations * 10000);
+		timeBulkInsertion(10000, ratio, skew, iterations * 1000);
+		timeBulkInsertion(100000, ratio, skew, iterations * 100);
+		timeBulkInsertion(1000000, ratio, skew, iterations * 10);
+		if (ratio < 40) timeBulkInsertion(10000000, ratio, skew, iterations);
 	}
 
 	return 0;
