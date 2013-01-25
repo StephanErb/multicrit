@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Road instance ops: Size of 1 Million. Insert of size about 10000. So ratio is 100
+
 # Test configuration. Change these
 iter_count=10
 skew=1
