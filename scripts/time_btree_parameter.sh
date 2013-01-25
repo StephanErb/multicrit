@@ -1,4 +1,5 @@
 #!/bin/bash
+cd ../src/
 
 # Difficult road instance ops: Size of 1 Million. Insert of size about 10000. So ratio is 100
 

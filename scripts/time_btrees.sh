@@ -1,4 +1,5 @@
 #!/bin/bash
+cd ../src/
 
 # Test configuration. Change these
 iter_count=10
