@@ -53,3 +53,12 @@ Random grid graphs with costs in range [1, 10]:
 
     -c number of repetitions. Each one gets a new graph.
     -p correlation of the weights (e.g., 0.8, 0.4, 0, -0,4, -0.8)
+
+### BTree & Parallel BTree
+Benchmarks are configured within & run via `./time_btrees.sh` and `./time_btree_parameter.sh`. This will automatically update the timing values under `./timings/btree`
+General options of the underlying `time_btree.cpp` und `time_parallel_btree.cpp`:
+
+    -c number of repetitions
+    -k number of elements to insert
+    -r ratio where n stands for the pre-existing elements within the treee for n = k * r. So, r=0 is a bulk construction.
+    -p number of threads to use
