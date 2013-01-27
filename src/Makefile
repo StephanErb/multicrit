@@ -20,22 +20,24 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=time_labelsetting time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_btree
+CODE=time_labelsetting time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set
+TESTS=test_labelset test_labelsetting 
 
-TESTS=test_labelset test_labelsetting test_btree 
+PARA_CODE=time_pq_btree
+PARA_TESTS=test_pq_btree
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)
-PARALLEL = time_parallel_btree test_btree
+PARALLEL = $(PARA_TESTS) $(PARA_CODE)
 
-DEFAULT_OPS =  -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
+DEFAULT_OPS = -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
 
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
 CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
 CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
 
-CXXLIBS= -lrt -ltbbmalloc
+CXXLIBS= -lrt
 CXXPLIBS= -lrt -ltbb -ltbbmalloc
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
@@ -100,4 +102,5 @@ all: $(TARGETS) $(PARALLEL_TARGETS)
 
 test: all
 	cd $(BINDIR); $(foreach test,$(TESTS),./$(test);)
+	cd $(BINDIR); $(foreach test,$(PARA_TESTS),./$(test);)
 

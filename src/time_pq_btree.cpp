@@ -10,8 +10,13 @@
 
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tick_count.h"
+#include "tbb/scalable_allocator.h"
 
+#ifdef SEQUENTIAL_BTREE
+#include "BTree.hpp"
+#else
 #include "ParallelBTree.hpp"
+#endif
 
 #include "utility/tool/timer.h"
 #include "timing.h"
@@ -24,60 +29,37 @@
 
 #include <valgrind/callgrind.h>
 
-/*struct Label {
-	unsigned int x;
-	unsigned int y;
-	unsigned int node;
 
-	friend std::ostream& operator<<(std::ostream& os, const Label& label) {
-		os << "{" << label.x << ", " << label.y  << ", " << label.node << "}";
-		return os;
-	}
-};
+#ifdef USE_GRAPH_LABEL
+	struct Label {
+		unsigned int x;
+		unsigned int y;
+		unsigned int node;
 
-struct Comparator {
-	bool operator() (const Label& i, const Label& j) const {
-		if (i.x == j.x) {
-			if (i.y == j.y) {
-				return i.node < j.node;
-			}
-			return i.y < j.y;
-		}
-		return i.x < j.x;
-	}
-} cmp;
-*/
-typedef unsigned int Label;
-typedef std::less<Label> Comparator;
-Comparator cmp;
-
-//#define REDBLACKTREE_WITHOUT_BULKS
-#ifdef REDBLACKTREE_WITHOUT_BULKS
-	struct RedBlackTree : std::set<Label, Comparator> {
-		void apply_updates(const std::vector<Operation<Label> >& updates) {
-			auto update_iter = updates.begin();
-
-			while (update_iter != updates.end()) {
-				switch (update_iter->type) {
-				case Operation<Label>::DELETE:
-				  	erase(update_iter->data);
-					++update_iter;
-					continue;
-				case Operation<Label>::INSERT:
-					insert(update_iter->data);
-					++update_iter;
-					continue;
-		        }
-			}
-		}
-		void verify() {
-
+		friend std::ostream& operator<<(std::ostream& os, const Label& label) {
+			os << "{" << label.x << ", " << label.y  << ", " << label.node << "}";
+			return os;
 		}
 	};
-	typedef RedBlackTree Tree;
-#else
-	typedef btree<Label, Comparator> Tree;
+
+	struct Comparator {
+		bool operator() (const Label& i, const Label& j) const {
+			if (i.x == j.x) {
+				if (i.y == j.y) {
+					return i.node < j.node;
+				}
+				return i.y < j.y;
+			}
+			return i.x < j.x;
+		}
+	} cmp;
+#else 
+	typedef unsigned int Label;
+	typedef std::less<Label> Comparator;
 #endif
+
+Comparator cmp;
+typedef btree<Label, Comparator> Tree;
 
 struct OpComparator {
 	bool operator() (const Operation<Label>& i, const Operation<Label>& j) const {
@@ -85,25 +67,14 @@ struct OpComparator {
 	}
 } opCmp;
 
-
 boost::mt19937 gen;
 
-void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p) {
-	std::vector<double> timings(iterations);
-	std::vector<double> memory(iterations);
-
-	size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
-
-	boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
-	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
-
-	for (size_t i = 0; i < iterations; ++i) {
-		Tree tree(n);
-
-		// Bulk Construct the initial tree
-		std::vector<Operation<Label> > updates(n);
-		for (size_t i=0; i < updates.size(); ++i) {
-			updates[i] = {Operation<Label>::INSERT, dist(gen)};
+void bulkConstruct(Tree& tree, size_t n) {
+		boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
+		std::vector<Operation<Label>> updates;
+		updates.reserve(n);
+		for (size_t j=0; j < n; ++j) {
+			updates.push_back({Operation<Label>::INSERT, dist(gen)});
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		tree.apply_updates(updates);
@@ -113,13 +84,27 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		#ifndef KEEP_CONSTRUCTED_TREE_IN_CACHE
 			flushDataCache();
 		#endif
+}
 
-		// Generate & insert updates depending on the skew
-		updates.resize(k);
-		for (size_t i=0; i < updates.size(); ++i) {
-			updates[i] = {Operation<Label>::INSERT, dist(gen)};
+void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p) {
+	std::vector<double> timings(iterations);
+	std::vector<double> memory(iterations);
+
+	size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
+
+	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
+
+	for (size_t i = 0; i < iterations; ++i) {
+		// Prepare the updates
+		std::vector<Operation<Label>> updates;
+		updates.reserve(k);
+		for (size_t j=0; j < k; ++j) {
+			updates.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
+		
+		Tree tree(std::max(n, k));
+		if (n > 0) bulkConstruct(tree, n);
 
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
@@ -140,6 +125,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		<< " " << k << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
 		<< " # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p" << std::endl;
 }
+
 
 int main(int argc, char ** args) {
 	size_t iterations = 1;
@@ -170,12 +156,16 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-	tbb::task_scheduler_init init(p);
+
+	if (Tree::is_parallel) {
+		tbb::task_scheduler_init init(p);
+	} else {
+		p = 0;
+	}
 
 	if (k != 0) {
 		timeBulkInsertion(k, ratio, skew, iterations, p);
 	} else {
-		std::cout << "# Running on " << p << " threads" << std::endl;
 		if (ratio > 0.0) {
 			std::cout << "# Bulk Insertion" << std::endl;
 		} else {

@@ -4,8 +4,11 @@
 #define TBB_USE_ASSERT 1
 #define TBB_USE_THREADING_TOOLS 1
 
-//#include "BTree.hpp"
+#ifdef SEQUENTIAL_BTREE
+#include "BTree.hpp"
+#else
 #include "ParallelBTree.hpp"
+#endif
 
 #include <iostream>
 #include <algorithm>
