@@ -156,12 +156,11 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-
-	if (Tree::is_parallel) {
-		tbb::task_scheduler_init init(p);
-	} else {
+#ifdef SEQUENTIAL_BTREE
 		p = 0;
-	}
+#else
+		tbb::task_scheduler_init init(p);
+#endif
 
 	if (k != 0) {
 		timeBulkInsertion(k, ratio, skew, iterations, p);
