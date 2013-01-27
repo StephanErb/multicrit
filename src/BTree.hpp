@@ -114,6 +114,8 @@ public:
     static const width_type         innerslotmax =  traits::branchingparameter_b * 4;
     static const width_type         innerslotmin =  traits::branchingparameter_b / 4;
 
+    static const bool               is_parallel = false;
+
 private:
     // *** Node Classes for In-Memory Nodes
 
@@ -272,9 +274,10 @@ public:
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
     explicit inline btree(size_type size_hint=0, const allocator_type &alloc = allocator_type())
-        : root(NULL), allocator(alloc), weightdelta(size_hint+1)
+        : root(NULL), allocator(alloc)
     {
-        spare_leaf = allocate_leaf_without_count(); 
+        spare_leaf = allocate_leaf_without_count();
+        weightdelta.reserve(size_hint+1);
     }
 
     /// Frees up all used B+ tree memory pages
@@ -451,7 +454,7 @@ private:
         if (size() == 0) {
             return _updates.size(); // Shortcut, we know this is a bulk insertion and don't need any weights
         } else {
-            weightdelta.resize(_updates.size() + 1);
+            weightdelta.reserve(_updates.size() + 1);
 
             long val = 0; // exclusive prefix sum
             weightdelta[0] = val;
@@ -466,9 +469,10 @@ private:
     void allocate_new_leaves(size_type n) {
         BTREE_PRINT("Allocating new nodes for tree of size " << n << std::endl);
         size_type leaf_count = num_subtrees(n, designated_leafsize);
-        leaves.resize(leaf_count);
+        leaves.clear();
+        leaves.reserve(leaf_count);
         for (size_type i = 0; i < leaf_count; ++i) {
-            leaves[i] = allocate_leaf();
+            leaves.push_back(allocate_leaf());
         }
     }
 

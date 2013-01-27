@@ -132,6 +132,7 @@ public:
     static const width_type         innerslotmax =  traits::branchingparameter_b * 4;
     static const width_type         innerslotmin =  traits::branchingparameter_b / 4;
 
+    static const bool               is_parallel = true;
 private:
     // *** Node Classes for In-Memory Nodes
 
@@ -288,8 +289,10 @@ public:
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
     explicit inline btree(size_type size_hint=0, const allocator_type &alloc = allocator_type())
-        : root(NULL), allocator(alloc), weightdelta(size_hint+1)
-    { }
+        : root(NULL), allocator(alloc)
+    {
+            weightdelta.reserve(size_hint+1);
+    }
 
     /// Frees up all used B+ tree memory pages
     inline ~btree() {
@@ -507,7 +510,7 @@ private:
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
-        weightdelta.resize(_updates.size() + 1);
+        weightdelta.reserve(_updates.size() + 1);
         weightdelta[0] = 0;
         // If the tree is empty, then the updates can only contain insertions.
         const signed char all_ops_identical = size() == 0; 
