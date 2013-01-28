@@ -2,7 +2,7 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=10
+iter_count=1
 skew=1
 # also, see ratio below to configure original tree size: r = n/k
 
