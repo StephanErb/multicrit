@@ -104,3 +104,6 @@ test: all
 	cd $(BINDIR); $(foreach test,$(TESTS),./$(test);)
 	cd $(BINDIR); $(foreach test,$(PARA_TESTS),./$(test);)
 
+time_pq_mcstl_set: time_pq_set
+	/software/gcc-4.2.4-64/bin/g++-4.2.4 $(CXXPFLAGS) -DENABLE_MCSTL -fopenmp -I../lib/mcstl/c++ -o ./bin/time_pq_mcstl_set time_pq_set.cpp
+

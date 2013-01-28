@@ -11,6 +11,10 @@
 #include "tbb/tick_count.h"
 #include "tbb/scalable_allocator.h"
 
+#ifdef ENABLE_MCSTL
+#include "mcstl.h"
+#endif
+
 #include "utility/tool/timer.h"
 #include "timing.h"
 #include "memory.h"
@@ -156,6 +160,11 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
+#ifdef ENABLE_MCSTL
+		mcstl::SETTINGS::num_threads = p;
+#else
+		p = 0;
+#endif
 
 	if (k != 0) {
 		timeBulkInsertion(k, ratio, skew, iterations, p);
