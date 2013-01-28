@@ -30,12 +30,12 @@ PARA_TESTS=test_pq_btree
 TARGETS = $(TESTS) $(CODE)
 PARALLEL = $(PARA_TESTS) $(PARA_CODE)
 
-DEFAULT_OPS = -Wall -Wextra -std=c++11 -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
+DEFAULT_OPS = -Wall -Wextra -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
 
-CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
-CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS)
-CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
-CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS)
+CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11
+CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11
+CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11
+CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11
 
 CXXLIBS= -lrt
 CXXPLIBS= -lrt -ltbb -ltbbmalloc
@@ -105,5 +105,5 @@ test: all
 	cd $(BINDIR); $(foreach test,$(PARA_TESTS),./$(test);)
 
 time_pq_mcstl_set: time_pq_set
-	/software/gcc-4.2.4-64/bin/g++-4.2.4 $(CXXPFLAGS) -DENABLE_MCSTL -fopenmp -I../lib/mcstl/c++ -o ./bin/time_pq_mcstl_set time_pq_set.cpp
+	/software/gcc-4.2.4-64/bin/g++-4.2.4 -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -DENABLE_MCSTL -fopenmp -I../lib/mcstl/c++ -o ./bin/time_pq_mcstl_set time_pq_set.cpp
 
