@@ -48,7 +48,6 @@
 #define BTREE_ASSERT(x)         do { } while(0)
 #endif
 
-
 /// The maximum of a and b. Used in some compile-time formulas.
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
 

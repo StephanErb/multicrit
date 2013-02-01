@@ -129,7 +129,7 @@ public:
 #else 
     typedef utility::NullData           min_key_type;
 #endif
-   
+
     /// STL allocator for tree nodes
     typedef _Alloc                      allocator_type;
 
@@ -1087,7 +1087,6 @@ private:
 
     inline bool scheduleSubTreeUpdate(const width_type i, const size_type& weight, const size_type minweight,
             const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) const {
-
         subtree_updates[i].upd_begin = subupd_begin;
         subtree_updates[i].upd_end = subupd_end;
         subtree_updates[i].weight = weight + weightdelta[subupd_end] - weightdelta[subupd_begin];
@@ -1111,11 +1110,11 @@ private:
         hi += (hi < 0 || key_lessequal(updates[hi].data, key));
         return hi;
     }
-    
+
     static inline size_type designated_subtreesize(const level_type level) {
         size_type num_to_round = (maxweight(level-1) + minweight(level-1)) / 2;
-        size_type remaining = num_to_round % designated_leafsize;
 
+        size_type remaining = num_to_round % designated_leafsize;
         if (remaining == 0) {
             return num_to_round;  
         } else {
