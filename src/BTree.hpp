@@ -768,7 +768,7 @@ private:
 
     static inline level_type num_optimal_levels(const size_type n) {
         if (n <= designated_leafsize) {
-            return 0;
+            return 1;
         } else {
             return ceil( log(2 * ((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
         }
