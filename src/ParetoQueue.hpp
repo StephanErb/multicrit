@@ -3,18 +3,18 @@
 
 #include <iostream>
 #include <vector>
-#include <set>
+
+#define COMPUTE_PARETO_MIN
+#ifdef SEQUENTIAL_BTREE
+#include "BTree.hpp"
+#else
+#include "ParallelBTree.hpp"
+#endif
+
 #include <algorithm>
 #include <limits>
 #include "utility/datastructure/graph/GraphMacros.h"
 
-template<typename data_type>
-struct Operation {
-	enum OpType {INSERT, DELETE};
-	OpType type;
-	data_type data;
- 	explicit Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-};
 
 /**
  * Queue storing all temporary labels of all nodes.
@@ -167,62 +167,32 @@ private:
   			return i.first_weight < j.first_weight;
   		}
 	};
-	typedef std::set<data_type, SetOrderer<data_type> > QueueType;
+	typedef btree<data_type, data_type, SetOrderer<data_type>> QueueType;
 	QueueType labels;
-	
-	typedef typename QueueType::iterator iterator;
-	typedef typename QueueType::const_iterator const_iterator;
+
 	typedef typename data_type::weight_type weight_type;
-
-	static void printLabels(const std::string msg, const const_iterator begin, const const_iterator end) {
-		std::cout << msg;
-		for (const_iterator i = begin; i != end; ++i) {
-			std::cout << " (" << i->node << ": " << i->first_weight << "," << i->second_weight << ")";
-		}
-		std::cout << std::endl;
-	}
-
+	data_type min_label;
+	
 public:
 
-	SequentialTreeParetoQueue(const size_t node_count) {
+	SequentialTreeParetoQueue(const size_t node_count) : labels(node_count) {
+		const weight_type min = std::numeric_limits<weight_type>::min();
+		const weight_type max = std::numeric_limits<weight_type>::max();
 
+		min_label = data_type(NodeID(0), typename data_type::label_type(min, max));
 	}
 
 	void init(const data_type& data) {
-		labels.insert(data);
+		const std::vector<Operation<data_type>> upds = {{Operation<data_type>::INSERT, data}};
+		labels.apply_updates(upds);
 	}
 
 	void findParetoMinima(std::vector<data_type>& minima) const {
-		const_iterator iter = labels.begin();
-		const_iterator end = labels.end();
-
-		data_type min = *iter;
-		while (iter != end) {
-			if (iter->second_weight < min.second_weight ||
-					(iter->first_weight == min.first_weight && iter->second_weight == min.second_weight)) {
-				min = *iter;
-				minima.push_back(*iter);
-			}
-			++iter;
-		}
+		labels.find_pareto_minima(min_label, minima);
 	}
 
-	void applyUpdates(const std::vector<Operation<data_type> >& updates) {
-		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
-		u_iterator update_iter = updates.begin();
-
-		while (update_iter != updates.end()) {
-			switch (update_iter->type) {
-			case Operation<data_type>::DELETE:
-			  	labels.erase(update_iter->data);
-				++update_iter;
-				continue;
-			case Operation<data_type>::INSERT:
-				labels.insert(update_iter->data);
-				++update_iter;
-				continue;
-	        }
-		}
+	void applyUpdates(const std::vector<Operation<data_type>>& updates) {
+		labels.apply_updates(updates);
 	}
 
 	bool empty() {
@@ -231,6 +201,10 @@ public:
 
 	size_t size() {
 		return labels.size();
+	}
+
+	void printStatistics() {
+
 	}
 };
 
