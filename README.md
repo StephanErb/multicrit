@@ -55,8 +55,8 @@ Random grid graphs with costs in range [1, 10]:
     -p correlation of the weights (e.g., 0.8, 0.4, 0, -0,4, -0.8)
 
 ### BTree & Parallel BTree
-Benchmarks are configured within & run via `./scripts/time_btrees.sh` and `./scripts/time_btree_parameter.sh`. This will automatically update the timing values under `./timings/btree`
-General options of the underlying `time_btree.cpp` und `time_parallel_btree.cpp`:
+Benchmarks are configured within & run via `./scripts/time_pq_btrees.sh` and `./scripts/time_pq_btree_parameter.sh`. This will automatically update the timing values under `./timings/btree`. Also see the `time_pq_set.cpp` equivalents.
+General options of the underlying `time_pq_btree.cpp`:
 
     -c number of repetitions
     -k number of elements to insert
