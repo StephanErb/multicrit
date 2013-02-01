@@ -1047,11 +1047,12 @@ private:
         const size_type diff_in_extra_tree_case = subtreesize-remaining;
 
         num_subtrees += diff_in_single_tree_case >= diff_in_extra_tree_case;
+        num_subtrees += num_subtrees == 0; // but have at least enough space to hold all elements
         return num_subtrees;
     }
 
     static inline level_type num_optimal_levels(const size_type n) {
-        if (n <= leafslotmax) {
+        if (n <= designated_leafsize) {
             return 0;
         } else {
             level_type opt_levels = ceil( log(2 * ((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
