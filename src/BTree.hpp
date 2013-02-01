@@ -37,11 +37,16 @@
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
 #define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
-#define BTREE_ASSERT(x)         do { assert(x); } while(0)
 #else
 #define BTREE_PRINT(x)          do { } while(0)
+#endif
+
+#ifndef NDEBUG
+#define BTREE_ASSERT(x)         do { assert(x); } while(0)
+#else
 #define BTREE_ASSERT(x)         do { } while(0)
 #endif
+
 
 /// The maximum of a and b. Used in some compile-time formulas.
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))

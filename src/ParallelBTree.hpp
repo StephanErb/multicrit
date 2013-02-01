@@ -47,9 +47,13 @@
 // *** Debugging Macros
 #ifdef BTREE_DEBUG
 #define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
-#define BTREE_ASSERT(x)         do { assert(x); } while(0)
 #else
 #define BTREE_PRINT(x)          do { } while(0)
+#endif
+
+#ifndef NDEBUG
+#define BTREE_ASSERT(x)         do { assert(x); } while(0)
+#else
 #define BTREE_ASSERT(x)         do { } while(0)
 #endif
 
@@ -457,6 +461,7 @@ public:
             verify();
         }
     }
+
 
 private:
 
