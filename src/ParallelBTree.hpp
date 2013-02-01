@@ -664,7 +664,10 @@ private:
         tbb::task* execute() {
            BTREE_PRINT("Rewriting tree " << source_node << " on level " << source_node->level << " while applying updates [" << upd.upd_begin << ", " << upd.upd_end << ")" << std::endl);
 
-            if (source_node->isleafnode()) {
+            if (upd.weight == 0) {
+                tree->clear_recursive(source_node);
+                return NULL; 
+            } else if (source_node->isleafnode()) {
                 if (resultTreeIsSmall()) {
                     write_updated_leaf_to_new_tree(/*start index*/0, rank, upd.upd_begin, upd.upd_end);
                 } else {
@@ -701,19 +704,15 @@ private:
 
                 // Push updates to subtrees and rewrite them in parallel
                 tbb::task_list tasks;
-                width_type task_count = 0;
 
                 auto& c = *new(allocate_continuation()) tbb::empty_task(); // our parent will wait for this one
 
                 size_type subtree_rank = rank;
                 for (width_type i = 0; i < inner->slotuse; ++i) {
-                    if (subtree_updates[i].weight > 0) {
-                        tasks.push_back(*new(c.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], leaves, tree));
-                        ++task_count;
-                    }
+                    tasks.push_back(*new(c.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], leaves, tree));
                     subtree_rank += subtree_updates[i].weight;
                 }
-                c.set_ref_count(task_count);
+                c.set_ref_count(inner->slotuse);
                 auto& task = tasks.pop_front(); // use scheduler bypass for one task
                 spawn(tasks);
                 tree->free_node(source_node);
