@@ -7,6 +7,7 @@
 #include "GraphGenerator.hpp"
 
 #include "utility/tool/timer.h"
+#include <valgrind/callgrind.h>
 
 
 void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
@@ -14,7 +15,9 @@ void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 
 	utility::tool::TimeOfDayTimer timer;
 	timer.start();
+	CALLGRIND_START_INSTRUMENTATION;
 	algo.run(start);
+	CALLGRIND_STOP_INSTRUMENTATION;
 	timer.stop();
 
 	if (verbose) {
