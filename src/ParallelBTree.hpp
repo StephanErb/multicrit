@@ -842,7 +842,10 @@ private:
         tbb::task* execute() {
             BTREE_PRINT("Applying updates [" << upd.upd_begin << ", " << upd.upd_end << ") to " << upd_node << " on level " << upd_node->level << std::endl);
 
-            if (upd_node->isleafnode()) {
+            if (upd.weight == 0) {
+                tree->clear_recursive(upd_node);
+                return NULL;
+            } else if (upd_node->isleafnode()) {
                 update_leaf_in_current_tree();
                 return NULL;
             } else {
@@ -904,17 +907,15 @@ private:
                             weight_of_defective_range += subtree_updates[in].weight;
                             ++in;
                         }
-                        if (weight_of_defective_range > 0) {
-                            BTREE_PRINT("Rewrite session started on level " << inner->level << " of " << tree->height() << " for subtree count " << in-rebalancing_range_start<< std::endl);
+                        if (openrebalancing_region) {
+                            BTREE_PRINT("Rewrite session started on level " << inner->level << " of " << height() << " for subtrees [" << rebalancing_range_start << "," << in <<") of total weight " << weight_of_defective_range << std::endl);
                            
                             node* result_as_node = static_cast<node*>(result);
                             TreeRootCreationTask& task = *new(allocate_child()) TreeRootCreationTask(result_as_node, out, inner->level, weight_of_defective_range, tree);
 
                             size_type subtree_rank = 0;
                             for (width_type i = rebalancing_range_start; i < in; ++i) {
-                                if (subtree_updates[i].weight > 0) {
-                                    task.subtasks.push_back(*new(task.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], task.leaves, tree));
-                                }
+                                task.subtasks.push_back(*new(task.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], task.leaves, tree));
                                 subtree_rank += subtree_updates[i].weight;
                             }
                             task.subtask_count = in - rebalancing_range_start;

@@ -576,17 +576,24 @@ private:
                         weight_of_defective_range += subtree_updates[in].weight;
                         ++in;
                     }
-                    if (weight_of_defective_range > 0) {
-                        BTREE_PRINT("Rewrite session started on level " << inner->level << " of " << height() << " for subtree count " << in-rebalancing_range_start<< std::endl);
-                        allocate_new_leaves(weight_of_defective_range);
-                        updateSubTreesInRange(inner, rebalancing_range_start, in, 0, true, subtree_updates);
+                    if (openrebalancing_region) {
+                        if (weight_of_defective_range == 0) {
+                            BTREE_PRINT("Deleting entire subtree range" << std::endl);
+                            for (width_type i = rebalancing_range_start; i < in; ++i) {
+                                clear_recursive(inner->childid[i]);
+                            }
+                        } else {
+                            BTREE_PRINT("Rewrite session started on level " << inner->level << " of " << height() << " for subtrees [" << rebalancing_range_start << "," << in <<") of total weight " << weight_of_defective_range << std::endl);
+                            allocate_new_leaves(weight_of_defective_range);
+                            updateSubTreesInRange(inner, rebalancing_range_start, in, 0, true, subtree_updates);
 
-                        result->slotuse = out;
-                        node* result_as_node = result;
-                        key_type unused_router;
-                        out += create_subtree_from_leaves(result_as_node, /*write into result node*/ true, result->level, unused_router, 0, weight_of_defective_range);
-                        result = static_cast<inner_node*>(result_as_node);
-
+                            result->slotuse = out;
+                            node* result_as_node = result;
+                            key_type unused_router;
+                            key_type unused_min_key;
+                            out += create_subtree_from_leaves(result_as_node, /*write into result node*/ true, result->level, unused_router, unused_min_key, 0, weight_of_defective_range);
+                            result = static_cast<inner_node*>(result_as_node);                            
+                        }
                     } else {
                         BTREE_PRINT("Copying " << in << " to " << out << " " << inner->childid[in] << std::endl);
                         result->weight[out] = subtree_updates[in].weight;
@@ -615,7 +622,9 @@ private:
     inline void updateSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const size_type rank, const bool rewrite_subtree, const UpdateDescriptor* subtree_updates) {
         size_type subtree_rank = rank;
         for (width_type i = begin; i < end; ++i) {
-            if (subtree_updates[i].weight > 0 && (rewrite_subtree || hasUpdates(subtree_updates[i]))) {
+            if (subtree_updates[i].weight == 0) {
+                clear_recursive(node->childid[i]);
+            } else if (rewrite_subtree || hasUpdates(subtree_updates[i])) {
                 update(node->childid[i], node->slotkey[i], subtree_rank, subtree_updates[i], rewrite_subtree);
             	node->weight[i] = subtree_updates[i].weight;
             }
