@@ -625,14 +625,17 @@ private:
             set_ref_count(subtask_count+1);
             spawn_and_wait_for_all(subtasks);
 
-            // Reconstruct new tree from the filled leaves
-            key_type unused_router;
-            TreeCreationTask& task = *new(allocate_child()) TreeCreationTask(out_node, old_slotuse, out_node != NULL, level, unused_router, 0, size, leaves, tree);
-            set_ref_count(2);
-            spawn_and_wait_for_all(task); // wait to keep the leaves data structure alive
+            if (size > 0) {
+                // Reconstruct new tree from the filled leaves
+                key_type unused_router;
+                min_key_type unused_min_key; // unused on this level
+
+                TreeCreationTask& task = *new(allocate_child()) TreeCreationTask(out_node, old_slotuse, out_node != NULL, level, unused_router, unused_min_key, 0, size, leaves, tree);
+                set_ref_count(2);
+                spawn_and_wait_for_all(task); // wait to keep the leaves data structure alive
+            }
             return NULL;
         }
-
     };
 
 
