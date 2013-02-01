@@ -4,13 +4,14 @@
  *  
  * Author: Stephan Erb
  */
-#ifndef PARETO_SEARCH_H_
-#define PARETO_SEARCH_H_
+#ifndef PARALLEL_PARETO_SEARCH_H_
+#define PARALLEL_PARETO_SEARCH_H_
 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "options.hpp"
 #include "ParetoQueue.hpp"
 #include "ParetoSearchStatistics.hpp"
+#include "tbb/parallel_sort.h"
 
 #include <deque>
 
@@ -222,7 +223,7 @@ public:
 				}
 			}
 			// Sort sequence to group candidates by their target node
-			std::sort(candidates.begin(), candidates.end(), groupByNode);
+			tbb::parallel_sort(candidates.begin(), candidates.end(), groupByNode);
 			updateLabelSets(candidates, updates);
 
 			// Schedule optima for deletion
@@ -230,7 +231,7 @@ public:
 				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
 			}
 			// Sort sequence for batch update
-			std::sort(updates.begin(), updates.end(), groupByWeight);
+			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
 			pq.applyUpdates(updates);
 
 			globalMinima.clear();

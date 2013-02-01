@@ -8,7 +8,13 @@
 
 #include "options.hpp"
 
-#include "ParetoSearch.hpp"
+
+#ifdef PARALLEL_BUILD
+#include "ParetoSearch_parallel.hpp"
+#else
+#include "ParetoSearch_sequential.hpp"
+#endif
+
 #include "SeqLabelSetting.hpp"
 
 typedef utility::datastructure::IntegerBiWeightedEdge Edge;
