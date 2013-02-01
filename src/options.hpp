@@ -14,7 +14,7 @@
  */ 
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
 //#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
-#define LABEL_SETTING_ALGORITHM SequentialParetoSearch	// will always use custom pareto label set
+#define LABEL_SETTING_ALGORITHM ParetoSearch // will always use custom pareto label set
 
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
@@ -31,20 +31,17 @@
 //#define PRIORITY_MAX
 
 /**
- * If defined, use std::set to store labels, otherwise use the LABELSET_SET_SEQUENCE_TYPE defined below
+ * If defined, use std::set to store labels, otherwise use an std::vector
  */
 //#define TREE_SET
 
-/**
- * Only used by the SequentialParetoSearch algorithm. All other default to std::vector
- */
-#define LABELSET_SET_SEQUENCE_TYPE std::vector
-//#define LABELSET_SET_SEQUENCE_TYPE std::deque
 
 /**
  * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector
  */
-#define TREE_PARETO_QUEUE
+//#define PARETO_QUEUE VectorParetoQueue
+#define PARETO_QUEUE BTreeParetoQueue
+
 
 /**
  * Keep this defined to gather runtime stats during label setting
@@ -65,14 +62,15 @@
  std::string currentConfig() {
 	std::ostringstream out_stream;
 
+	#ifdef PARALLEL_BUILD
+		out_stream << "Parallel";
+	#else 
+		out_stream << "Sequential";
+	#endif
 	out_stream << STR(LABEL_SETTING_ALGORITHM) << "_";
 
-	if (strcmp(STR(LABEL_SETTING_ALGORITHM), "SequentialParetoSearch") == 0) {
-		#ifdef TREE_PARETO_QUEUE
-			out_stream << "TreeParetoQueue";
-		#else
-			out_stream << STR(LABELSET_SET_SEQUENCE_TYPE) << "ParetoQueue";
-		#endif
+	if (strcmp(STR(LABEL_SETTING_ALGORITHM), "ParetoSearch") == 0) {
+		out_stream << STR(PARETO_QUEUE);
 	} else {
 		if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
 			out_stream << STR(LABEL_SET) << "_";

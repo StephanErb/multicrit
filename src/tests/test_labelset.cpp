@@ -1,4 +1,4 @@
-#include "SeqLabelSet.hpp"
+#include "../SeqLabelSet.hpp"
 #include <iostream>
 #include <algorithm>
 

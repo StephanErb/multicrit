@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <cmath>
 #include <string.h>
-#include "utility/datastructure/NullData.hpp"
+#include "../utility/datastructure/NullData.hpp"
 
 #include "tbb/parallel_scan.h"
 #include "tbb/parallel_for.h"
@@ -72,11 +72,6 @@
 #define DCACHE_LINESIZE 64
 #endif
 
-// Number of leaves that need to be written before we try perform it in parallel
-#ifndef REWRITE_THRESHOLD
-#define REWRITE_THRESHOLD 1
-#endif
-
 template<typename data_type>
 struct Operation {
     enum OpType {INSERT=1, DELETE=-1};
@@ -95,6 +90,11 @@ struct btree_default_traits {
     static const int    leafparameter_k = BTREE_MAX( 8, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
     static const int    branchingparameter_b = BTREE_MAX( 8, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key) + sizeof(_MinKey) + sizeof(size_t) + sizeof(void*)))/4 );
 };
+
+// Number of leaves that need to be written before we try perform it in parallel
+#ifndef REWRITE_THRESHOLD
+#define REWRITE_THRESHOLD 1
+#endif
 
 /** 
  * Basic class implementing a base B+ tree data structure in memory.

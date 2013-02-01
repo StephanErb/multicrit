@@ -4,12 +4,10 @@
 #include <iostream>
 #include <vector>
 
+#include "options.hpp"
+
 #define COMPUTE_PARETO_MIN
-#ifdef SEQUENTIAL_BTREE
-#include "BTree.hpp"
-#else
-#include "ParallelBTree.hpp"
-#endif
+#include "datastructures/BTree.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -20,7 +18,7 @@
  * Queue storing all temporary labels of all nodes.
  */
 template<typename data_type>
-class SequentialVectorParetoQueue {
+class VectorParetoQueue {
 private:
 
 	typedef std::vector<data_type> QueueType;
@@ -46,7 +44,7 @@ private:
 
 public:
 
-	SequentialVectorParetoQueue(const size_t node_count)
+	VectorParetoQueue(const size_t node_count)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		: pq_inserts(101), pq_deletes(101)
 		#endif
@@ -152,7 +150,7 @@ public:
  * Queue storing all temporary labels of all nodes.
  */
 template<typename data_type>
-class SequentialTreeParetoQueue {
+class BTreeParetoQueue {
 private:
 
 	template<typename type>
@@ -175,7 +173,9 @@ private:
 	
 public:
 
-	SequentialTreeParetoQueue(const size_t node_count) : labels(node_count) {
+	BTreeParetoQueue(const size_t node_count)
+		: labels(node_count)
+	{
 		const weight_type min = std::numeric_limits<weight_type>::min();
 		const weight_type max = std::numeric_limits<weight_type>::max();
 
@@ -208,22 +208,13 @@ public:
 	}
 };
 
-#ifdef TREE_PARETO_QUEUE
-	template<typename data_type>
-	class SequentialParetoQueue : public SequentialTreeParetoQueue<data_type> {
-	public:
-		SequentialParetoQueue(const size_t node_count):
-			SequentialTreeParetoQueue<data_type>(node_count)
-		 {}
-	};
-#else 
-	template<typename data_type>
-	class SequentialParetoQueue : public SequentialVectorParetoQueue<data_type> {
-	public:
-		SequentialParetoQueue(const size_t node_count):
-			SequentialVectorParetoQueue<data_type>(node_count)
-		 {}
-	};
-#endif
+template<typename data_type>
+class ParetoQueue : public PARETO_QUEUE<data_type> {
+public:
+	ParetoQueue(const size_t node_count):
+		PARETO_QUEUE<data_type>(node_count)
+	 {}
+};
+
 
 #endif

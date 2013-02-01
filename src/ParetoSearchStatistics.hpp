@@ -33,11 +33,11 @@ private:
 	unsigned long identical_target_node;
 	unsigned long peak_identical_target_node;
 
-	static unsigned long sumLabelCount(unsigned long accum, LABELSET_SET_SEQUENCE_TYPE<Label> labels) {
+	static unsigned long sumLabelCount(unsigned long accum, std::vector<Label> labels) {
 		return accum + labels.size() -2; // sentinal correction
 	}
 
-	static unsigned int cmpLess(LABELSET_SET_SEQUENCE_TYPE<Label> x, LABELSET_SET_SEQUENCE_TYPE<Label> y) {
+	static unsigned int cmpLess(std::vector<Label> x, std::vector<Label> y) {
 		return x.size() < y.size();
 	}
 
@@ -71,7 +71,7 @@ public:
 			}
 	}
 
-	std::string toString(std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> >& labels) {
+	std::string toString(std::vector<std::vector<Label> >& labels) {
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
@@ -122,9 +122,10 @@ public:
 
 	ParetoSearchStatistics() {}
 
-	void report(StatElement stat, unsigned long payload=0) {}
+	void report(StatElement) {}
+	void report(StatElement, unsigned long) {}
 
-	std::string toString(std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> >& labels) {
+	std::string toString(std::vector<std::vector<Label> >&) {
 		std::ostringstream out_stream;
 		out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();

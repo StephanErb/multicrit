@@ -10,13 +10,8 @@
 
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tick_count.h"
-#include "tbb/scalable_allocator.h"
 
-#ifdef SEQUENTIAL_BTREE
-#include "BTree.hpp"
-#else
-#include "ParallelBTree.hpp"
-#endif
+#include "datastructures/BTree.hpp"
 
 #include "utility/tool/timer.h"
 #include "timing.h"
@@ -156,10 +151,10 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
-#ifdef SEQUENTIAL_BTREE
-		p = 0;
-#else
+#ifdef PARALLEL_BUILD
 		tbb::task_scheduler_init init(p);
+#else
+		p = 0;
 #endif
 
 	if (k != 0) {

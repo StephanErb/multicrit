@@ -20,24 +20,23 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set
-TESTS=test_labelset test_labelsetting 
-
-PARA_CODE=time_pq_btree
-PARA_TESTS=test_pq_btree test_pq_btree_paretomin time_labelsetting 
+CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set time_pq_btree time_labelsetting
+TESTS=test_labelset test_labelsetting test_pq_btree test_pq_btree_paretomin
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)
-PARALLEL = $(PARA_TESTS) $(PARA_CODE)
+PARALLEL = $(TESTS) $(CODE)
 
 DEFAULT_OPS = -Wall -Wextra -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
 
+# Sequential
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11
-CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11
 CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11
-CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11
+CXXLIBS= -lrt -ltbb -ltbbmalloc
 
-CXXLIBS= -lrt
+# Parallel
+CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
+CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1
 CXXPLIBS= -lrt -ltbb -ltbbmalloc
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)

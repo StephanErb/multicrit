@@ -15,7 +15,7 @@
 #include <algorithm>
 
 #include "utility/datastructure/graph/GraphTypes.hpp"
-#include "UnboundBinaryHeap.hpp"
+#include "datastructures/UnboundBinaryHeap.hpp"
 
 
 /**
@@ -397,7 +397,7 @@ public:
 	}
 
 	// Copy constructor which does not copy
-	HeapLabelSet(const HeapLabelSet& other) {
+	HeapLabelSet(const HeapLabelSet&) {
 		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 

@@ -85,6 +85,7 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
+	std::cout << "# " << currentConfig() << std::endl;
 	timeExponentialGraph(verbose, nodes);
 	timeGrid(width, height, verbose);
 	timeCorrelatedGrid1(width, height, verbose);

@@ -5,13 +5,7 @@
 #define TBB_USE_THREADING_TOOLS 1
 
 #define COMPUTE_PARETO_MIN
-
-#ifdef SEQUENTIAL_BTREE
-#include "BTree.hpp"
-#else
-#include "ParallelBTree.hpp"
-#endif
-
+#include "../datastructures/BTree.hpp"
 #include <iostream>
 #include <algorithm>
 
@@ -37,8 +31,8 @@ struct Label {
 		return first_weight == other.first_weight && second_weight == other.second_weight;
 	}
 	friend std::ostream& operator<<(std::ostream& os, const Label& label) {
-			os << "{" << label.first_weight << ", " << label.second_weight  << "}";
-			return os;
+		os << "{" << label.first_weight << ", " << label.second_weight  << "}";
+		return os;
 	}
 };
 
@@ -113,8 +107,6 @@ void testParetoMinInInternalNode() {
 	btree.find_pareto_minima(Label(0, 1000000), minima);
 	assertTrue(minima.size() == 100, "Find all minima");
 }
-
-
 
 int main() {
 	testParetoMinInLeaf();

@@ -19,8 +19,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _BTREE_H_
-#define _BTREE_H
+#ifndef _SEQUENTIAL_BTREE_H_
+#define _SEQUENTIAL_BTREE_H_
 
 #include <algorithm>
 #include <functional>
@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <cmath>
 #include <string.h>
-#include "utility/datastructure/NullData.hpp"
+#include "../utility/datastructure/NullData.hpp"
 
 
 // *** Debugging Macros
@@ -1012,4 +1012,4 @@ private:
 };
 
 
-#endif // _BTREE_H_
+#endif // _SEQUENTIAL_BTREE_H_

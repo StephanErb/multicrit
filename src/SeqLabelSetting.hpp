@@ -8,7 +8,7 @@
 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "utility/datastructure/container/BinaryHeap.hpp"
-#include "UnboundBinaryHeap.hpp"
+#include "datastructures/UnboundBinaryHeap.hpp"
 
 #include <iostream>
 #include <vector>

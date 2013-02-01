@@ -15,7 +15,7 @@
 #include <deque>
 
 template<typename graph_slot>
-class SequentialParetoSearch {
+class ParetoSearch {
 private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
@@ -35,16 +35,16 @@ private:
 		}
 	};
 
-	typedef typename LABELSET_SET_SEQUENCE_TYPE<Label>::iterator label_iter;
-	typedef typename LABELSET_SET_SEQUENCE_TYPE<Label>::iterator const_label_iter;
+	typedef typename std::vector<Label>::iterator label_iter;
+	typedef typename std::vector<Label>::iterator const_label_iter;
 	typedef typename std::vector<Data>::iterator pareto_iter;
 	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
 
     // Permanent and temporary labels per node.
-	std::vector<LABELSET_SET_SEQUENCE_TYPE<Label> > labels;
+	std::vector<std::vector<Label>> labels;
 
 	graph_slot graph;
-	SequentialParetoQueue<Data> pq;
+	ParetoQueue<Data> pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -136,7 +136,7 @@ private:
 		}
 	}
 
-	void updateLabelSet(LABELSET_SET_SEQUENCE_TYPE<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
+	void updateLabelSet(std::vector<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
@@ -185,7 +185,7 @@ private:
 	}
 
 public:
-	SequentialParetoSearch(const graph_slot& graph_):
+	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())

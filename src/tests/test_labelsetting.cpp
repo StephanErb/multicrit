@@ -1,6 +1,6 @@
 #include <iostream>
-#include "BiCritShortestPathAlgorithm.hpp"
-#include "GraphGenerator.hpp"
+#include "../BiCritShortestPathAlgorithm.hpp"
+#include "../GraphGenerator.hpp"
 
 void assertTrue(bool cond, std::string msg) {
 	if (!cond) {

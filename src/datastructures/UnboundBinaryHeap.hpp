@@ -9,8 +9,8 @@
 #ifndef UNBOUND_BINARY_HEAP_HPP_
 #define UNBOUND_BINARY_HEAP_HPP_
 
-#include "utility/exception.h"
-#include "utility/datastructure/NullData.hpp"
+#include "../utility/exception.h"
+#include "../utility/datastructure/NullData.hpp"
 
 #include <vector>
 #include <limits>
