@@ -25,9 +25,14 @@ private:
 	struct Data : public Label {
 		NodeID node;
   		typedef Label label_type;
- 		explicit Data(const NodeID& x, const Label& y) : Label(y), node(x) {}
+ 		Data(const NodeID& x, const Label& y) : Label(y), node(x) {}
  		Data() : Label(0,0), node(0) {}
  		Data(const Data& data) : Label(data), node(data.node) {}
+
+ 		friend std::ostream& operator<<(std::ostream& os, const Data& data) {
+			os << " (" << data.node << ": " << data.first_weight << "," << data.second_weight << ")";
+			return os;
+		}
 	};
 
 	typedef typename LABELSET_SET_SEQUENCE_TYPE<Label>::iterator label_iter;
