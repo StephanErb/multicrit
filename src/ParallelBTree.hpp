@@ -755,11 +755,15 @@ private:
 
                     tbb::parallel_for(tbb::blocked_range<size_type>(upd.upd_begin, upd.upd_end, traits::leafparameter_k),
                         [&, this](const tbb::blocked_range<size_type>& r) {
-
-                            const signed long delta = tree->weightdelta[r.begin()] - tree->weightdelta[upd.upd_begin];
-                            const width_type key_index = find_index_of_lower_key(leaf, tree->updates[r.begin()].data);
-                            const size_type corrected_rank = rank + key_index + delta;
-                            this->write_updated_leaf_to_new_tree(key_index, corrected_rank, r.begin(), r.end());
+                            
+                            if (r.begin() == upd.upd_begin) {
+                                this->write_updated_leaf_to_new_tree(/*start index*/0, rank, r.begin(), r.end());
+                            } else {
+                                const signed long delta = tree->weightdelta[r.begin()] - tree->weightdelta[upd.upd_begin];
+                                const width_type key_index = this->find_index_of_lower_key(leaf, tree->updates[r.begin()].data);
+                                const size_type corrected_rank = rank + key_index + delta;
+                                this->write_updated_leaf_to_new_tree(key_index, corrected_rank, r.begin(), r.end());
+                            }
                         }
                     );
                 }
