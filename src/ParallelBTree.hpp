@@ -810,19 +810,19 @@ private:
             return tree->weightdelta[upd.upd_end] - tree->weightdelta[upd.upd_begin] < designated_leafsize * REWRITE_THRESHOLD;
         }
 
-        static inline int find_index_of_lower_key(const leaf_node* const leaf, const key_type& key) {
+        inline int find_index_of_lower_key(const leaf_node* const leaf, const key_type& key) const {
             int lo = 0;
             int hi = leaf->slotuse - 1;
 
             while(lo < hi) {
                 size_type mid = (lo + hi) >> 1; // FIXME: Potential integer overflow
-                if (key_less(key, leaf->slotkey[mid])) {
+                if (tree->key_lessequal(key, leaf->slotkey[mid])) {
                     hi = mid - 1;
                 } else {
                     lo = mid + 1;
                 }
             }
-            hi += (hi < 0 || key_lessequal(leaf->slotkey[hi], key));
+            hi += (hi < 0 || tree->key_less(leaf->slotkey[hi], key));
             return hi;
         }
 
@@ -944,7 +944,6 @@ private:
                 size_type subupd_begin = upd.upd_begin;
                 for (width_type i = 0; i < last; ++i) {
                     size_type subupd_end = tree->find_lower(subupd_begin, upd.upd_end, inner->slotkey[i]);
-
                     rebalancing_needed |= tree->scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                     subupd_begin = subupd_end;
                 } 
@@ -1088,6 +1087,7 @@ private:
 
     inline bool scheduleSubTreeUpdate(const width_type i, const size_type& weight, const size_type minweight,
             const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) const {
+
         subtree_updates[i].upd_begin = subupd_begin;
         subtree_updates[i].upd_end = subupd_end;
         subtree_updates[i].weight = weight + weightdelta[subupd_end] - weightdelta[subupd_begin];
@@ -1114,8 +1114,8 @@ private:
     
     static inline size_type designated_subtreesize(const level_type level) {
         size_type num_to_round = (maxweight(level-1) + minweight(level-1)) / 2;
-
         size_type remaining = num_to_round % designated_leafsize;
+
         if (remaining == 0) {
             return num_to_round;  
         } else {
