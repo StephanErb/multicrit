@@ -762,7 +762,7 @@ private:
         const size_type diff_in_extra_tree_case = subtreesize-remaining;
 
         num_subtrees += diff_in_single_tree_case >= diff_in_extra_tree_case;
-        num_subtrees += num_subtrees == 0; // but have at least enough space to hold all elements
+        num_subtrees += n > 0 && num_subtrees == 0; // but have at least enough space to hold all elements
         return num_subtrees;
     }
 
@@ -770,9 +770,7 @@ private:
         if (n <= designated_leafsize) {
             return 0;
         } else {
-            level_type opt_levels = ceil( log(2 * ((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
-            opt_levels -= num_subtrees(n, designated_subtreesize(opt_levels)) == 1;
-            return opt_levels;
+            return ceil( log(2 * ((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
         }
     }
 
