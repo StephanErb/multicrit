@@ -13,7 +13,6 @@
 #include <iostream>
 #include <algorithm>
 
-template <typename _Key>
 struct btree_test_set_traits {
     static const bool   selfverify = true;
     static const int    leafparameter_k = 8;
@@ -26,9 +25,8 @@ void assertTrue(bool cond, std::string msg) {
 		exit(-1);
 	}
 }
-
 void testBulkUpdatesOfSingleLeaf() {
-	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree;
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -73,7 +71,7 @@ void testBulkUpdatesOfSingleLeaf() {
 }
 
 void testSplitLeafInto2() {
-	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree;
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -89,6 +87,7 @@ void testSplitLeafInto2() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
+	assertTrue(btree.size() == 8, "Tree size");
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 5});
@@ -101,7 +100,7 @@ void testSplitLeafInto2() {
 }
 
 void testSplitLeafInto3() {
-	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree;
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -117,6 +116,7 @@ void testSplitLeafInto3() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 	assertTrue(btree.get_stats().leaves == 1, "Leafcount");
+    assertTrue(btree.size() == 8, "Tree size");
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 1});
@@ -128,6 +128,8 @@ void testSplitLeafInto3() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 1, "13 elements need 3 leaves");
 	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
+	assertTrue(btree.size() == 13, "Tree size");
+
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 0});
@@ -145,10 +147,11 @@ void testSplitLeafInto3() {
 	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
 	assertTrue(btree.get_stats().avgfill_leaves() == 0.75, "Should have 6 elements per leaf");
 	assertTrue(btree.size() == 3*6, "Total element count");
+
 }
 
 void testSplitDeepRebalancingInsert() {
-	btree<int, std::less<int>, btree_test_set_traits<int>> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree;
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -160,7 +163,7 @@ void testSplitDeepRebalancingInsert() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Initial Leafcount");
-
+	assertTrue(btree.size() == 70, "Tree size");
 
 	// Underflow one leaf. Element should be moved to neihgbor node
 	updates.clear();
@@ -172,6 +175,7 @@ void testSplitDeepRebalancingInsert() {
 
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 13, "Leafcount after leaf underflow");
+	assertTrue(btree.size() == 66, "Tree size");
 
 	// Overflow one leaf 
 	updates.clear();
@@ -182,7 +186,7 @@ void testSplitDeepRebalancingInsert() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Leafcount after leaf overflow");
-
+	assertTrue(btree.size() == 70, "Tree size");
 
 	// Overflow one leaf and underflow its neighbor
 	updates.clear();
@@ -197,6 +201,7 @@ void testSplitDeepRebalancingInsert() {
 	btree.apply_updates(updates);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Leafcount after leaf overflow & underflow");
+	assertTrue(btree.size() == 70, "Tree size");
 
 	// Bulk insertion into leaf which oveflows the parent node
 	updates.clear();
@@ -205,7 +210,9 @@ void testSplitDeepRebalancingInsert() {
 	}
 	btree.apply_updates(updates);
 	assertTrue(btree.get_stats().innernodes == 1 + 3, "Innernode count after heavy leaf overflow");
+	assertTrue(btree.size() == 115, "Tree size");
 }
+
 
 int main() {
 	testBulkUpdatesOfSingleLeaf();

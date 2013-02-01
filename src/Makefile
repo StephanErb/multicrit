@@ -20,11 +20,11 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=time_labelsetting time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set
+CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set
 TESTS=test_labelset test_labelsetting 
 
 PARA_CODE=time_pq_btree
-PARA_TESTS=test_pq_btree
+PARA_TESTS=test_pq_btree test_pq_btree_paretomin time_labelsetting 
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)
