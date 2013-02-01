@@ -243,9 +243,10 @@ private:
     /// Other small statistics about the B+ tree
     tree_stats  stats;
 
+
     /// Key comparison object. More comparison functions are generated from
     /// this < relation.
-    static key_compare key_less;
+    key_compare key_less;
 
     /// Memory allocator.
     allocator_type allocator;
@@ -298,18 +299,18 @@ private:
     // *** Convenient Key Comparison Functions Generated From key_less
 
     /// True if a <= b
-    static inline bool key_lessequal(const key_type &a, const key_type &b) {
+    inline bool key_lessequal(const key_type &a, const key_type &b) const {
         return !key_less(b, a);
     }
 
     /// True if a >= b
-    static inline bool key_greaterequal(const key_type &a, const key_type &b) {
+    inline bool key_greaterequal(const key_type &a, const key_type &b) const {
         return !key_less(a, b);
     }
 
     /// True if a == b. This requires the < relation to be a total order,
     /// otherwise the B+ tree cannot be sorted.
-    static inline bool key_equal(const key_type &a, const key_type &b) {
+    inline bool key_equal(const key_type &a, const key_type &b) const {
         return !key_less(a, b) && !key_less(b, a);
     }
 
