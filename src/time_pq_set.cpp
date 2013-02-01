@@ -9,7 +9,6 @@
 #include <set>
 
 #include "tbb/tick_count.h"
-#include "tbb/scalable_allocator.h"
 
 #ifdef ENABLE_MCSTL
 #include "mcstl.h"

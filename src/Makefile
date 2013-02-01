@@ -32,7 +32,7 @@ DEFAULT_OPS = -Wall -Wextra -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINE
 # Sequential
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11
 CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11
-CXXLIBS= -lrt -ltbb -ltbbmalloc
+CXXLIBS= -lrt -ltbb
 
 # Parallel
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
