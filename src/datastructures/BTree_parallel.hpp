@@ -78,6 +78,7 @@ struct Operation {
     OpType type;
     data_type data;
     Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
+    Operation() {}
 };
 
 template <typename _Key, typename _MinKey>

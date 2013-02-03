@@ -11,7 +11,13 @@
 #include "options.hpp"
 #include "ParetoQueue.hpp"
 #include "ParetoSearchStatistics.hpp"
+
 #include "tbb/parallel_sort.h"
+#include "tbb/concurrent_vector.h"
+#include "tbb/parallel_for.h"
+#include "tbb/blocked_range.h"
+#include "tbb/enumerable_thread_specific.h"
+
 
 #include <deque>
 
@@ -38,11 +44,16 @@ private:
 
 	typedef typename std::vector<Label>::iterator label_iter;
 	typedef typename std::vector<Label>::iterator const_label_iter;
+	typedef typename std::vector<Label>::iterator const_cand_iter;
 	typedef typename std::vector<Data>::iterator pareto_iter;
 	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
 
     // Permanent and temporary labels per node.
 	std::vector<std::vector<Label>> labels;
+	std::vector<std::vector<Label>> candidates;
+
+	typedef tbb::enumerable_thread_specific< std::vector<Operation<Data>> > UpdateListType; 
+	UpdateListType tls_local_updates;
 
 	graph_slot graph;
 	ParetoQueue<Data> pq;
@@ -53,16 +64,13 @@ private:
 	#endif
 
 	struct GroupByNodeComp {
-		bool operator() (const Data& i, const Data& j) const {
-			if (i.node == j.node) {
-				if (i.first_weight == j.first_weight) {
+		bool operator() (const Label& i, const Label& j) const {
+			if (i.first_weight == j.first_weight) {
 					return i.second_weight < j.second_weight;
 				}
-				return i.first_weight < j.first_weight;
-			} 
-			return i.node < j.node;
+			return i.first_weight < j.first_weight;
 		}
-	} groupByNode;
+	} groupLabels;
 
 	struct GroupByWeightComp {
 		bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
@@ -121,28 +129,12 @@ private:
 		return false;
 	}
 
-	void updateLabelSets(const std::vector<Data>& candidates, std::vector<Operation<Data> >& updates) {
-		const_pareto_iter cand_iter = candidates.begin();
-
-		while (cand_iter != candidates.end()) {
-			// find all labels belonging to the same target node
-			const_pareto_iter range_start = cand_iter;
-			while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
-				++cand_iter;
-			}
-			stats.report(IDENTICAL_TARGET_NODE, cand_iter - range_start);
-
-			// batch process labels belonging to the same target node
-			updateLabelSet(labels[range_start->node], range_start, cand_iter, updates);
-		}
-	}
-
-	void updateLabelSet(std::vector<Label>& labelset, const const_pareto_iter start, const const_pareto_iter end, std::vector<Operation<Data> >& updates) {
+	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const const_cand_iter start, const const_cand_iter end, std::vector<Operation<Data> >& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
-		for (const_pareto_iter candidate = start; candidate != end; ++candidate) {
-			Data new_label = *candidate;
+		for (const_cand_iter candidate = start; candidate != end; ++candidate) {
+			Label new_label = *candidate;
 			// short cut dominated check among candidates
 			if (new_label.second_weight >= min) { 
 				stats.report(LABEL_DOMINATED);
@@ -157,7 +149,7 @@ private:
 			}
 			min = new_label.second_weight;
 			stats.report(LABEL_NONDOMINATED);
-			updates.push_back(Operation<Data>(Operation<Data>::INSERT, new_label));
+			updates.push_back(Operation<Data>(Operation<Data>::INSERT, Data(node, new_label)));
 
 			label_iter first_nondominated = y_predecessor(iter, new_label);
 			if (iter == first_nondominated) {
@@ -176,7 +168,7 @@ private:
 						if (i != iter) set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
 					#endif
 
-					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(new_label.node, *i)));
+					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *i)));
 				}
 				// replace first dominated label and remove the rest
 				*iter = new_label;
@@ -188,6 +180,7 @@ private:
 public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
+		candidates(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -206,8 +199,8 @@ public:
 
 	void run(const NodeID node) {
 		std::vector<Data> globalMinima;
-		std::vector<Data> candidates;
-		std::vector<Operation<Data> > updates;
+		std::vector<Operation<Data>> updates;
+		std::vector<NodeID> affected_nodes;
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
@@ -216,27 +209,54 @@ public:
 			pq.findParetoMinima(globalMinima);
 			stats.report(MINIMA_COUNT, globalMinima.size());
 
-			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				FORALL_EDGES(graph, i->node, eid) {
+			for (size_t i = 0; i != globalMinima.size(); ++i) {
+				FORALL_EDGES(graph, globalMinima[i].node, eid) {
 					const Edge& edge = graph.getEdge(eid);
-					candidates.push_back(Data(edge.target, createNewLabel(*i, edge)));
+					if (candidates[edge.target].empty()) {
+						affected_nodes.push_back(edge.target);
+					}
+					candidates[edge.target].push_back(createNewLabel(globalMinima[i], edge));
 				}
 			}
-			// Sort sequence to group candidates by their target node
-			tbb::parallel_sort(candidates.begin(), candidates.end(), groupByNode);
-			updateLabelSets(candidates, updates);
+				
+			tbb::parallel_for(tbb::blocked_range<size_t>(0, affected_nodes.size()),
+				[&, this](const tbb::blocked_range<size_t>& r) {
 
+				typename UpdateListType::reference local_updates = tls_local_updates.local();
+
+				for (size_t i = r.begin(); i != r.end(); ++i) {
+						auto node = affected_nodes[i];
+						std::sort(candidates[node].begin(), candidates[node].end(), groupLabels);
+						stats.report(IDENTICAL_TARGET_NODE, candidates[node].size());
+
+						// batch process labels belonging to the same target node
+						this->updateLabelSet(node, labels[node], candidates[node].begin(), candidates[node].end(), local_updates);
+						candidates[node].clear();
+				}
+
+			});
+			for (typename UpdateListType::reference local_updates : tls_local_updates) {
+
+				updates.reserve(updates.size() + local_updates.size());
+				std::copy(local_updates.begin(), local_updates.end(), std::back_insert_iterator<std::vector<Operation<Data>>>(updates));
+				local_updates.clear();
+			}
+			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
+
+			size_t update_size = updates.size();
 			// Schedule optima for deletion
 			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
 				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
 			}
-			// Sort sequence for batch update
-			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
+			// Merge the sorted minima
+			std::inplace_merge(updates.begin(), updates.begin()+update_size, updates.end(), groupByWeight);
+
+
 			pq.applyUpdates(updates);
 
 			globalMinima.clear();
-			candidates.clear();
 			updates.clear();
+			affected_nodes.clear();
 		}		
 	}
 	
