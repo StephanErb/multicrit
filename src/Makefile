@@ -37,7 +37,7 @@ CXXLIBS= -lrt -ltbb
 # Parallel
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
 CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -g3 -W -DPARANOID $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1
-CXXPLIBS= -lrt -ltbb -ltbbmalloc
+CXXPLIBS= -lrt -ltbb -ltbbmalloc -lpthread
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
 DEPENDENCYDIRS=.

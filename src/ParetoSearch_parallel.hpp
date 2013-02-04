@@ -17,6 +17,7 @@
 #include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"
 #include "tbb/enumerable_thread_specific.h"
+#include "tbb/cache_aligned_allocator.h"
 
 
 template<typename graph_slot>
@@ -40,23 +41,26 @@ private:
 		}
 	};
 
-	typedef typename std::vector<Label>::iterator label_iter;
-	typedef typename std::vector<Label>::iterator const_label_iter;
-	typedef typename std::vector<Label>::iterator const_cand_iter;
+	typedef typename std::vector<Label> LabelVec;
+
+	typedef typename LabelVec::iterator label_iter;
+	typedef typename LabelVec::iterator const_label_iter;
+	typedef typename LabelVec::iterator const_cand_iter;
+
 	typedef typename std::vector<Data>::iterator pareto_iter;
 	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
 
     // Permanent and temporary labels per node.
-	std::vector<std::vector<Label>> labels;
+	std::vector<LabelVec> labels;
 	std::vector<tbb::atomic<bool>> has_candidates_for_node;
 
-	typedef tbb::enumerable_thread_specific< std::vector<Operation<Data>> > UpdateListType; 
+	typedef tbb::enumerable_thread_specific< std::vector<Operation<Data>>, tbb::cache_aligned_allocator<std::vector<Operation<Data>>>, tbb::ets_key_per_instance> UpdateListType; 
 	UpdateListType tls_local_updates;
 
-	typedef tbb::enumerable_thread_specific< std::vector<std::vector<Label>> > CandidatesPerNodeListType; 
+	typedef tbb::enumerable_thread_specific< std::vector<std::vector<Label>>, tbb::cache_aligned_allocator<std::vector<LabelVec>>, tbb::ets_key_per_instance > CandidatesPerNodeListType; 
 	CandidatesPerNodeListType tls_candidates;
 
-	typedef tbb::enumerable_thread_specific< std::vector<Label> > CandidateBufferType; 
+	typedef tbb::enumerable_thread_specific< LabelVec, tbb::cache_aligned_allocator<LabelVec>, tbb::ets_key_per_instance > CandidateBufferType; 
 	CandidateBufferType tls_candidate_buffer;
 
 	tbb::concurrent_vector<NodeID> affected_nodes;

@@ -272,7 +272,7 @@ private:
     node*       root;
 
     /// Pointer to spare leaf used for merging.
-    typedef tbb::enumerable_thread_specific<node*> SpareLeafPerThread; 
+    typedef tbb::enumerable_thread_specific<node*, tbb::cache_aligned_allocator<node*>, tbb::ets_key_per_instance> SpareLeafPerThread; 
     SpareLeafPerThread spare_leaves;
 
     /// Other small statistics about the B+ tree
