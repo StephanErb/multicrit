@@ -43,7 +43,7 @@ private:
     // Permanent and temporary labels per node.
 	std::vector<std::vector<Label>> labels;
 
-	graph_slot graph;
+	graph_slot& graph;
 	ParetoQueue<Data, Label> pq;
 	ParetoSearchStatistics<Label> stats;
 

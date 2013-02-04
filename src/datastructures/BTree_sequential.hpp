@@ -424,6 +424,10 @@ public:
         return stats;
     }
 
+    static std::string name() {
+        return "Sequential BTree";
+    }
+
 public:
 
     void apply_updates(const update_list& _updates) {
