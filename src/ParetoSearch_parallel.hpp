@@ -59,6 +59,8 @@ private:
 	typedef tbb::enumerable_thread_specific< std::vector<Label> > CandidateBufferType; 
 	CandidateBufferType tls_candidate_buffer;
 
+	tbb::concurrent_vector<NodeID> affected_nodes;
+
 	graph_slot graph;
 	BTreeParetoQueue<Data, Label> pq;
 	ParetoSearchStatistics<Label> stats;
@@ -185,6 +187,7 @@ public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
 		has_candidates_for_node(graph_.numberOfNodes()),
+		affected_nodes(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -204,8 +207,6 @@ public:
 	void run(const NodeID node) {
 		std::vector<Data> globalMinima;
 		std::vector<Operation<Data>> updates;
-		tbb::concurrent_vector<NodeID> affected_nodes;
-		affected_nodes.resize(graph.numberOfNodes());
 		
 		pq.init(Data(node, Label(0,0)));
 
@@ -244,7 +245,7 @@ public:
 					for (typename CandidatesPerNodeListType::reference c : tls_candidates) {
 						std::copy(c[node].begin(), c[node].end(), std::back_insert_iterator<std::vector<Label>>(candidates));
 						c[node].clear();
-					}	
+					}
 
 					// batch process labels belonging to the same target node
 					std::sort(candidates.begin(), candidates.end(), groupLabels);
