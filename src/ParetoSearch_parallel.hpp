@@ -19,8 +19,6 @@
 #include "tbb/enumerable_thread_specific.h"
 
 
-#include <deque>
-
 template<typename graph_slot>
 class ParetoSearch {
 private:
@@ -50,10 +48,16 @@ private:
 
     // Permanent and temporary labels per node.
 	std::vector<std::vector<Label>> labels;
-	std::vector<std::vector<Label>> candidates;
+	std::vector<tbb::atomic<bool>> has_candidates_for_node;
 
 	typedef tbb::enumerable_thread_specific< std::vector<Operation<Data>> > UpdateListType; 
 	UpdateListType tls_local_updates;
+
+	typedef tbb::enumerable_thread_specific< std::vector<std::vector<Label>> > CandidatesPerNodeListType; 
+	CandidatesPerNodeListType tls_candidates;
+
+	typedef tbb::enumerable_thread_specific< std::vector<Label> > CandidateBufferType; 
+	CandidateBufferType tls_candidate_buffer;
 
 	graph_slot graph;
 	ParetoQueue<Data> pq;
@@ -180,7 +184,7 @@ private:
 public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
-		candidates(graph_.numberOfNodes()),
+		has_candidates_for_node(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_.numberOfNodes())
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -200,7 +204,9 @@ public:
 	void run(const NodeID node) {
 		std::vector<Data> globalMinima;
 		std::vector<Operation<Data>> updates;
-		std::vector<NodeID> affected_nodes;
+		tbb::concurrent_vector<NodeID> affected_nodes;
+		affected_nodes.resize(graph.numberOfNodes());
+		
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
@@ -209,35 +215,48 @@ public:
 			pq.findParetoMinima(globalMinima);
 			stats.report(MINIMA_COUNT, globalMinima.size());
 
-			for (size_t i = 0; i != globalMinima.size(); ++i) {
-				FORALL_EDGES(graph, globalMinima[i].node, eid) {
-					const Edge& edge = graph.getEdge(eid);
-					if (candidates[edge.target].empty()) {
-						affected_nodes.push_back(edge.target);
-					}
-					candidates[edge.target].push_back(createNewLabel(globalMinima[i], edge));
-				}
-			}
-				
-			tbb::parallel_for(tbb::blocked_range<size_t>(0, affected_nodes.size()),
+			tbb::parallel_for(tbb::blocked_range<size_t>(0, globalMinima.size()),
 				[&, this](const tbb::blocked_range<size_t>& r) {
 
-				typename UpdateListType::reference local_updates = tls_local_updates.local();
+				typename  CandidatesPerNodeListType::reference local_candidates = tls_candidates.local();
+				local_candidates.resize(graph.numberOfNodes());
 
-				for (size_t i = r.begin(); i != r.end(); ++i) {
-						auto node = affected_nodes[i];
-						std::sort(candidates[node].begin(), candidates[node].end(), groupLabels);
-						stats.report(IDENTICAL_TARGET_NODE, candidates[node].size());
-
-						// batch process labels belonging to the same target node
-						this->updateLabelSet(node, labels[node], candidates[node].begin(), candidates[node].end(), local_updates);
-						candidates[node].clear();
-				}
-
+				for (size_t i = r.begin(); i != r.end(); ++i) {	
+					FORALL_EDGES(graph, globalMinima[i].node, eid) {
+						const Edge& edge = graph.getEdge(eid);
+	  					if (local_candidates[edge.target].empty() && !has_candidates_for_node[edge.target].compare_and_swap(true, false)) {
+							affected_nodes.push_back(edge.target);
+						}
+						local_candidates[edge.target].push_back(createNewLabel(globalMinima[i], edge));
+					}	
+  				}
 			});
-			for (typename UpdateListType::reference local_updates : tls_local_updates) {
 
-				updates.reserve(updates.size() + local_updates.size());
+			tbb::parallel_for(affected_nodes.range(),
+				[&, this](const typename tbb::concurrent_vector<NodeID>::range_type& r) {
+
+				typename UpdateListType::reference local_updates = tls_local_updates.local();
+				typename CandidateBufferType::reference candidates = tls_candidate_buffer.local();
+
+				for (auto i = r.begin(); i != r.end(); ++i) {
+					const NodeID node = *i;
+
+					for (typename CandidatesPerNodeListType::reference c : tls_candidates) {
+						std::copy(c[node].begin(), c[node].end(), std::back_insert_iterator<std::vector<Label>>(candidates));
+						c[node].clear();
+					}	
+
+					// batch process labels belonging to the same target node
+					std::sort(candidates.begin(), candidates.end(), groupLabels);
+					this->updateLabelSet(node, labels[node], candidates.begin(), candidates.end(), local_updates);
+
+					stats.report(IDENTICAL_TARGET_NODE, candidates.size());
+					has_candidates_for_node[node] = false;
+					candidates.clear();
+				}
+			});
+
+			for (typename UpdateListType::reference local_updates : tls_local_updates) {
 				std::copy(local_updates.begin(), local_updates.end(), std::back_insert_iterator<std::vector<Operation<Data>>>(updates));
 				local_updates.clear();
 			}
