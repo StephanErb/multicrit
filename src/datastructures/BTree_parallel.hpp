@@ -152,7 +152,7 @@ public:
     static const width_type         innerslotmax =  traits::branchingparameter_b * 4;
     static const width_type         innerslotmin =  traits::branchingparameter_b / 4;
 
-private:
+protected:
     // *** Node Classes for In-Memory Nodes
 
     struct node {
@@ -265,7 +265,7 @@ public:
 #endif
     };
 
-private:
+protected:
     // *** Tree Object Data Members
 
     /// Pointer to the B+ tree's root node, either leaf or inner node
@@ -437,6 +437,10 @@ public:
     /// Return a const reference to the current statistics.
     inline const struct tree_stats& get_stats() const {
         return stats;
+    }
+
+    static std::string name() {
+        return "Parallel BTree";
     }
 
 public:

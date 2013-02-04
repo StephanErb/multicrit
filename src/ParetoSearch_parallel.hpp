@@ -9,7 +9,7 @@
 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "options.hpp"
-#include "ParetoQueue.hpp"
+#include "ParetoQueue_parallel.hpp"
 #include "ParetoSearchStatistics.hpp"
 
 #include "tbb/parallel_sort.h"
@@ -52,21 +52,16 @@ private:
 
     // Permanent and temporary labels per node.
 	std::vector<LabelVec> labels;
-	std::vector<tbb::atomic<bool>> has_candidates_for_node;
 
-	typedef tbb::enumerable_thread_specific< std::vector<Operation<Data>>, tbb::cache_aligned_allocator<std::vector<Operation<Data>>>, tbb::ets_key_per_instance> UpdateListType; 
-	UpdateListType tls_local_updates;
 
-	typedef tbb::enumerable_thread_specific< std::vector<std::vector<Label>>, tbb::cache_aligned_allocator<std::vector<LabelVec>>, tbb::ets_key_per_instance > CandidatesPerNodeListType; 
-	CandidatesPerNodeListType tls_candidates;
 
 	typedef tbb::enumerable_thread_specific< LabelVec, tbb::cache_aligned_allocator<LabelVec>, tbb::ets_key_per_instance > CandidateBufferType; 
 	CandidateBufferType tls_candidate_buffer;
 
-	tbb::concurrent_vector<NodeID> affected_nodes;
 
-	graph_slot graph;
-	BTreeParetoQueue<Data, Label> pq;
+	const graph_slot& graph;
+	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> PQType;
+	PQType pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -94,9 +89,7 @@ private:
 		}
 	} groupByWeight;
 
-	static Label createNewLabel(const Label& current_label, const Edge& edge) {
-		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
-	}
+
 
 	static struct WeightLessComp {
 		bool operator() (const Label& i, const Label& j) const {
@@ -190,10 +183,8 @@ private:
 public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()),
-		has_candidates_for_node(graph_.numberOfNodes()),
-		affected_nodes(graph_.numberOfNodes()),
 		graph(graph_),
-		pq(graph_.numberOfNodes())
+		pq(graph_)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
 		#endif
@@ -209,44 +200,32 @@ public:
 	}
 
 	void run(const NodeID node) {
-		std::vector<Data> globalMinima;
 		std::vector<Operation<Data>> updates;
+		std::vector<NodeID> affected_nodes;
 		
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
 			stats.report(ITERATION, pq.size());
 
-			pq.findParetoMinima(globalMinima);
-			stats.report(MINIMA_COUNT, globalMinima.size());
+			pq.findParetoMinima(); // writes minimas to thread locals pq.*
+			stats.report(MINIMA_COUNT, 0); // unknown size
 
-			tbb::parallel_for(tbb::blocked_range<size_t>(0, globalMinima.size()),
+			for (typename PQType::AffectedNodesListType::reference local_affected_nodes : pq.tls_affected_nodes) {
+				std::copy(local_affected_nodes.begin(), local_affected_nodes.end(), std::back_insert_iterator<std::vector<NodeID>>(affected_nodes));
+				local_affected_nodes.clear();
+			}
+
+			tbb::parallel_for(tbb::blocked_range<size_t>(0, affected_nodes.size()),
 				[&, this](const tbb::blocked_range<size_t>& r) {
 
-				typename  CandidatesPerNodeListType::reference local_candidates = tls_candidates.local();
-				local_candidates.resize(graph.numberOfNodes());
-
-				for (size_t i = r.begin(); i != r.end(); ++i) {	
-					FORALL_EDGES(graph, globalMinima[i].node, eid) {
-						const Edge& edge = graph.getEdge(eid);
-	  					if (local_candidates[edge.target].empty() && !has_candidates_for_node[edge.target].compare_and_swap(true, false)) {
-							affected_nodes.push_back(edge.target);
-						}
-						local_candidates[edge.target].push_back(createNewLabel(globalMinima[i], edge));
-					}	
-  				}
-			});
-
-			tbb::parallel_for(affected_nodes.range(),
-				[&, this](const typename tbb::concurrent_vector<NodeID>::range_type& r) {
-
-				typename UpdateListType::reference local_updates = tls_local_updates.local();
+				typename PQType::UpdateListType::reference local_updates = pq.tls_local_updates.local();
 				typename CandidateBufferType::reference candidates = tls_candidate_buffer.local();
 
-				for (auto i = r.begin(); i != r.end(); ++i) {
-					const NodeID node = *i;
+				for (size_t i = r.begin(); i != r.end(); ++i) {
+					const NodeID node = affected_nodes[i];
 
-					for (typename CandidatesPerNodeListType::reference c : tls_candidates) {
+					for (typename PQType::CandidatesPerNodeListType::reference c : pq.tls_candidates) {
 						std::copy(c[node].begin(), c[node].end(), std::back_insert_iterator<std::vector<Label>>(candidates));
 						c[node].clear();
 					}
@@ -256,29 +235,18 @@ public:
 					this->updateLabelSet(node, labels[node], candidates.begin(), candidates.end(), local_updates);
 
 					stats.report(IDENTICAL_TARGET_NODE, candidates.size());
-					has_candidates_for_node[node] = false;
+					pq.has_candidates_for_node[node] = false;
 					candidates.clear();
 				}
 			});
 
-			for (typename UpdateListType::reference local_updates : tls_local_updates) {
+			for (typename PQType::UpdateListType::reference local_updates : pq.tls_local_updates) {
 				std::copy(local_updates.begin(), local_updates.end(), std::back_insert_iterator<std::vector<Operation<Data>>>(updates));
 				local_updates.clear();
 			}
 			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
-
-			size_t update_size = updates.size();
-			// Schedule optima for deletion
-			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
-			}
-			// Merge the sorted minima
-			std::inplace_merge(updates.begin(), updates.begin()+update_size, updates.end(), groupByWeight);
-
-
 			pq.applyUpdates(updates);
 
-			globalMinima.clear();
 			updates.clear();
 			affected_nodes.clear();
 		}		
@@ -291,8 +259,8 @@ public:
 				std::cout << i << " " << set_changes[i] << std::endl;
 			}
 		#endif
-		pq.printStatistics();
 		std::cout << stats.toString(labels) << std::endl;
+		pq.printStatistics();
 	}
 
 	// Subtraction / addition used to hide the sentinals
