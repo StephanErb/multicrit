@@ -210,7 +210,7 @@ public:
 	}
 };
 
-template<typename data_type, typename min_key_type=data_type>
+template<typename data_type, typename min_key_type>
 class ParetoQueue : public PARETO_QUEUE<data_type, min_key_type> {
 public:
 	ParetoQueue(const size_t node_count):

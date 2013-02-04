@@ -44,7 +44,7 @@ private:
 	std::vector<std::vector<Label>> labels;
 
 	graph_slot graph;
-	ParetoQueue<Data> pq;
+	ParetoQueue<Data, Label> pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
