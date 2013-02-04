@@ -60,7 +60,7 @@ private:
 	CandidateBufferType tls_candidate_buffer;
 
 	graph_slot graph;
-	ParetoQueue<Data> pq;
+	BTreeParetoQueue<Data, Label> pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG

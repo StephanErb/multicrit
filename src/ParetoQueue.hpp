@@ -17,7 +17,7 @@
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename data_type>
+template<typename data_type, typename min_key_type=data_type>
 class VectorParetoQueue {
 private:
 
@@ -149,7 +149,7 @@ public:
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename data_type>
+template<typename data_type, typename min_key_type=data_type>
 class BTreeParetoQueue {
 private:
 
@@ -165,7 +165,7 @@ private:
   			return i.first_weight < j.first_weight;
   		}
 	};
-	typedef btree<data_type, data_type, SetOrderer<data_type>> QueueType;
+	typedef btree<data_type, min_key_type, SetOrderer<data_type>> QueueType;
 	QueueType labels;
 
 	typedef typename data_type::weight_type weight_type;
@@ -208,8 +208,8 @@ public:
 	}
 };
 
-template<typename data_type>
-class ParetoQueue : public PARETO_QUEUE<data_type> {
+template<typename data_type, typename min_key_type=data_type>
+class ParetoQueue : public PARETO_QUEUE<data_type, min_key_type> {
 public:
 	ParetoQueue(const size_t node_count):
 		PARETO_QUEUE<data_type>(node_count)
