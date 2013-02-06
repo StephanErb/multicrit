@@ -33,7 +33,8 @@ private:
 	unsigned long identical_target_node;
 	unsigned long peak_identical_target_node;
 
-	static unsigned long sumLabelCount(unsigned long accum, std::vector<Label> labels) {
+	template<class X>
+	static unsigned long sumLabelCount(unsigned long accum, std::vector<X> labels) {
 		return accum + labels.size() -2; // sentinal correction
 	}
 
@@ -71,7 +72,8 @@ public:
 			}
 	}
 
-	std::string toString(std::vector<std::vector<Label> >& labels) {
+	template<class T, class X>
+	std::string toString(std::vector<std::vector<T, X>>& labels) {
 		std::ostringstream out_stream;
 		out_stream << "\nIterations: " << data[ITERATION] << "\n";
 
@@ -125,7 +127,8 @@ public:
 	void report(StatElement) {}
 	void report(StatElement, unsigned long) {}
 
-	std::string toString(std::vector<std::vector<Label> >&) {
+	template<class T, class X>
+	std::string toString(std::vector<std::vector<T, X>>&) {
 		std::ostringstream out_stream;
 		out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();

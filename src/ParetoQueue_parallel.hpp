@@ -60,17 +60,20 @@ private:
 	const graph_slot& graph;
 
 public:
+	typedef std::vector< Operation<data_type>, tbb::scalable_allocator<Operation<data_type>> > OpVec; 
+	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
+	typedef std::vector< CandLabelVec > CandLabelVecVec;
+	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
 
-	typedef tbb::enumerable_thread_specific< std::vector<Operation<data_type>>, tbb::cache_aligned_allocator<std::vector<Operation<data_type>>>, tbb::ets_key_per_instance> UpdateListType; 
-	UpdateListType tls_local_updates;
+	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
+	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
+	typedef tbb::enumerable_thread_specific< NodeVec,         tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected; 
 
-	typedef tbb::enumerable_thread_specific< std::vector<std::vector<label_type>>, tbb::cache_aligned_allocator<std::vector<std::vector<label_type>>>, tbb::ets_key_per_instance > CandidatesPerNodeListType; 
-	CandidatesPerNodeListType tls_candidates;
+	TLSUpdates tls_local_updates;
+	TLSCandidates tls_candidates;
+	TLSAffected tls_affected_nodes;
 
 	std::vector<tbb::atomic<bool>> has_candidates_for_node;
-
-	typedef tbb::enumerable_thread_specific< std::vector<NodeID>, tbb::cache_aligned_allocator<std::vector<NodeID>>, tbb::ets_key_per_instance > AffectedNodesListType; 
-	AffectedNodesListType tls_affected_nodes;
 
 public:
 

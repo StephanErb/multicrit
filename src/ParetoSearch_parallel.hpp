@@ -40,30 +40,24 @@ private:
 			return os;
 		}
 	};
-	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> PQType;
+	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> ParetoQueue;
+	typedef typename ParetoQueue::CandLabelVec::const_iterator const_cand_iter;
 
-	typedef typename std::vector<Label> LabelVec;
-
+	typedef typename std::vector<Label, tbb::scalable_allocator<Label>> LabelVec;
 	typedef typename LabelVec::iterator label_iter;
-	typedef typename LabelVec::iterator const_label_iter;
+	typedef typename LabelVec::const_iterator const_label_iter;
 
-	typedef typename LabelVec::const_iterator const_cand_iter;
-
-	typedef typename std::vector<Data>::iterator pareto_iter;
-	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
+	typedef tbb::enumerable_thread_specific< LabelVec, tbb::cache_aligned_allocator<LabelVec>, tbb::ets_key_per_instance > TLSBuffer; 
+	TLSBuffer tls_candidate_buffer;
 
     // Permanent and temporary labels per node.
 	std::vector<LabelVec> labels;
 
-
-
-	typedef tbb::enumerable_thread_specific< LabelVec, tbb::cache_aligned_allocator<LabelVec>, tbb::ets_key_per_instance > CandidateBufferType; 
-	CandidateBufferType tls_candidate_buffer;
-
-
 	const graph_slot& graph;
-	PQType pq;
+
+	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
+
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> set_changes;
@@ -133,7 +127,7 @@ private:
 		return false;
 	}
 
-	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const const_cand_iter start, const const_cand_iter end, std::vector<Operation<Data> >& updates) {
+	void updateLabelSet(const NodeID node, LabelVec& labelset, const const_cand_iter start, const const_cand_iter end, typename ParetoQueue::OpVec& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
@@ -201,8 +195,8 @@ public:
 	}
 
 	void run(const NodeID node) {
-		std::vector<Operation<Data>> updates;
-		std::vector<NodeID> affected_nodes;
+		typename std::vector<Operation<Data>> updates;
+		typename std::vector<NodeID> affected_nodes;
 		
 		pq.init(Data(node, Label(0,0)));
 
@@ -212,25 +206,24 @@ public:
 			pq.findParetoMinima(); // writes minimas to thread locals pq.*
 			stats.report(MINIMA_COUNT, 0); // unknown size
 
-			for (typename PQType::AffectedNodesListType::reference local_affected_nodes : pq.tls_affected_nodes) {
+			for (typename ParetoQueue::TLSAffected::reference local_affected_nodes : pq.tls_affected_nodes) {
 				std::copy(local_affected_nodes.cbegin(), local_affected_nodes.cend(), std::back_insert_iterator<std::vector<NodeID>>(affected_nodes));
 				local_affected_nodes.clear();
 			}
-
+			
 			tbb::parallel_for(tbb::blocked_range<size_t>(0, affected_nodes.size()),
 				[&, this](const tbb::blocked_range<size_t>& r) {
 
-				typename PQType::UpdateListType::reference local_updates = pq.tls_local_updates.local();
-				typename CandidateBufferType::reference candidates = tls_candidate_buffer.local();
+				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
+				typename TLSBuffer::reference candidates = tls_candidate_buffer.local();
 
 				for (size_t i = r.begin(); i != r.end(); ++i) {
 					const NodeID node = affected_nodes[i];
 
-					for (typename PQType::CandidatesPerNodeListType::reference c : pq.tls_candidates) {
-						std::copy(c[node].cbegin(), c[node].cend(), std::back_insert_iterator<std::vector<Label>>(candidates));
+					for (typename ParetoQueue::TLSCandidates::reference c : pq.tls_candidates) {
+						std::copy(c[node].cbegin(), c[node].cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
 						c[node].clear();
 					}
-
 					// batch process labels belonging to the same target node
 					std::sort(candidates.begin(), candidates.end(), groupLabels);
 					this->updateLabelSet(node, labels[node], candidates.cbegin(), candidates.cend(), local_updates);
@@ -245,7 +238,7 @@ public:
 				}
 			});
 
-			for (typename PQType::UpdateListType::reference local_updates : pq.tls_local_updates) {
+			for (typename ParetoQueue::TLSUpdates::reference local_updates : pq.tls_local_updates) {
 				std::copy(local_updates.begin(), local_updates.end(), std::back_insert_iterator<std::vector<Operation<Data>>>(updates));
 				local_updates.clear();
 			}
