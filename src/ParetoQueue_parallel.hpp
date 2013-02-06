@@ -20,6 +20,10 @@
 #include "tbb/concurrent_vector.h"
 
 
+#ifndef PARETO_FIND_RECURSION_END_LEVEL
+#define PARETO_FIND_RECURSION_END_LEVEL 3
+#endif
+
 
 
 template<typename type>
@@ -83,14 +87,13 @@ public:
 		const weight_type min = std::numeric_limits<weight_type>::min();
 		const weight_type max = std::numeric_limits<weight_type>::max();
 
-		min_label = data_type(NodeID(0), typename data_type::label_type(min, max));
+		min_label = data_type(NodeID(0), typename data_type::label_type(min, max)); // FIXME: make static const
 	}
 
 	void init(const data_type& data) {
 		const std::vector<Operation<data_type>> upds = {{Operation<data_type>::INSERT, data}};
 		base_type::apply_updates(upds);
 	}
-
 
 	void applyUpdates(const std::vector<Operation<data_type>>& updates) {
 		base_type::apply_updates(updates);
@@ -111,8 +114,23 @@ public:
 	}
 
 	void findParetoMinima() {
-		FindParetMinTask& task = *new(tbb::task::allocate_root()) FindParetMinTask(base_type::root, min_label, this);
-        tbb::task::spawn_root_and_wait(task);
+		if (base_type::root->level < PARETO_FIND_RECURSION_END_LEVEL) {
+			findParetoMinRecursive(base_type::root, min_label);
+		} else {
+			const inner_node* const inner = (inner_node*) base_type::root;
+			const width_type slotuse = inner->slotuse;
+
+			label_type min = min_label;
+			tbb::task_list tasks;
+			for (width_type i = 0; i<slotuse; ++i) {
+				 if (inner->minimum[i].second_weight < min.second_weight ||
+						(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
+					tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->childid[i], min, this));
+					min = inner->minimum[i];
+				}
+			}
+			tbb::task::spawn_root_and_wait(tasks);
+		}
 	}
 
     class FindParetMinTask : public tbb::task {
@@ -127,12 +145,12 @@ public:
 		{ }
 
 		tbb::task* execute() {
-			if (in_node->level < 3) {
-				findParetoMinRecursive(in_node, prefix_minima);
+			if (in_node->level < PARETO_FIND_RECURSION_END_LEVEL) {
+				tree->findParetoMinRecursive(in_node, prefix_minima);
 				return NULL;
 			} else {
 				const inner_node* const inner = (inner_node*) in_node;
-				width_type slotuse = inner->slotuse;
+				const width_type slotuse = inner->slotuse;
 
 				tbb::task_list tasks;
 				width_type task_count = 0;
@@ -154,62 +172,60 @@ public:
 			}
 		}
 
-		void findParetoMinRecursive(const node* const in_node, const label_type prefix_minima) {
-			if (in_node->isleafnode()) {
-				typename UpdateListType::reference local_updates = tree->tls_local_updates.local();
-				typename CandidatesPerNodeListType::reference local_candidates = tree->tls_candidates.local();
-				local_candidates.resize(tree->graph.numberOfNodes());
-				typename AffectedNodesListType::reference locally_affected_nodes = tree->tls_affected_nodes.local();
+    };
 
-				const leaf_node* const leaf = (leaf_node*) in_node;
-				width_type slotuse = leaf->slotuse;
+	void findParetoMinRecursive(const node* const in_node, const label_type prefix_minima) {
+		if (in_node->isleafnode()) {
+			typename TLSUpdates::reference local_updates = tls_local_updates.local();
+			typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
+			typename TLSCandidates::reference local_candidates = tls_candidates.local();
+			local_candidates.resize(graph.numberOfNodes());
 
-				label_type min = prefix_minima;
-				for (width_type i = 0; i<slotuse; ++i) {
-					if (leaf->slotkey[i].second_weight < min.second_weight ||
-							(leaf->slotkey[i].first_weight == min.first_weight && leaf->slotkey[i].second_weight == min.second_weight)) {
-						// found a pareto optimal label
-						min = leaf->slotkey[i];
+			const leaf_node* const leaf = (leaf_node*) in_node;
+			const width_type slotuse = leaf->slotuse;
 
-						// Schedule minima for deletion
-						local_updates.push_back(Operation<data_type>(Operation<data_type>::DELETE, leaf->slotkey[i]));
+			label_type min = prefix_minima;
+			for (width_type i = 0; i<slotuse; ++i) {
+				if (leaf->slotkey[i].second_weight < min.second_weight ||
+						(leaf->slotkey[i].first_weight == min.first_weight && leaf->slotkey[i].second_weight == min.second_weight)) {
+					// found a pareto optimal label
+					min = leaf->slotkey[i];
 
-						// Take note of the node needing updating
-						FORALL_EDGES(tree->graph, leaf->slotkey[i].node, eid) {
-							const Edge& edge = tree->graph.getEdge(eid);
-							if (local_candidates[edge.target].empty()) {
-								if (!tree->has_candidates_for_node[edge.target].compare_and_swap(true, false)) {
-									locally_affected_nodes.push_back(edge.target);
-								}
-								local_candidates[edge.target].reserve(32);
+					// Schedule minima for deletion
+					local_updates.push_back(Operation<data_type>(Operation<data_type>::DELETE, leaf->slotkey[i]));
+
+					// Derive candidates
+					FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
+						const Edge& edge = graph.getEdge(eid);
+						if (local_candidates[edge.target].empty()) {
+							if (!has_candidates_for_node[edge.target].compare_and_swap(true, false)) {
+								locally_affected_nodes.push_back(edge.target);
 							}
-						}	
-						// Derive candidates
-						FORALL_EDGES(tree->graph, leaf->slotkey[i].node, eid) {
-							const Edge& edge = tree->graph.getEdge(eid);
-							local_candidates[edge.target].push_back(createNewLabel(leaf->slotkey[i], edge));
+							local_candidates[edge.target].reserve(32);
 						}
-					}
+						local_candidates[edge.target].push_back(createNewLabel(leaf->slotkey[i], edge));
+					}	
 				}
-			} else {
-				const inner_node* const inner = (inner_node*) in_node;
-				width_type slotuse = inner->slotuse;
+			}
+		} else {
+			const inner_node* const inner = (inner_node*) in_node;
+			const width_type slotuse = inner->slotuse;
 
-				label_type min = prefix_minima;
-				for (width_type i = 0; i<slotuse; ++i) {
-					if (inner->minimum[i].second_weight < min.second_weight ||
-							(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-						findParetoMinRecursive(inner->childid[i], min);
-						min = inner->minimum[i];
-					}
+			label_type min = prefix_minima;
+			for (width_type i = 0; i<slotuse; ++i) {
+				if (inner->minimum[i].second_weight < min.second_weight ||
+						(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
+					findParetoMinRecursive(inner->childid[i], min);
+					min = inner->minimum[i];
 				}
 			}
 		}
+	}
 
-		static label_type createNewLabel(const label_type& current_label, const Edge& edge) {
-			return label_type(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
-		}
-    };
+	static label_type createNewLabel(const label_type& current_label, const Edge& edge) {
+		return label_type(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
+	}
+
 };
 
 

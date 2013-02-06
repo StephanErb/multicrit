@@ -299,6 +299,9 @@ protected:
         size_type upd_end;
     };
 
+    UpdateDescriptor root_subtree_updates[innerslotmax];
+
+
     typedef std::vector<Operation<key_type>> update_list;
 
     typedef typename _Alloc::template rebind<tbb::atomic<leaf_node*>>::other leaf_listalloc_type;
@@ -461,6 +464,8 @@ public:
         bool rebuild_needed = (level < root->level && size() < minweight(root->level)) || size() > maxweight(root->level);
 
         UpdateDescriptor upd = {rebuild_needed, new_size, 0, _updates.size()};
+        key_type unused_router;
+        min_key_type unused_min_key;
 
         if (rebuild_needed) {
             BTREE_PRINT("Root-level rewrite session started for new level " << level << " with elements: " << new_size << std::endl);
@@ -471,10 +476,44 @@ public:
             tbb::task::spawn_root_and_wait(task);
             root = new_root;
         } else {
-            key_type unused_router;
-            min_key_type unused_min_key;
-            TreeUpdateTask& task = *new(tbb::task::allocate_root()) TreeUpdateTask(root, unused_router, unused_min_key, upd, this);
-            tbb::task::spawn_root_and_wait(task);
+
+            if (root->isleafnode()) {
+                // FIXME: Should be optimized
+                TreeUpdateTask& task = *new(tbb::task::allocate_root()) TreeUpdateTask(root, unused_router, unused_min_key, upd, this);
+                tbb::task::spawn_root_and_wait(task);
+            } else {
+                // The common case
+                inner_node* const inner = static_cast<inner_node*>(root);
+                const size_type min_weight = minweight(level-1);
+                const size_type max_weight = maxweight(level-1);
+                bool rebalancing_needed = false;
+
+                // Distribute operations and find out which subtrees need rebalancing
+                width_type last = inner->slotuse-1;
+                size_type subupd_begin = upd.upd_begin;
+                for (width_type i = 0; i < last; ++i) {
+                    size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slotkey[i]);
+                    rebalancing_needed |= scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end, root_subtree_updates);
+                    subupd_begin = subupd_end;
+                } 
+                rebalancing_needed |= scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd.upd_end, root_subtree_updates);
+
+                tbb::task_list tasks;
+                if (!rebalancing_needed) {
+                    // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
+                    for (width_type i = 0; i < inner->slotuse; ++i) {
+                        if (hasUpdates(root_subtree_updates[i])) {
+                            tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], inner->minimum[i], root_subtree_updates[i], this));
+                            inner->weight[i] = root_subtree_updates[i].weight;
+                        }
+                    }
+                    tbb::task::spawn_root_and_wait(tasks);
+                } else {
+                    // FIXME: Should be optimized
+                    TreeUpdateTask& task = *new(tbb::task::allocate_root()) TreeUpdateTask(root, unused_router, unused_min_key, upd, this);
+                    tbb::task::spawn_root_and_wait(task);
+                }
+            }
         }
 
         #ifdef BTREE_DEBUG
