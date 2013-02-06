@@ -12,6 +12,9 @@
 #include "timing.h"
 #include "memory.h"
 
+#include "tbb/task_scheduler_init.h"
+#include "tbb/tick_count.h"
+
 typedef utility::datastructure::DirectedIntegerWeightedEdge TempEdge;
 typedef utility::datastructure::KGraph<TempEdge> TempGraph;
 
@@ -112,6 +115,8 @@ int main(int argc, char ** args) {
 	bool verbose = false;
 	int iterations = 1;
 	int total_instance = 1;
+	int p = tbb::task_scheduler_init::default_num_threads();
+
 
 	std::string graphname;
 	std::string directory;
@@ -120,7 +125,7 @@ int main(int argc, char ** args) {
 	std::ifstream problems_in;
 
 	int c;
-	while( (c = getopt( argc, args, "c:g:d:n:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:g:d:n:p:v") ) != -1  ){
 		switch(c){
 		case 'd':
 			directory = optarg;
@@ -134,6 +139,9 @@ int main(int argc, char ** args) {
 		case 'c':
 			iterations = atoi(optarg);
 			break;
+		case 'p':
+			p = atoi(optarg);
+			break;
 		case 'v':
 			verbose = true;
 			break;
@@ -142,6 +150,11 @@ int main(int argc, char ** args) {
 			break;
 		}
 	}
+	#ifdef PARALLEL_BUILD
+		tbb::task_scheduler_init init(p);
+	#else
+		p = 0;
+	#endif
 
 	int instance = 1;
 	std::string tim(directory + "USA-road-t." + graphname + ".gr");

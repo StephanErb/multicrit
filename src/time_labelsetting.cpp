@@ -9,6 +9,9 @@
 #include "utility/tool/timer.h"
 #include <valgrind/callgrind.h>
 
+#include "tbb/task_scheduler_init.h"
+#include "tbb/tick_count.h"
+
 
 void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 	LabelSettingAlgorithm algo(graph);
@@ -67,9 +70,10 @@ int main(int argc, char ** args) {
 	int height = 50;
 	int nodes = 12;
 	bool verbose = false;
+	int p = tbb::task_scheduler_init::default_num_threads();
 
 	int c;
-	while( (c = getopt( argc, args, "w:h:v") ) != -1  ){
+	while( (c = getopt( argc, args, "w:h:p:v") ) != -1  ){
 		switch(c){
 		case 'w':
 			width = atoi(optarg);
@@ -78,6 +82,9 @@ int main(int argc, char ** args) {
 		case 'h':
 			height = atoi(optarg);
 			break;
+		case 'p':
+			p = atoi(optarg);
+			break;
 		case 'v':
 			verbose = true;
 			break;
@@ -85,6 +92,12 @@ int main(int argc, char ** args) {
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
 	}
+	#ifdef PARALLEL_BUILD
+		tbb::task_scheduler_init init(p);
+	#else
+		p = 0;
+	#endif
+
 	std::cout << "# " << currentConfig() << std::endl;
 	timeExponentialGraph(verbose, nodes);
 	timeGrid(width, height, verbose);
