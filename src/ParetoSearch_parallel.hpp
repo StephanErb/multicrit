@@ -40,12 +40,14 @@ private:
 			return os;
 		}
 	};
+	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> PQType;
 
 	typedef typename std::vector<Label> LabelVec;
 
 	typedef typename LabelVec::iterator label_iter;
 	typedef typename LabelVec::iterator const_label_iter;
-	typedef typename LabelVec::iterator const_cand_iter;
+
+	typedef typename LabelVec::const_iterator const_cand_iter;
 
 	typedef typename std::vector<Data>::iterator pareto_iter;
 	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
@@ -60,7 +62,6 @@ private:
 
 
 	const graph_slot& graph;
-	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> PQType;
 	PQType pq;
 	ParetoSearchStatistics<Label> stats;
 
@@ -212,7 +213,7 @@ public:
 			stats.report(MINIMA_COUNT, 0); // unknown size
 
 			for (typename PQType::AffectedNodesListType::reference local_affected_nodes : pq.tls_affected_nodes) {
-				std::copy(local_affected_nodes.begin(), local_affected_nodes.end(), std::back_insert_iterator<std::vector<NodeID>>(affected_nodes));
+				std::copy(local_affected_nodes.cbegin(), local_affected_nodes.cend(), std::back_insert_iterator<std::vector<NodeID>>(affected_nodes));
 				local_affected_nodes.clear();
 			}
 
@@ -226,17 +227,21 @@ public:
 					const NodeID node = affected_nodes[i];
 
 					for (typename PQType::CandidatesPerNodeListType::reference c : pq.tls_candidates) {
-						std::copy(c[node].begin(), c[node].end(), std::back_insert_iterator<std::vector<Label>>(candidates));
+						std::copy(c[node].cbegin(), c[node].cend(), std::back_insert_iterator<std::vector<Label>>(candidates));
 						c[node].clear();
 					}
 
 					// batch process labels belonging to the same target node
 					std::sort(candidates.begin(), candidates.end(), groupLabels);
-					this->updateLabelSet(node, labels[node], candidates.begin(), candidates.end(), local_updates);
+					this->updateLabelSet(node, labels[node], candidates.cbegin(), candidates.cend(), local_updates);
 
 					stats.report(IDENTICAL_TARGET_NODE, candidates.size());
-					pq.has_candidates_for_node[node] = false;
 					candidates.clear();
+				}
+
+				for (size_t i = r.begin(); i != r.end(); ++i) {
+					const NodeID node = affected_nodes[i];
+					pq.has_candidates_for_node[node] = false;
 				}
 			});
 
