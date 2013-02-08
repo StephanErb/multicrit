@@ -219,21 +219,17 @@ public:
 
 				for (size_t i = r.begin(); i != r.end(); ++i) {
 					const NodeID node = affected_nodes[i];
-
 					const typename ParetoQueue::thread_count count = pq.candidate_bufferlist_counter[node];
-					for (typename ParetoQueue::thread_count i=0; i < count; ++i) {
-						typename ParetoQueue::CandLabelVec* c = pq.candidate_bufferlist[node * pq.num_threads + i];
+			
+					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
+						typename ParetoQueue::CandLabelVec* c = pq.candidate_bufferlist[node * pq.num_threads + j];
 						assert((*c).size() > 0);
 						std::copy((*c).cbegin(), (*c).cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
-						std::cout << (*c).size() << " ";
 						(*c).clear();
 					}
-					std::cout << "-->" << candidates.size() << std::endl;
-
 					// batch process labels belonging to the same target node
 					std::sort(candidates.begin(), candidates.end(), groupLabels);
 					this->updateLabelSet(node, labels[node], candidates.cbegin(), candidates.cend(), local_updates);
-
 					stats.report(IDENTICAL_TARGET_NODE, candidates.size());
 					candidates.clear();
 				}
