@@ -19,7 +19,7 @@ typedef utility::datastructure::DirectedIntegerWeightedEdge TempEdge;
 typedef utility::datastructure::KGraph<TempEdge> TempGraph;
 
 
-static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations) {
+static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations, int p) {
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
@@ -28,7 +28,7 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 	std::fill_n(memory, iterations, 0);
 
 	for (int i = 0; i < iterations; ++i) {
-		LabelSettingAlgorithm algo(graph);
+		LabelSettingAlgorithm algo(graph, p);
 
 		utility::tool::TimeOfDayTimer timer;
 		timer.start();
@@ -44,7 +44,7 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 	}
 	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0) << " " 
 		<< pruned_average(label_count, iterations, 0) <<  " " << pruned_average(memory, iterations, 0)/1024 << " " 
-		<< getPeakMemorySize()/1024 << "  # time in [s], target node label count, memory [mb], peak memory [mb] " << std::endl;
+		<< getPeakMemorySize()/1024 << " " << p << "  # time in [s], target node label count, memory [mb], peak memory [mb], p" << std::endl;
 }
 
 static TempEdge::weight_type getWeightOf(TempGraph& graph, unsigned int start, unsigned int end) {
@@ -182,7 +182,7 @@ int main(int argc, char ** args) {
 		start_stream >> start;
 		end_stream >> end;
 
-		time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations);
+		time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations, p);
 	}
 	problems_in.close();
 	return 0;
