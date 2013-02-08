@@ -19,10 +19,14 @@
 #include "tbb/blocked_range.h"
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"
+#include "tbb/task.h"
+#include "tbb/atomic.h"
+
 
 
 template<typename graph_slot>
 class ParetoSearch {
+	friend class LabelSetUpdateTask;
 private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
@@ -64,15 +68,6 @@ private:
 		std::vector<unsigned long> set_changes;
 	#endif
 
-	struct GroupByNodeComp {
-		bool operator() (const Label& i, const Label& j) const {
-			if (i.first_weight == j.first_weight) {
-					return i.second_weight < j.second_weight;
-				}
-			return i.first_weight < j.first_weight;
-		}
-	} groupLabels;
-
 	struct GroupByWeightComp {
 		bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
 			if (i.data.first_weight == j.data.first_weight) {
@@ -84,8 +79,6 @@ private:
 			return i.data.first_weight < j.data.first_weight;
 		}
 	} groupByWeight;
-
-
 
 	static struct WeightLessComp {
 		bool operator() (const Label& i, const Label& j) const {
@@ -176,6 +169,7 @@ private:
 		}
 	}
 
+
 public:
 	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
 		labels(graph_.numberOfNodes()),
@@ -196,49 +190,26 @@ public:
 	}
 	void run(const NodeID node) {
 		typename std::vector<Operation<Data>> updates;
-		typename std::vector<NodeID> affected_nodes;
+		tbb::task_list tasks;
+
 		
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
 			stats.report(ITERATION, pq.size());
 
-			pq.findParetoMinima(); // writes minimas to thread locals pq.*
-			stats.report(MINIMA_COUNT, 0); // unknown size
+			// write minimas & candidates to thread locals in pq.*
+			pq.findParetoMinima(); 
 
-			for (typename ParetoQueue::TLSAffected::reference local_affected_nodes : pq.tls_affected_nodes) {
-				std::copy(local_affected_nodes.cbegin(), local_affected_nodes.cend(), std::back_insert_iterator<std::vector<NodeID>>(affected_nodes));
-				local_affected_nodes.clear();
+			// Spawn tasks that use these candidates to update the labelsets
+			for (typename ParetoQueue::TLSAffected::reference affected :  pq.tls_affected_nodes) {
+				if (!affected.nodes.empty()) {
+					auto& task = *new(tbb::task::allocate_root()) LabelSetUpdateTask(this, affected.nodes);
+					task.set_affinity(affected.affinity);
+					tasks.push_back(task);
+				}
 			}
-			
-			tbb::parallel_for(tbb::blocked_range<size_t>(0, affected_nodes.size()),
-				[&, this](const tbb::blocked_range<size_t>& r) {
-
-				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
-				typename TLSBuffer::reference candidates = tls_candidate_buffer.local();
-
-				for (size_t i = r.begin(); i != r.end(); ++i) {
-					const NodeID node = affected_nodes[i];
-					const typename ParetoQueue::thread_count count = pq.candidate_bufferlist_counter[node];
-			
-					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
-						typename ParetoQueue::CandLabelVec* c = pq.candidate_bufferlist[node * pq.num_threads + j];
-						assert((*c).size() > 0);
-						std::copy((*c).cbegin(), (*c).cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
-						(*c).clear();
-					}
-					// batch process labels belonging to the same target node
-					std::sort(candidates.begin(), candidates.end(), groupLabels);
-					this->updateLabelSet(node, labels[node], candidates.cbegin(), candidates.cend(), local_updates);
-					stats.report(IDENTICAL_TARGET_NODE, candidates.size());
-					candidates.clear();
-				}
-
-				for (size_t i = r.begin(); i != r.end(); ++i) {
-					const NodeID node = affected_nodes[i];
-					pq.candidate_bufferlist_counter[node] = 0;
-				}
-			});
+			tbb::task::spawn_root_and_wait(tasks);
 
 			for (typename ParetoQueue::TLSUpdates::reference local_updates : pq.tls_local_updates) {
 				std::copy(local_updates.begin(), local_updates.end(), std::back_insert_iterator<std::vector<Operation<Data>>>(updates));
@@ -248,10 +219,10 @@ public:
 			pq.applyUpdates(updates);
 
 			updates.clear();
-			affected_nodes.clear();
+			tasks.clear();
 		}		
 	}
-	
+
 	void printStatistics() {
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			std::cout << "# LabelSet Modifications" << std::endl;
@@ -270,6 +241,63 @@ public:
 	const_label_iter begin(NodeID node) const { return ++labels[node].begin(); }
 	label_iter end(NodeID node) { return --labels[node].end(); }
 	const_label_iter end(NodeID node) const { return --labels[node].end(); }
+
+
+private:
+
+	class LabelSetUpdateTask : public tbb::task {
+
+		ParetoSearch<graph_slot>* const ps;
+		typename ParetoQueue::NodeVec& locally_affected_nodes;
+
+		static struct GroupByNodeComp {
+			bool operator() (const Label& i, const Label& j) const {
+				if (i.first_weight == j.first_weight) {
+						return i.second_weight < j.second_weight;
+					}
+				return i.first_weight < j.first_weight;
+			}
+		} groupLabels;
+
+	public:
+		
+		inline LabelSetUpdateTask(ParetoSearch<graph_slot>* const _ps, typename ParetoQueue::NodeVec& _locally_affected_nodes)
+			: ps(_ps), locally_affected_nodes(_locally_affected_nodes)
+		{}
+
+		tbb::task* execute() {
+			tbb::parallel_for(tbb::blocked_range<size_t>(0, locally_affected_nodes.size()),
+				[&](const tbb::blocked_range<size_t>& r) {
+
+				typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
+				typename TLSBuffer::reference candidates = ps->tls_candidate_buffer.local();
+
+				for (size_t i = r.begin(); i != r.end(); ++i) {
+					const NodeID node = locally_affected_nodes[i];
+					const typename ParetoQueue::thread_count count = ps->pq.candidate_bufferlist_counter[node];
+			
+					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
+						typename ParetoQueue::CandLabelVec* c = ps->pq.candidate_bufferlist[node * ps->pq.num_threads + j];
+						assert((*c).size() > 0);
+						std::copy((*c).cbegin(), (*c).cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
+						(*c).clear();
+					}
+					// batch process labels belonging to the same target node
+					std::sort(candidates.begin(), candidates.end(), groupLabels);
+					ps->updateLabelSet(node, ps->labels[node], candidates.cbegin(), candidates.cend(), local_updates);
+					candidates.clear();
+				}
+
+				for (size_t i = r.begin(); i != r.end(); ++i) {
+					const NodeID node = locally_affected_nodes[i];
+					ps->pq.candidate_bufferlist_counter[node] = 0;
+				}
+			});
+
+			locally_affected_nodes.clear();
+			return NULL;
+		}
+	};
 };
 
 

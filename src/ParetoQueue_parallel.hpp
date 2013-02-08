@@ -61,8 +61,6 @@ private:
 	typedef typename base_type::leaf_node leaf_node;
 	typedef typename base_type::width_type width_type;
 
-
-
 	const graph_slot& graph;
 
 public:
@@ -71,9 +69,14 @@ public:
 	typedef std::vector< CandLabelVec > CandLabelVecVec;
 	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
 
+	struct NodeVecAffinity { 
+		NodeVec nodes;
+		tbb::task::affinity_id  affinity;
+	};
+
 	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
 	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
-	typedef tbb::enumerable_thread_specific< NodeVec,         tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected; 
+	typedef tbb::enumerable_thread_specific< NodeVecAffinity, tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected; 
 
 	TLSUpdates tls_local_updates;
 	TLSCandidates tls_candidates;
@@ -185,6 +188,10 @@ public:
 			}
 		}
 
+		virtual void note_affinity(tbb::task::affinity_id id) {
+			typename TLSAffected::reference locally_affected_nodes = tree->tls_affected_nodes.local();
+			locally_affected_nodes.affinity = id;
+		}
     };
 
 	void findParetoMinRecursive(const node* const in_node, const label_type prefix_minima) {
@@ -215,7 +222,7 @@ public:
 							candidate_bufferlist[edge.target * num_threads + position] = &local_candidates[edge.target];
 							if (position == 0) {
 								// We were the first, so we are responsible!
-								locally_affected_nodes.push_back(edge.target);
+								locally_affected_nodes.nodes.push_back(edge.target);
 							}
 						}
 						local_candidates[edge.target].push_back(createNewLabel(leaf->slotkey[i], edge));
