@@ -61,6 +61,8 @@ private:
 	typedef typename base_type::leaf_node leaf_node;
 	typedef typename base_type::width_type width_type;
 
+
+
 	const graph_slot& graph;
 
 public:
@@ -77,17 +79,28 @@ public:
 	TLSCandidates tls_candidates;
 	TLSAffected tls_affected_nodes;
 
-	std::vector<tbb::atomic<bool>> has_candidates_for_node;
+	typedef unsigned short thread_count;
+	const thread_count num_threads;
+
+	std::vector<tbb::atomic<thread_count>> candidate_bufferlist_counter;
+	CandLabelVec** candidate_bufferlist; // two dimensional array [node ID][thread id]
+
 
 public:
 
-	ParallelBTreeParetoQueue(const graph_slot& _graph)
-		: base_type(_graph.numberOfNodes()), graph(_graph), has_candidates_for_node(_graph.numberOfNodes())
+	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
+		: base_type(_graph.numberOfNodes()), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(_graph.numberOfNodes())
 	{
 		const weight_type min = std::numeric_limits<weight_type>::min();
 		const weight_type max = std::numeric_limits<weight_type>::max();
 
 		min_label = data_type(NodeID(0), typename data_type::label_type(min, max)); // FIXME: make static const
+
+		candidate_bufferlist = (CandLabelVec**) malloc(graph.numberOfNodes() * _num_threads * sizeof(CandLabelVec*));
+	}
+
+	~ParallelBTreeParetoQueue() {
+		free(candidate_bufferlist);
 	}
 
 	void init(const data_type& data) {
@@ -198,10 +211,12 @@ public:
 					FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
 						const Edge& edge = graph.getEdge(eid);
 						if (local_candidates[edge.target].empty()) {
-							if (!has_candidates_for_node[edge.target].compare_and_swap(true, false)) {
+							unsigned short position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
+							candidate_bufferlist[edge.target * num_threads + position] = &local_candidates[edge.target];
+							if (position == 0) {
+								// We were the first, so we are responsible!
 								locally_affected_nodes.push_back(edge.target);
 							}
-							local_candidates[edge.target].reserve(32);
 						}
 						local_candidates[edge.target].push_back(createNewLabel(leaf->slotkey[i], edge));
 					}	

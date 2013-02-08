@@ -24,9 +24,13 @@ typedef Edge::edge_data Label;
 
 class LabelSettingAlgorithm : public LABEL_SETTING_ALGORITHM<Graph> {
 public:
-	LabelSettingAlgorithm(const Graph& graph_):
+	LabelSettingAlgorithm(const Graph& graph_, const unsigned short _num_threads=0):
+#ifdef PARALLEL_BUILD
+		LABEL_SETTING_ALGORITHM<Graph>(graph_, _num_threads)
+#else 
 		LABEL_SETTING_ALGORITHM<Graph>(graph_)
-	 {}
+#endif
+	 {if(_num_threads == 0){} /* prevent unused variable warning */}
 };
 
 #endif

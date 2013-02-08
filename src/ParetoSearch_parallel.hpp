@@ -11,6 +11,7 @@
 #include "options.hpp"
 #include "ParetoQueue_parallel.hpp"
 #include "ParetoSearchStatistics.hpp"
+#include "assert.h"
 
 #include "tbb/parallel_sort.h"
 #include "tbb/concurrent_vector.h"
@@ -176,10 +177,10 @@ private:
 	}
 
 public:
-	ParetoSearch(const graph_slot& graph_):
+	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
-		pq(graph_)
+		pq(graph_, num_threads)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
 		#endif
@@ -193,7 +194,6 @@ public:
 			labels[i].insert(labels[i].end(), Label(max, min));		
 		}
 	}
-
 	void run(const NodeID node) {
 		typename std::vector<Operation<Data>> updates;
 		typename std::vector<NodeID> affected_nodes;
@@ -220,10 +220,16 @@ public:
 				for (size_t i = r.begin(); i != r.end(); ++i) {
 					const NodeID node = affected_nodes[i];
 
-					for (typename ParetoQueue::TLSCandidates::reference c : pq.tls_candidates) {
-						std::copy(c[node].cbegin(), c[node].cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
-						c[node].clear();
+					const typename ParetoQueue::thread_count count = pq.candidate_bufferlist_counter[node];
+					for (typename ParetoQueue::thread_count i=0; i < count; ++i) {
+						typename ParetoQueue::CandLabelVec* c = pq.candidate_bufferlist[node * pq.num_threads + i];
+						assert((*c).size() > 0);
+						std::copy((*c).cbegin(), (*c).cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
+						std::cout << (*c).size() << " ";
+						(*c).clear();
 					}
+					std::cout << "-->" << candidates.size() << std::endl;
+
 					// batch process labels belonging to the same target node
 					std::sort(candidates.begin(), candidates.end(), groupLabels);
 					this->updateLabelSet(node, labels[node], candidates.cbegin(), candidates.cend(), local_updates);
@@ -234,7 +240,7 @@ public:
 
 				for (size_t i = r.begin(); i != r.end(); ++i) {
 					const NodeID node = affected_nodes[i];
-					pq.has_candidates_for_node[node] = false;
+					pq.candidate_bufferlist_counter[node] = 0;
 				}
 			});
 

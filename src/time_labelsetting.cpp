@@ -13,8 +13,8 @@
 #include "tbb/tick_count.h"
 
 
-void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
-	LabelSettingAlgorithm algo(graph);
+void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose, unsigned short thread_count) {
+	LabelSettingAlgorithm algo(graph, thread_count);
 
 	utility::tool::TimeOfDayTimer timer;
 	timer.start();
@@ -31,38 +31,38 @@ void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose) {
 	std::cout << timer.getTimeInSeconds()  << " # time in [s]" << std::endl << std::endl;
 }
 
-void timeGrid(int width, int height, bool verbose) {
+void timeGrid(int width, int height, bool verbose, unsigned short thread_count) {
 	std::cout << "# Raith & Ehrgott Grid (" << width << "x" << height << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraph(graph, width, height);
-	benchmark(graph, NodeID(0), NodeID(1), verbose);
+	benchmark(graph, NodeID(0), NodeID(1), verbose, thread_count);
 }
 
-void timeCorrelatedGrid1(int width, int height, bool verbose) {
+void timeCorrelatedGrid1(int width, int height, bool verbose, unsigned short thread_count) {
 	double p = 0.8;
 	std::cout << "# Machuca Grid Correlated (p=" << p << ", "<< width << "x" << height << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraphWithCostCorrleation(graph, width, height, p);
-	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
+	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose, thread_count);
 }
 
-void timeCorrelatedGrid2(int width, int height, bool verbose) {
+void timeCorrelatedGrid2(int width, int height, bool verbose, unsigned short thread_count) {
 	double p = -0.8;
 	std::cout << "# Machuca Grid Correlated (p=" << p << ", "<< width << "x" << height << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraphWithCostCorrleation(graph, width, height, p);
-	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
+	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose, thread_count);
 }
 
-void timeExponentialGraph(bool verbose, int n) {
+void timeExponentialGraph(bool verbose, int n, unsigned short thread_count) {
 	std::cout << "# Exponential Graph (root degree&depth=" << n << "):" << std::endl;
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialStarGraph(graph, n);
-	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose);
+	benchmark(graph, NodeID(0), NodeID(graph.numberOfNodes()-1), verbose, thread_count);
 }
 
 int main(int argc, char ** args) {
@@ -70,7 +70,7 @@ int main(int argc, char ** args) {
 	int height = 50;
 	int nodes = 12;
 	bool verbose = false;
-	int p = tbb::task_scheduler_init::default_num_threads();
+	unsigned short p = tbb::task_scheduler_init::default_num_threads();
 
 	int c;
 	while( (c = getopt( argc, args, "w:h:p:v") ) != -1  ){
@@ -99,10 +99,10 @@ int main(int argc, char ** args) {
 	#endif
 
 	std::cout << "# " << currentConfig() << std::endl;
-	timeExponentialGraph(verbose, nodes);
-	timeGrid(width, height, verbose);
-	timeCorrelatedGrid1(width, height, verbose);
-	timeCorrelatedGrid2(width, height, verbose);
+	timeExponentialGraph(verbose, nodes, p);
+	timeGrid(width, height, verbose, p);
+	timeCorrelatedGrid1(width, height, verbose, p);
+	timeCorrelatedGrid2(width, height, verbose, p);
 	return 0;
 }
 
