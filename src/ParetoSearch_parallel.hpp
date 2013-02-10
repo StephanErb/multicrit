@@ -212,7 +212,7 @@ public:
 			tbb::task::spawn_root_and_wait(tasks);
 
 			for (typename ParetoQueue::TLSUpdates::reference local_updates : pq.tls_local_updates) {
-				std::copy(local_updates.begin(), local_updates.end(), std::back_insert_iterator<std::vector<Operation<Data>>>(updates));
+				updates.insert(updates.end(), local_updates.begin(), local_updates.end());
 				local_updates.clear();
 			}
 			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
@@ -278,8 +278,8 @@ private:
 			
 					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
 						typename ParetoQueue::CandLabelVec* c = ps->pq.candidate_bufferlist[node * ps->pq.num_threads + j];
+						candidates.insert(candidates.end(), (*c).cbegin(), (*c).cend());
 						assert((*c).size() > 0);
-						std::copy((*c).cbegin(), (*c).cend(), std::back_insert_iterator<typename ParetoQueue::CandLabelVec>(candidates));
 						(*c).clear();
 					}
 					// batch process labels belonging to the same target node
