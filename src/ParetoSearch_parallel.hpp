@@ -266,10 +266,10 @@ private:
 				[&](const tbb::blocked_range<size_t>& r) {
 
 				typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
-				typename TLSBuffer::reference candidates = ps->tls_candidate_buffer.local();
+				const size_t last_node_index = locally_affected_nodes.size()-1;
 
 				for (size_t i = r.begin(); i != r.end(); ++i) {
-					const NodeID node = locally_affected_nodes[i];
+					const NodeID node = locally_affected_nodes[last_node_index - i];
 					const typename ParetoQueue::thread_count count = ps->pq.candidate_bufferlist_counter[node];
 		
 					typename ParetoQueue::CandLabelVec& candidates = *ps->pq.candidate_bufferlist[node * ps->pq.num_threads + 0];	
