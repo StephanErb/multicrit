@@ -52,9 +52,6 @@ private:
 	typedef typename LabelVec::iterator label_iter;
 	typedef typename LabelVec::const_iterator const_label_iter;
 
-	typedef tbb::enumerable_thread_specific< LabelVec, tbb::cache_aligned_allocator<LabelVec>, tbb::ets_key_per_instance > TLSBuffer; 
-	TLSBuffer tls_candidate_buffer;
-
     // Permanent and temporary labels per node.
 	std::vector<LabelVec> labels;
 
@@ -189,10 +186,7 @@ public:
 		}
 	}
 	void run(const NodeID node) {
-		typename std::vector<Operation<Data>> updates;
 		tbb::task_list tasks;
-
-		
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
@@ -211,15 +205,17 @@ public:
 			}
 			tbb::task::spawn_root_and_wait(tasks);
 
-			for (typename ParetoQueue::TLSUpdates::reference local_updates : pq.tls_local_updates) {
-				updates.insert(updates.end(), local_updates.begin(), local_updates.end());
+			auto iter = pq.tls_local_updates.begin();
+			typename ParetoQueue::TLSUpdates::reference updates = *iter++;
+			for (; iter != pq.tls_local_updates.end(); ++iter) {
+				typename ParetoQueue::TLSUpdates::reference local_updates = *iter;
+				updates.insert(updates.end(), std::make_move_iterator(local_updates.begin()), std::make_move_iterator(local_updates.end()));
 				local_updates.clear();
 			}
+
 			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
 			pq.applyUpdates(updates);
-
 			updates.clear();
-			tasks.clear();
 		}		
 	}
 
@@ -275,21 +271,19 @@ private:
 				for (size_t i = r.begin(); i != r.end(); ++i) {
 					const NodeID node = locally_affected_nodes[i];
 					const typename ParetoQueue::thread_count count = ps->pq.candidate_bufferlist_counter[node];
-			
-					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
-						typename ParetoQueue::CandLabelVec* c = ps->pq.candidate_bufferlist[node * ps->pq.num_threads + j];
-						candidates.insert(candidates.end(), (*c).cbegin(), (*c).cend());
-						assert((*c).size() > 0);
-						(*c).clear();
+		
+					typename ParetoQueue::CandLabelVec& candidates = *ps->pq.candidate_bufferlist[node * ps->pq.num_threads + 0];	
+					for (typename ParetoQueue::thread_count j=1; j < count; ++j) {
+						typename ParetoQueue::CandLabelVec& c = *ps->pq.candidate_bufferlist[node * ps->pq.num_threads + j];
+						candidates.insert(candidates.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
+						assert(c.size() > 0);
+						c.clear();
 					}
 					// batch process labels belonging to the same target node
 					std::sort(candidates.begin(), candidates.end(), groupLabels);
 					ps->updateLabelSet(node, ps->labels[node], candidates.cbegin(), candidates.cend(), local_updates);
 					candidates.clear();
-				}
 
-				for (size_t i = r.begin(); i != r.end(); ++i) {
-					const NodeID node = locally_affected_nodes[i];
 					ps->pq.candidate_bufferlist_counter[node] = 0;
 				}
 			});
