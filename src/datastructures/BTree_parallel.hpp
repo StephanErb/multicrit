@@ -448,7 +448,8 @@ public:
 
 public:
 
-    void apply_updates(const update_list& _updates) {
+    template<typename T>
+    void apply_updates(const T& _updates) {
         size_type new_size = setOperationsAndComputeWeightDelta(_updates);
         stats.itemcount = new_size;
         
@@ -625,8 +626,9 @@ private:
         void assign(const PrefixSum& b) {sum = b.sum;}
         TOut get_sum() const { return sum; }
     };
-
-    size_type setOperationsAndComputeWeightDelta(const update_list& _updates) {
+    
+    template<typename T>
+    size_type setOperationsAndComputeWeightDelta(const T& _updates) {
         updates = _updates.data();
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 

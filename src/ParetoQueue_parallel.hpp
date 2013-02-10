@@ -113,7 +113,8 @@ public:
 		base_type::apply_updates(upds);
 	}
 
-	void applyUpdates(const std::vector<Operation<data_type>>& updates) {
+	template<typename T>
+	void applyUpdates(const T& updates) {
 		base_type::apply_updates(updates);
 	}
 
