@@ -63,6 +63,8 @@ private:
 
 	const graph_slot& graph;
 
+	tbb::task_list root_tasks;
+
 public:
 	typedef std::vector< Operation<data_type>, tbb::scalable_allocator<Operation<data_type>> > OpVec; 
 	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
@@ -137,15 +139,14 @@ public:
 			const width_type slotuse = inner->slotuse;
 
 			label_type min = min_label;
-			tbb::task_list tasks;
 			for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->minimum[i].second_weight < min.second_weight ||
 						(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-					tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->childid[i], min, this));
+					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->childid[i], min, this));
 					min = inner->minimum[i];
 				}
 			}
-			tbb::task::spawn_root_and_wait(tasks);
+			tbb::task::spawn_root_and_wait(root_tasks);
 		}
 	}
 

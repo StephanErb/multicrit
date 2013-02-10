@@ -300,7 +300,7 @@ protected:
     };
 
     UpdateDescriptor root_subtree_updates[innerslotmax];
-
+    tbb::task_list root_tasks;
 
     typedef std::vector<Operation<key_type>> update_list;
 
@@ -498,16 +498,15 @@ public:
                 } 
                 rebalancing_needed |= scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd.upd_end, root_subtree_updates);
 
-                tbb::task_list tasks;
                 if (!rebalancing_needed) {
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(root_subtree_updates[i])) {
-                            tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], inner->minimum[i], root_subtree_updates[i], this));
+                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], inner->minimum[i], root_subtree_updates[i], this));
                             inner->weight[i] = root_subtree_updates[i].weight;
                         }
                     }
-                    tbb::task::spawn_root_and_wait(tasks);
+                    tbb::task::spawn_root_and_wait(root_tasks);
                 } else {
                     // FIXME: Should be optimized
                     TreeUpdateTask& task = *new(tbb::task::allocate_root()) TreeUpdateTask(root, unused_router, unused_min_key, upd, this);
