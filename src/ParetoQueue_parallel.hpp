@@ -114,8 +114,8 @@ public:
 	}
 
 	template<typename T>
-	void applyUpdates(const T& updates) {
-		base_type::apply_updates(updates);
+	void applyUpdates(const T* updates, const size_t update_count) {
+		base_type::apply_updates(updates, update_count);
 	}
 
 	bool empty() {

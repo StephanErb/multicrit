@@ -450,7 +450,12 @@ public:
 
     template<typename T>
     void apply_updates(const T& _updates) {
-        size_type new_size = setOperationsAndComputeWeightDelta(_updates);
+        apply_updates(_updates.data(), _updates.size());
+    }
+
+    template<typename T>
+    void apply_updates(const T* _updates, const size_t update_count) {
+        size_type new_size = setOperationsAndComputeWeightDelta(_updates, update_count);
         stats.itemcount = new_size;
         
         if (new_size == 0) {
@@ -464,7 +469,7 @@ public:
         level_type level = num_optimal_levels(new_size);
         bool rebuild_needed = (level < root->level && size() < minweight(root->level)) || size() > maxweight(root->level);
 
-        UpdateDescriptor upd = {rebuild_needed, new_size, 0, _updates.size()};
+        UpdateDescriptor upd = {rebuild_needed, new_size, 0, update_count};
         key_type unused_router;
         min_key_type unused_min_key;
 
@@ -628,18 +633,18 @@ private:
     };
     
     template<typename T>
-    size_type setOperationsAndComputeWeightDelta(const T& _updates) {
-        updates = _updates.data();
+    size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count) {
+        updates = _updates;
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
-        weightdelta.reserve(_updates.size() + 1);
+        weightdelta.reserve(update_count + 1);
         weightdelta[0] = 0;
         // If the tree is empty, then the updates can only contain insertions.
         const signed char all_ops_identical = size() == 0; 
 
-        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates.data(), all_ops_identical);
-        tbb::parallel_scan(tbb::blocked_range<size_type>(0, _updates.size(), traits::leafparameter_k), body);
+        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates, all_ops_identical);
+        tbb::parallel_scan(tbb::blocked_range<size_type>(0, update_count, traits::leafparameter_k), body);
 
         return size() + body.get_sum();
     }

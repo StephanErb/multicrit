@@ -60,6 +60,8 @@ private:
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
+	tbb::atomic<size_t> update_counter;
+	typename std::vector<Operation<Data>> updates;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> set_changes;
@@ -184,12 +186,16 @@ public:
 			labels[i].insert(labels[i].begin(), Label(min, max));
 			labels[i].insert(labels[i].end(), Label(max, min));		
 		}
+
+		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 	}
+
 	void run(const NodeID node) {
 		tbb::task_list tasks;
 		pq.init(Data(node, Label(0,0)));
 
 		while (!pq.empty()) {
+			update_counter = 0;
 			stats.report(ITERATION, pq.size());
 
 			// write minimas & candidates to thread locals in pq.*
@@ -205,17 +211,17 @@ public:
 			}
 			tbb::task::spawn_root_and_wait(tasks);
 
-			auto iter = pq.tls_local_updates.begin();
-			typename ParetoQueue::TLSUpdates::reference updates = *iter++;
-			for (; iter != pq.tls_local_updates.end(); ++iter) {
-				typename ParetoQueue::TLSUpdates::reference local_updates = *iter;
-				updates.insert(updates.end(), std::make_move_iterator(local_updates.begin()), std::make_move_iterator(local_updates.end()));
-				local_updates.clear();
+			// Due to loadbalancing in the parallel_for, there may be some remaining elements that still need to be copied
+			for (typename ParetoQueue::TLSUpdates::reference local_updates : pq.tls_local_updates) {
+				if (!local_updates.empty()) {
+					assert(update_counter + local_updates.size() < updates.capacity());
+					memcpy(updates.data() + update_counter, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
+					update_counter += local_updates.size();
+					local_updates.clear();
+				}
 			}
-
-			tbb::parallel_sort(updates.begin(), updates.end(), groupByWeight);
-			pq.applyUpdates(updates);
-			updates.clear();
+			tbb::parallel_sort(updates.data(), updates.data() + update_counter, groupByWeight);
+			pq.applyUpdates(updates.data(), update_counter);
 		}		
 	}
 
@@ -287,7 +293,13 @@ private:
 					ps->pq.candidate_bufferlist_counter[node] = 0;
 				}
 			});
+			// Copy updates to globally shared data structure
+			typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
+			const size_t position = ps->update_counter.fetch_and_add(local_updates.size());
+			assert(position + local_updates.size() < ps->updates.capacity());
+			memcpy(ps->updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
 
+			local_updates.clear();
 			locally_affected_nodes.clear();
 			return NULL;
 		}

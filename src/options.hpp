@@ -59,6 +59,10 @@
  */
  #define MAX_COST 20000
 
+
+ #define LARGE_ENOUGH_FOR_EVERYTHING 16777216
+
+
  std::string currentConfig() {
 	std::ostringstream out_stream;
 
