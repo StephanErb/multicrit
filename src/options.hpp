@@ -60,6 +60,10 @@
  #define MAX_COST 20000
 
 
+/**
+ * A suitable size for dynamic but pre-allocated data structures where we want
+ * to actually reserve memory only when we trigger a page fault.
+ */
  #define LARGE_ENOUGH_FOR_EVERYTHING 16777216
 
 
@@ -74,7 +78,11 @@
 	out_stream << STR(LABEL_SETTING_ALGORITHM) << "_";
 
 	if (strcmp(STR(LABEL_SETTING_ALGORITHM), "ParetoSearch") == 0) {
-		out_stream << STR(PARETO_QUEUE);
+		#ifdef PARALLEL_BUILD
+			out_stream << "ParallelBTreeParetoQueue";
+		#else 
+			out_stream << STR(PARETO_QUEUE);
+		#endif
 	} else {
 		if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
 			out_stream << STR(LABEL_SET) << "_";
