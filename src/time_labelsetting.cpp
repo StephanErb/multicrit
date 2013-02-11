@@ -5,6 +5,7 @@
 
 #include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
+#include "memory.h"
 
 #include "utility/tool/timer.h"
 #include <valgrind/callgrind.h>
@@ -13,22 +14,24 @@
 #include "tbb/tick_count.h"
 
 
-void benchmark(Graph& graph, NodeID start, NodeID target, bool verbose, unsigned short thread_count) {
+void benchmark(Graph& graph, NodeID start_node, NodeID target, bool verbose, unsigned short thread_count) {
 	LabelSettingAlgorithm algo(graph, thread_count);
 
-	utility::tool::TimeOfDayTimer timer;
-	timer.start();
+	double mem_start = getCurrentMemorySize();
+	tbb::tick_count start = tbb::tick_count::now();
 	CALLGRIND_START_INSTRUMENTATION;
-	algo.run(start);
+	algo.run(start_node);
 	CALLGRIND_STOP_INSTRUMENTATION;
-	timer.stop();
+	tbb::tick_count stop = tbb::tick_count::now();
+	double mem_stop = getCurrentMemorySize();
+
 
 	if (verbose) {
 		algo.printStatistics();
 		NodeID node = NodeID(target);
 		std::cout << "Target node label count: " << algo.size(node) << std::endl;
 	}
-	std::cout << timer.getTimeInSeconds()  << " # time in [s]" << std::endl << std::endl;
+	std::cout << (stop-start).seconds() << " " << (mem_stop - mem_start)/1024 << " # time in [s], mem in [mb]" << std::endl << std::endl;
 }
 
 void timeGrid(int width, int height, bool verbose, unsigned short thread_count) {

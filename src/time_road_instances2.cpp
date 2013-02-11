@@ -19,7 +19,7 @@ typedef utility::datastructure::DirectedIntegerWeightedEdge TempEdge;
 typedef utility::datastructure::KGraph<TempEdge> TempGraph;
 
 
-static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations, int p) {
+static void time(const Graph& graph, NodeID start_node, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations, int p) {
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
@@ -30,11 +30,11 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 	for (int i = 0; i < iterations; ++i) {
 		LabelSettingAlgorithm algo(graph, p);
 
-		utility::tool::TimeOfDayTimer timer;
-		timer.start();
-		algo.run(start);
-		timer.stop();
-		timings[i] = timer.getTimeInSeconds();
+		tbb::tick_count start = tbb::tick_count::now();
+		algo.run(start_node);
+		tbb::tick_count stop = tbb::tick_count::now();
+
+		timings[i] = (stop-start).seconds();
 		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(end);
@@ -116,7 +116,6 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 	int total_instance = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
-
 
 	std::string graphname;
 	std::string directory;

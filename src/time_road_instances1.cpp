@@ -12,8 +12,11 @@
 #include "timing.h"
 #include "memory.h"
 
+#include "tbb/task_scheduler_init.h"
+#include "tbb/tick_count.h"
 
-static void time(const Graph& graph, NodeID start, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations) {
+
+static void time(const Graph& graph, NodeID start_node, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations, int p) {
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
@@ -22,13 +25,13 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 	std::fill_n(memory, iterations, 0);
 
 	for (int i = 0; i < iterations; ++i) {
-		LabelSettingAlgorithm algo(graph);
+		LabelSettingAlgorithm algo(graph, p);
 
-		utility::tool::TimeOfDayTimer timer;
-		timer.start();
-		algo.run(start);
-		timer.stop();
-		timings[i] = timer.getTimeInSeconds();
+		tbb::tick_count start = tbb::tick_count::now();
+		algo.run(start_node);
+		tbb::tick_count stop = tbb::tick_count::now();
+
+		timings[i] = (stop-start).seconds();
 		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(end);
@@ -38,7 +41,7 @@ static void time(const Graph& graph, NodeID start, NodeID end, int total_num, in
 	}
 	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0) << " " 
 		<< pruned_average(label_count, iterations, 0) <<  " " << pruned_average(memory, iterations, 0)/1024 << " " 
-		<< getPeakMemorySize()/1024 << "  # time in [s], target node label count, memory [mb], peak memory [mb] " << std::endl;
+		<< getPeakMemorySize()/1024 << " " << p << "  # time in [s], target node label count, memory [mb], peak memory [mb], p " << std::endl;
 }
 
 static void readGraphFromFile(Graph& graph, std::ifstream& in) {
@@ -74,6 +77,7 @@ int main(int argc, char ** args) {
 	bool verbose = false;
 	int iterations = 1;
 	int total_instance = 1;
+	int p = tbb::task_scheduler_init::default_num_threads();
 
 	std::string graphname;
 	std::string directory;
@@ -81,7 +85,7 @@ int main(int argc, char ** args) {
 	std::ifstream problems_in;
 
 	int c;
-	while( (c = getopt( argc, args, "c:g:d:n:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:g:d:n:p:v") ) != -1  ){
 		switch(c){
 		case 'd':
 			directory = optarg;
@@ -95,6 +99,9 @@ int main(int argc, char ** args) {
 		case 'c':
 			iterations = atoi(optarg);
 			break;
+		case 'p':
+			p = atoi(optarg);
+			break;
 		case 'v':
 			verbose = true;
 			break;
@@ -103,6 +110,11 @@ int main(int argc, char ** args) {
 			break;
 		}
 	}
+	#ifdef PARALLEL_BUILD
+		tbb::task_scheduler_init init(p);
+	#else
+		p = 0;
+	#endif
 
 	int instance = 1;
 	std::string map(directory + graphname + "1");
@@ -125,7 +137,7 @@ int main(int argc, char ** args) {
 		start_stream >> start;
 		end_stream >> end;
 
-		time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations);
+		time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations, p);
 	}
 	problems_in.close();
 	return 0;
