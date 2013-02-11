@@ -33,15 +33,6 @@ private:
 	unsigned long identical_target_node;
 	unsigned long peak_identical_target_node;
 
-	template<class X>
-	static unsigned long sumLabelCount(unsigned long accum, std::vector<X> labels) {
-		return accum + labels.size() -2; // sentinal correction
-	}
-
-	static unsigned int cmpLess(std::vector<Label> x, std::vector<Label> y) {
-		return x.size() < y.size();
-	}
-
 public:
 
 	ParetoSearchStatistics() :
@@ -86,13 +77,16 @@ public:
 		out_stream << "    via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
 		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
 
-		unsigned long final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0, sumLabelCount);
+
+		unsigned long final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0,
+			[](const unsigned long accum, const std::vector<T, X>& labels) { return accum + labels.size() -2; /*sentinal correction*/ });
 		unsigned long finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
 		double finally_dom_percent = 100.0 * finally_dominated / data[LABEL_NONDOMINATED];
 		out_stream << "    finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
 
 		double avg_set_size = final_total_label_count / labels.size();
-		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), cmpLess)).size() -2; //sentinal correction
+		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), 
+			[](const std::vector<T, X>& x, const std::vector<T, X>& y) { return x.size() < y.size(); })).size() -2; //sentinal correction
 		out_stream << "LabelSet sizes: " << "\n";
 		out_stream << "  avg" << ": " << avg_set_size << "\n";
 		out_stream << "  max" << ": " << max_set_size << "\n";
@@ -102,16 +96,18 @@ public:
 		out_stream << "  avg" << ": " << avg_pq_size << "\n";
 		out_stream << "  max" << ": " << peak_pq_size << "\n";
 
-		double avg_minima_size = minima_size / data[MINIMA_COUNT];
-		out_stream << "Pareto Optimal Elements: " << "\n";
-		out_stream << "  avg" << ": " << avg_minima_size << "\n";
-		out_stream << "  max" << ": " << peak_minima_size << "\n";
-
-		double avg_ident_target_nodes = identical_target_node / data[IDENTICAL_TARGET_NODE];
-		out_stream << "Identical Target Nodes per Iteration: " << "\n";
-		out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
-		out_stream << "  max" << ": " << peak_identical_target_node;
-		
+		if (data[MINIMA_COUNT] > 0) {
+			double avg_minima_size = minima_size / data[MINIMA_COUNT];
+			out_stream << "Pareto Optimal Elements: " << "\n";
+			out_stream << "  avg" << ": " << avg_minima_size << "\n";
+			out_stream << "  max" << ": " << peak_minima_size << "\n";
+		}
+		if (data[IDENTICAL_TARGET_NODE] > 0) {
+			double avg_ident_target_nodes = identical_target_node / data[IDENTICAL_TARGET_NODE];
+			out_stream << "Identical Target Nodes per Iteration: " << "\n";
+			out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
+			out_stream << "  max" << ": " << peak_identical_target_node;
+		}
 		return out_stream.str();
 	}
 };
@@ -132,7 +128,6 @@ public:
 		std::ostringstream out_stream;
 		out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();
-
 	}
 };
 
