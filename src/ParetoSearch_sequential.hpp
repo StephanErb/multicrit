@@ -9,7 +9,7 @@
 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "options.hpp"
-#include "ParetoQueue.hpp"
+#include "ParetoQueue_sequential.hpp"
 #include "ParetoSearchStatistics.hpp"
 
 #include <deque>
@@ -43,7 +43,7 @@ private:
     // Permanent and temporary labels per node.
 	std::vector<std::vector<Label>> labels;
 
-	graph_slot& graph;
+	const graph_slot& graph;
 	ParetoQueue<Data, Label> pq;
 	ParetoSearchStatistics<Label> stats;
 

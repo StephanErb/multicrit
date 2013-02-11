@@ -149,7 +149,7 @@ public:
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename data_type, typename min_key_type=data_type>
+template<typename data_type, typename min_key_type>
 class BTreeParetoQueue {
 private:
 
@@ -169,18 +169,14 @@ private:
 	QueueType labels;
 
 	typedef typename data_type::weight_type weight_type;
-	data_type min_label;
+	const data_type min_label;
 	
 public:
 
 	BTreeParetoQueue(const size_t node_count)
-		: labels(node_count)
-	{
-		const weight_type min = std::numeric_limits<weight_type>::min();
-		const weight_type max = std::numeric_limits<weight_type>::max();
-
-		min_label = data_type(NodeID(0), typename data_type::label_type(min, max));
-	}
+		: labels(node_count), min_label(NodeID(0), typename data_type::label_type(
+			std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()))
+	{}
 
 	void init(const data_type& data) {
 		const std::vector<Operation<data_type>> upds = {{Operation<data_type>::INSERT, data}};
@@ -213,8 +209,8 @@ public:
 template<typename data_type, typename min_key_type>
 class ParetoQueue : public PARETO_QUEUE<data_type, min_key_type> {
 public:
-	ParetoQueue(const size_t node_count):
-		PARETO_QUEUE<data_type>(node_count)
+	ParetoQueue(const size_t numberOfNodes):
+		PARETO_QUEUE<data_type, min_key_type>(numberOfNodes)
 	 {}
 };
 
