@@ -13,7 +13,7 @@
 
 #include "datastructures/BTree.hpp"
 
-#include "utility/tool/timer.h"
+#include "timing.h"
 #include "memory.h"
 #include "algorithm"
 #include "limits"
