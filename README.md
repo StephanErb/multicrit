@@ -16,6 +16,8 @@
 ## Running benchmarks
 Modify `src/options.hpp` to configure the algorithm / data structures. To produce new graphs run the makefile in `gnuplot/`.
 
+Parallel versions of the different algorithm and timing programs end in `.par`, e.g., `./bin/time_road_instances1.par`.
+
 ### Road1 (time/distance, simple) of [Raith, Ehrgott 2009]
 Extract the DC, RI and NJ tar files in `instances/`. Then run:
 
@@ -26,6 +28,7 @@ Extract the DC, RI and NJ tar files in `instances/`. Then run:
     -n first instance number
     -c number of repetitions
     -v enable statistics
+    -p PE count
 
 To update the timing values under `timings/` pipe all road timings into one file.
 
@@ -38,6 +41,7 @@ Extract the NY tar file in `instances/`. Then run:
     -g graph/city name
     -c number of repetitions
     -v enable statistics
+    -p PE count
 
 ### Grid1 (random, medium) of [Raith, Ehrgott 2009]
 Random grid graphs with costs in range [1, 10]:
@@ -52,7 +56,8 @@ Random grid graphs with costs in range [1, 10]:
     ./bin/time_grid_instances2 -c 12 -p -0.8
 
     -c number of repetitions. Each one gets a new graph.
-    -p correlation of the weights (e.g., 0.8, 0.4, 0, -0,4, -0.8)
+    -q correlation of the weights (e.g., 0.8, 0.4, 0, -0,4, -0.8)
+    -p PE count
 
 ### BTree & Parallel BTree
 Benchmarks are configured within & run via `./scripts/time_pq_btrees.sh` and `./scripts/time_pq_btree_parameter.sh`. This will automatically update the timing values under `./timings/btree`. Also see the `time_pq_set.cpp` equivalents.
@@ -61,4 +66,4 @@ General options of the underlying `time_pq_btree.cpp`:
     -c number of repetitions
     -k number of elements to insert
     -r ratio where n stands for the pre-existing elements within the treee for n = k * r. So, r=0 is a bulk construction.
-    -p number of threads to use
+    -p PE count
