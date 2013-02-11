@@ -301,8 +301,6 @@ protected:
     UpdateDescriptor root_subtree_updates[innerslotmax];
     tbb::task_list root_tasks;
 
-    typedef std::vector<Operation<key_type>> update_list;
-
     typedef typename _Alloc::template rebind<tbb::atomic<leaf_node*>>::other leaf_listalloc_type;
     typedef std::vector<tbb::atomic<leaf_node*>, leaf_listalloc_type> leaf_list;
 
