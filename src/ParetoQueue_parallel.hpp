@@ -216,7 +216,7 @@ public:
 					FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
 						const Edge& edge = graph.getEdge(eid);
 						if (local_candidates[edge.target].empty()) {
-							unsigned short position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
+							thread_count position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
 							candidate_bufferlist[edge.target * num_threads + position] = &local_candidates[edge.target];
 							if (position == 0) {
 								// We were the first, so we are responsible!
