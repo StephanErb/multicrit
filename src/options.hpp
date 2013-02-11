@@ -39,14 +39,14 @@
 /**
  * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector
  */
-//#define PARETO_QUEUE VectorParetoQueue
-#define PARETO_QUEUE BTreeParetoQueue
+#define PARETO_QUEUE VectorParetoQueue
+//#define PARETO_QUEUE BTreeParetoQueue
 
 
 /**
  * Keep this defined to gather runtime stats during label setting
  */
-#define GATHER_STATS
+//#define GATHER_STATS
 
 /**
  * Enable the following flag to gather how label sets and the pareto queue are modified

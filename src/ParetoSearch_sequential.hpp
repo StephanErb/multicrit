@@ -27,7 +27,6 @@ private:
   		typedef Label label_type;
  		Data(const NodeID& x, const Label& y) : Label(y), node(x) {}
  		Data() : Label(0,0), node(0) {}
- 		Data(const Data& data) : Label(data), node(data.node) {}
 
  		friend std::ostream& operator<<(std::ostream& os, const Data& data) {
 			os << " (" << data.node << ": " << data.first_weight << "," << data.second_weight << ")";

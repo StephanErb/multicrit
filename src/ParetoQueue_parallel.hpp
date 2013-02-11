@@ -54,7 +54,7 @@ private:
 	typedef typename graph_slot::Edge Edge;
 
 	typedef typename data_type::weight_type weight_type;
-	data_type min_label;
+	const data_type min_label;
 
 	typedef typename base_type::node node;
 	typedef typename base_type::inner_node inner_node;
@@ -94,13 +94,9 @@ public:
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
-		: base_type(_graph.numberOfNodes()), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(_graph.numberOfNodes())
+		: base_type(_graph.numberOfNodes()), min_label(NodeID(0), typename data_type::label_type(std::numeric_limits<weight_type>::min(),
+			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(32*_graph.numberOfNodes())
 	{
-		const weight_type min = std::numeric_limits<weight_type>::min();
-		const weight_type max = std::numeric_limits<weight_type>::max();
-
-		min_label = data_type(NodeID(0), typename data_type::label_type(min, max)); // FIXME: make static const
-
 		candidate_bufferlist = (CandLabelVec**) malloc(graph.numberOfNodes() * _num_threads * sizeof(CandLabelVec*));
 	}
 
@@ -158,7 +154,7 @@ public:
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const label_type _prefix_minima, ParallelBTreeParetoQueue* const _tree) 
+		inline FindParetMinTask(const node* const _in_node, const label_type& _prefix_minima, ParallelBTreeParetoQueue* const _tree) 
 			: in_node(_in_node), prefix_minima(_prefix_minima), tree(_tree)
 		{ }
 
@@ -196,7 +192,7 @@ public:
 		}
     };
 
-	void findParetoMinRecursive(const node* const in_node, const label_type prefix_minima) {
+	void findParetoMinRecursive(const node* const in_node, const label_type& prefix_minima) {
 		if (in_node->isleafnode()) {
 			typename TLSUpdates::reference local_updates = tls_local_updates.local();
 			typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
