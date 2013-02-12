@@ -155,20 +155,21 @@ int main(int argc, char ** args) {
 	#ifdef PARALLEL_BUILD
 
 		struct tbb_set_affinity : public tbb::task_scheduler_observer {
-			int threadID;
-			cpu_set_t cpuset;
+			tbb::atomic<int> threadID;
 
 			tbb_set_affinity() : threadID(0) {
 				observe(true);
 			}
 			void on_scheduler_entry(bool) {
-				threadID++;
+				int myID = threadID.fetch_and_increment();
 
-				pthread_attr_t attr;
-				pthread_attr_init(&attr);
+				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
-				CPU_SET(threadID,&cpuset);
-				int error = pthread_attr_setaffinity_np(&attr,sizeof(cpuset),&cpuset);
+				CPU_SET(0,&cpuset);
+
+				std::cout << myID << " on pthread " <<  (unsigned int) pthread_self() << std::endl;
+
+				int error = pthread_setaffinity_np(pthread_self(), sizeof(cpuset), &cpuset);
 				if (error) {
 					std::cout << "bad affinity for " << threadID << ". Errno: " << error << std::endl; 
 					exit(1);
