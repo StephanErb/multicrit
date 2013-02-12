@@ -44,7 +44,7 @@ private:
 
 public:
 
-	VectorParetoQueue(const size_t node_count)
+	VectorParetoQueue(const size_t)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		: pq_inserts(101), pq_deletes(101)
 		#endif
@@ -52,8 +52,8 @@ public:
 		const weight_type min = std::numeric_limits<weight_type>::min();
 		const weight_type max = std::numeric_limits<weight_type>::max();
 
-		labels.reserve(node_count); // rough approximiation
-		temp.reserve(node_count);
+		labels.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+		temp.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 
 		// add sentinals
 		labels.insert(labels.begin(), data_type(NodeID(0), typename data_type::label_type(min, max)));
