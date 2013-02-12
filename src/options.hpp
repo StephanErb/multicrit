@@ -54,6 +54,12 @@
 //#define GATHER_DATASTRUCTURE_MODIFICATION_LOG
 
 /**
+ * Enable the following flag to time individual substeps of the ParetoSearch algorithms
+ */ 
+//#define GATHER_SUBCOMPNENT_TIMING
+
+
+/**
  * Maximal costs used to compute the lexicographic priority.
  * Must be appropriate to the problem size!
  */

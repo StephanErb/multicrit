@@ -13,6 +13,10 @@
 #include "ParetoSearchStatistics.hpp"
 #include <algorithm>
 
+#ifdef GATHER_SUBCOMPNENT_TIMING
+#include "tbb/tick_count.h"
+#endif
+
 template<typename graph_slot>
 class ParetoSearch {
 private:
@@ -49,6 +53,11 @@ private:
 	const graph_slot& graph;
 	ParetoQueue<Data, Label> pq;
 	ParetoSearchStatistics<Label> stats;
+
+	#ifdef GATHER_SUBCOMPNENT_TIMING
+		enum Component {FIND_PARETO_MIN=0, BUCKETSORT=1, UPDATE_LABELSETS=2, SORT=3, PQ_UPDATE=4};
+		double timings[5] = {0, 0, 0, 0, 0};
+	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> set_changes;
@@ -194,11 +203,21 @@ public:
 		std::vector<NodeID> affected_nodes;
 		pq.init(Data(node, Label(0,0)));
 
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			tbb::tick_count start = tbb::tick_count::now();
+			tbb::tick_count stop = tbb::tick_count::now();
+		#endif
+
 		while (!pq.empty()) {
 			stats.report(ITERATION, pq.size());
 
 			pq.findParetoMinima(globalMinima);
 			stats.report(MINIMA_COUNT, globalMinima.size());
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[FIND_PARETO_MIN] += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
 				FORALL_EDGES(graph, i->node, eid) {
@@ -209,6 +228,12 @@ public:
 					candidates[edge.target].push_back(createNewLabel(*i, edge));
 				}
 			}
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[BUCKETSORT] += (stop-start).seconds();
+				start = stop;
+			#endif
+
 			for (size_t i=0; i<affected_nodes.size(); ++i) {
 				const NodeID node = affected_nodes[affected_nodes.size()-1 - i];
 				// batch process labels belonging to the same target node
@@ -216,17 +241,32 @@ public:
 				updateLabelSet(node, labels[node], candidates[node].cbegin(), candidates[node].cend(), updates);
 				candidates[node].clear();
 			}
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[UPDATE_LABELSETS] += (stop-start).seconds();
+				start = stop;
+			#endif
+
 			// Sort sequence for batch update
 			std::sort(updates.begin(), updates.end(), groupByWeight);
-
 			// Schedule optima for deletion
 			size_t size = updates.size();
 			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
 				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
 			}
 			std::inplace_merge(updates.begin(), updates.begin()+size, updates.end(), groupByWeight);
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[SORT] += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			pq.applyUpdates(updates);
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[PQ_UPDATE] += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			globalMinima.clear();
 			updates.clear();
@@ -241,8 +281,16 @@ public:
 				std::cout << i << " " << set_changes[i] << std::endl;
 			}
 		#endif
-		pq.printStatistics();
 		std::cout << stats.toString(labels) << std::endl;
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			std::cout << "Subcomponent Timings:" << std::endl;
+			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find pareto min" << std::endl;
+			std::cout << "  " << timings[BUCKETSORT]  << " Bucket sort" << std::endl;
+			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			std::cout << "  " << timings[SORT] << " Sort Candidates"  << std::endl;
+			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
+		#endif
+		pq.printStatistics();
 	}
 
 	// Subtraction / addition used to hide the sentinals

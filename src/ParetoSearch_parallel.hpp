@@ -22,6 +22,9 @@
 #include "tbb/task.h"
 #include "tbb/atomic.h"
 
+#ifdef GATHER_SUBCOMPNENT_TIMING
+#include "tbb/tick_count.h"
+#endif
 
 
 template<typename graph_slot>
@@ -61,6 +64,11 @@ private:
 
 	tbb::atomic<size_t> update_counter;
 	typename std::vector<Operation<Data>> updates;
+
+	#ifdef GATHER_SUBCOMPNENT_TIMING
+		enum Component {FIND_PARETO_MIN_AND_BUCKETSORT=0, UPDATE_LABELSETS=1, SORT=2, PQ_UPDATE=3};
+		double timings[4] = {0, 0, 0, 0};
+	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> set_changes;
@@ -193,12 +201,22 @@ public:
 		tbb::task_list tasks;
 		pq.init(Data(node, Label(0,0)));
 
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			tbb::tick_count start = tbb::tick_count::now();
+			tbb::tick_count stop = tbb::tick_count::now();
+		#endif
+
 		while (!pq.empty()) {
 			update_counter = 0;
 			stats.report(ITERATION, pq.size());
 
 			// write minimas & candidates to thread locals in pq.*
 			pq.findParetoMinima(); 
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[FIND_PARETO_MIN_AND_BUCKETSORT] += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			// Spawn tasks that use these candidates to update the labelsets
 			for (typename ParetoQueue::TLSAffected::reference affected :  pq.tls_affected_nodes) {
@@ -209,6 +227,11 @@ public:
 				}
 			}
 			tbb::task::spawn_root_and_wait(tasks);
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[UPDATE_LABELSETS] += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			// Due to loadbalancing in the parallel_for, there may be some remaining elements that still need to be copied
 			for (typename ParetoQueue::TLSUpdates::reference local_updates : pq.tls_local_updates) {
@@ -220,7 +243,17 @@ public:
 				}
 			}
 			tbb::parallel_sort(updates.data(), updates.data() + update_counter, groupByWeight);
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[SORT] += (stop-start).seconds();
+				start = stop;
+			#endif
+
 			pq.applyUpdates(updates.data(), update_counter);
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[PQ_UPDATE] += (stop-start).seconds();
+			#endif
 		}		
 	}
 
@@ -232,6 +265,13 @@ public:
 			}
 		#endif
 		std::cout << stats.toString(labels) << std::endl;
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			std::cout << "Subcomponent Timings:" << std::endl;
+			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find pareto min & bucket sort" << std::endl;
+			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			std::cout << "  " << timings[SORT] << " Sort "  << std::endl;
+			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
+		#endif
 		pq.printStatistics();
 	}
 
