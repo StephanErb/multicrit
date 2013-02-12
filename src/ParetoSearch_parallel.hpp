@@ -253,6 +253,7 @@ public:
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[PQ_UPDATE] += (stop-start).seconds();
+				start = stop;
 			#endif
 		}		
 	}
@@ -269,7 +270,7 @@ public:
 			std::cout << "Subcomponent Timings:" << std::endl;
 			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find pareto min & bucket sort" << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			std::cout << "  " << timings[SORT] << " Sort "  << std::endl;
+			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
 		pq.printStatistics();

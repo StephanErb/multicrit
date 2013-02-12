@@ -287,7 +287,7 @@ public:
 			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find pareto min" << std::endl;
 			std::cout << "  " << timings[BUCKETSORT]  << " Bucket sort" << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			std::cout << "  " << timings[SORT] << " Sort Candidates"  << std::endl;
+			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
 		pq.printStatistics();
