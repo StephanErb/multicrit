@@ -15,6 +15,9 @@
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tick_count.h"
 
+#include "tbb/task_scheduler_observer.h"
+#include <pthread.h>
+
 typedef utility::datastructure::DirectedIntegerWeightedEdge TempEdge;
 typedef utility::datastructure::KGraph<TempEdge> TempGraph;
 
@@ -150,6 +153,29 @@ int main(int argc, char ** args) {
 		}
 	}
 	#ifdef PARALLEL_BUILD
+
+		struct tbb_set_affinity : public tbb::task_scheduler_observer {
+			int threadID;
+			cpu_set_t cpuset;
+
+			tbb_set_affinity() : threadID(0) {
+				observe(true);
+			}
+			void on_scheduler_entry(bool) {
+				threadID++;
+
+				pthread_attr_t attr;
+				pthread_attr_init(&attr);
+				CPU_ZERO(&cpuset);
+				CPU_SET(threadID,&cpuset);
+				int error = pthread_attr_setaffinity_np(&attr,sizeof(cpuset),&cpuset);
+				if (error) {
+					std::cout << "bad affinity for " << threadID << ". Errno: " << error << std::endl; 
+					exit(1);
+				}
+			}
+		} tbb_set_affinity;
+
 		tbb::task_scheduler_init init(p);
 	#else
 		p = 0;
