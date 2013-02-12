@@ -54,6 +54,10 @@ private:
 	typedef typename LabelVec::iterator label_iter;
 	typedef typename LabelVec::const_iterator const_label_iter;
 
+	typedef tbb::enumerable_thread_specific< tbb::auto_partitioner, tbb::cache_aligned_allocator<tbb::auto_partitioner>, tbb::ets_key_per_instance > TLSPartitioner;
+	TLSPartitioner tls_partitioner;
+
+
     // Permanent and temporary labels per node.
 	std::vector<LabelVec> labels;
 
@@ -332,7 +336,7 @@ private:
 
 					ps->pq.candidate_bufferlist_counter[node] = 0;
 				}
-			});
+			}, ps->tls_partitioner.local());
 			// Copy updates to globally shared data structure
 			typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
 			const size_t position = ps->update_counter.fetch_and_add(local_updates.size());
