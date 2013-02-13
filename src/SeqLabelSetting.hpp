@@ -127,14 +127,13 @@ private:
 	};
 	typedef UnboundBinaryHeap<Priority, std::numeric_limits<Priority>, Data> BinaryHeap;
 	typedef typename BinaryHeap::handle handle;
-	typedef std::pair<NodeID, Label> NodeLabelPair;
 
 	BinaryHeap heap;
 	std::vector<SharedHeapLabelSet<Label, BinaryHeap> > labels;
 	graph_slot graph;
 	LabelSettingStatistics stats;
 
-	static Label createNewLabel(const Label& current_label, const Edge& edge) {
+	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
 
