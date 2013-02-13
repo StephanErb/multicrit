@@ -172,21 +172,22 @@ protected:
 
     };
 
+    struct inner_node_data {
+        /// Heighest key in the subtree with the same slot index
+        key_type        slotkey;
+        /// Weight (total number of keys) of the subtree 
+        size_type       weight;
+        /// Pointers to children
+        node*           childid;
+        /// Heighest key in the subtree with the same slot index
+        min_key_type    minimum; 
+    };
+
     struct inner_node : public node {
         /// Define an related allocator for the inner_node structs.
         typedef typename _Alloc::template rebind<inner_node>::other alloc_type;
 
-        /// Heighest key in the subtree with the same slot index
-        key_type        slotkey[innerslotmax];
-
-        /// Weight (total number of keys) of the subtree 
-        size_type       weight[innerslotmax];
-
-        /// Pointers to children
-        node*           childid[innerslotmax];
-
-        /// Heighest key in the subtree with the same slot index
-        min_key_type        minimum[innerslotmax];
+        inner_node_data slot[innerslotmax];
 
         /// Set variables to initial values
         inline void initialize(const level_type l) {
@@ -409,7 +410,7 @@ private:
             inner_node *innernode = static_cast<inner_node*>(n);
 
             for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                clear_recursive(innernode->childid[slot]);
+                clear_recursive(innernode->slot[slot].childid);
             }
         }
         free_node(n);
@@ -495,18 +496,18 @@ public:
                 width_type last = inner->slotuse-1;
                 size_type subupd_begin = upd.upd_begin;
                 for (width_type i = 0; i < last; ++i) {
-                    size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slotkey[i]);
-                    rebalancing_needed |= scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end, root_subtree_updates);
+                    size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
+                    rebalancing_needed |= scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, root_subtree_updates);
                     subupd_begin = subupd_end;
                 } 
-                rebalancing_needed |= scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd.upd_end, root_subtree_updates);
+                rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, root_subtree_updates);
 
                 if (!rebalancing_needed) {
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(root_subtree_updates[i])) {
-                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], inner->minimum[i], root_subtree_updates[i], this));
-                            inner->weight[i] = root_subtree_updates[i].weight;
+                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->slot[i].childid, inner->slot[i].slotkey, inner->slot[i].minimum, root_subtree_updates[i], this));
+                            inner->slot[i].weight = root_subtree_updates[i].weight;
                         }
                     }
                     tbb::task::spawn_root_and_wait(root_tasks);
@@ -554,10 +555,10 @@ private:
 
             min_key_type min = prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (inner->minimum[i].second_weight < min.second_weight ||
-                        (inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-                    find_pareto_minima(inner->childid[i], min, minima);
-                    min = inner->minimum[i];
+                if (inner->slot[i].minimum.second_weight < min.second_weight ||
+                        (inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
+                    find_pareto_minima(inner->slot[i].childid, min, minima);
+                    min = inner->slot[i].minimum;
                 }
             }
         }
@@ -569,8 +570,8 @@ private:
     }
 
     static inline void set_min_element(min_key_type& min_key, const inner_node* const node, width_type size) {
-        min_key = *std::min_element(node->minimum, node->minimum+size,
-            [](const min_key_type& i, const min_key_type& j) { return i.second_weight < j.second_weight; });
+        min_key = (*std::min_element(node->slot, node->slot+size,
+            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })).minimum;
     }
 #else 
     void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
@@ -736,15 +737,15 @@ private:
 
                 size_type rank = rank_begin;
                 for (width_type i = old_slotuse; i < new_slotuse-1; ++i) {
-                    result->weight[i] = designated_treesize;
+                    result->slot[i].weight = designated_treesize;
                     tasks.push_back(*new(c.allocate_child()) TreeCreationTask(
-                        result->childid[i], 0, false, level-1, result->slotkey[i], result->minimum[i], rank, rank+designated_treesize, leaves, tree));
+                        result->slot[i].childid, 0, false, level-1, result->slot[i].slotkey, result->slot[i].minimum, rank, rank+designated_treesize, leaves, tree));
                     rank += designated_treesize;
                 }
                 // Use scheduler bypass for the last task
-                result->weight[new_slotuse-1] = rank_end - rank;
+                result->slot[new_slotuse-1].weight = rank_end - rank;
                 auto& task = *new(c.allocate_child()) TreeCreationTask(
-                        result->childid[new_slotuse-1], 0, false, level-1, result->slotkey[new_slotuse-1], result->minimum[new_slotuse-1], rank, rank_end, leaves, tree);
+                        result->slot[new_slotuse-1].childid, 0, false, level-1, result->slot[new_slotuse-1].slotkey, result->slot[new_slotuse-1].minimum, rank, rank_end, leaves, tree);
                 spawn(tasks);
                 return &task;
              }
@@ -764,7 +765,7 @@ private:
 
         tbb::task* execute() {
             set_min_element(min_key, result, slotuse);
-            router = result->slotkey[slotuse-1];
+            router = result->slot[slotuse-1].slotkey;
             return NULL;
         }
     };
@@ -826,12 +827,12 @@ private:
                 width_type last = inner->slotuse-1;
                 size_type subupd_begin = upd.upd_begin;
                 for (width_type i = 0; i < last; ++i) {
-                    size_type subupd_end = tree->find_lower(subupd_begin, upd.upd_end, inner->slotkey[i]);
+                    size_type subupd_end = tree->find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
 
-                    tree->scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
+                    tree->scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                     subupd_begin = subupd_end;
                 } 
-                tree->scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
+                tree->scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
 
                 // Push updates to subtrees and rewrite them in parallel
                 tbb::task_list tasks;
@@ -840,7 +841,7 @@ private:
 
                 size_type subtree_rank = rank;
                 for (width_type i = 0; i < inner->slotuse; ++i) {
-                    tasks.push_back(*new(c.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], leaves, tree));
+                    tasks.push_back(*new(c.allocate_child()) TreeRewriteTask(inner->slot[i].childid, subtree_rank, subtree_updates[i], leaves, tree));
                     subtree_rank += subtree_updates[i].weight;
                 }
                 c.set_ref_count(inner->slotuse);
@@ -990,11 +991,11 @@ private:
                 width_type last = inner->slotuse-1;
                 size_type subupd_begin = upd.upd_begin;
                 for (width_type i = 0; i < last; ++i) {
-                    size_type subupd_end = tree->find_lower(subupd_begin, upd.upd_end, inner->slotkey[i]);
-                    rebalancing_needed |= tree->scheduleSubTreeUpdate(i, inner->weight[i], min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
+                    size_type subupd_end = tree->find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
+                    rebalancing_needed |= tree->scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                     subupd_begin = subupd_end;
                 } 
-                rebalancing_needed |= tree->scheduleSubTreeUpdate(last, inner->weight[last], min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
+                rebalancing_needed |= tree->scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
 
                 tbb::task_list tasks;
                 width_type task_count = 0;
@@ -1005,9 +1006,9 @@ private:
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(subtree_updates[i])) {
-                            tasks.push_back(*new(c.allocate_child()) TreeUpdateTask(inner->childid[i], inner->slotkey[i], inner->minimum[i], subtree_updates[i], tree));
+                            tasks.push_back(*new(c.allocate_child()) TreeUpdateTask(inner->slot[i].childid, inner->slot[i].slotkey, inner->slot[i].minimum, subtree_updates[i], tree));
                             ++task_count;                            
-                            inner->weight[i] = subtree_updates[i].weight;
+                            inner->slot[i].weight = subtree_updates[i].weight;
                         }
                     }
                     c.set_ref_count(task_count);
@@ -1044,7 +1045,7 @@ private:
 
                             size_type subtree_rank = 0;
                             for (width_type i = rebalancing_range_start; i < in; ++i) {
-                                task.subtasks.push_back(*new(task.allocate_child()) TreeRewriteTask(inner->childid[i], subtree_rank, subtree_updates[i], task.leaves, tree));
+                                task.subtasks.push_back(*new(task.allocate_child()) TreeRewriteTask(inner->slot[i].childid, subtree_rank, subtree_updates[i], task.leaves, tree));
                                 subtree_rank += subtree_updates[i].weight;
                             }
                             task.subtask_count = in - rebalancing_range_start;
@@ -1054,14 +1055,14 @@ private:
                         } else {
                             BTREE_PRINT("Copying " << inner->childid[in] << " from " << in << " to " << out << " in " << result << std::endl);
 
-                            result->weight[out] = subtree_updates[in].weight;
-                            result->childid[out] = inner->childid[in];
+                            result->slot[out].weight = subtree_updates[in].weight;
+                            result->slot[out].childid = inner->slot[in].childid;
                             if (hasUpdates(subtree_updates[in])) {
-                                tasks.push_back(*new(allocate_child()) TreeUpdateTask(result->childid[out], result->slotkey[out], result->minimum[out], subtree_updates[in], tree));
+                                tasks.push_back(*new(allocate_child()) TreeUpdateTask(result->slot[out].childid, result->slot[out].slotkey, result->slot[out].minimum, subtree_updates[in], tree));
                                 ++task_count;
                             } else {
-                                result->minimum[out] = inner->minimum[in];
-                                result->slotkey[out] = inner->slotkey[in];
+                                result->slot[out].minimum = inner->slot[in].minimum;
+                                result->slot[out].slotkey = inner->slot[in].slotkey;
                             }
                             ++out;
                             ++in;
@@ -1071,7 +1072,7 @@ private:
                     set_ref_count(task_count+1);
                     spawn_and_wait_for_all(tasks);
                     set_min_element(min_key, result, out);
-                    router = result->slotkey[out-1];
+                    router = result->slot[out-1].slotkey;
                     tree->free_node(upd_node);
                     upd_node = result;
 
@@ -1211,13 +1212,13 @@ private:
             for(level_type i = 0; i < depth; i++) std::cout  << "  ";
 
             for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                std::cout  << "(" << innernode->childid[slot] << ": " << innernode->weight[slot] << ") " << innernode->slotkey[slot] << " ";
+                std::cout  << "(" << innernode->slot[slot].childid << ": " << innernode->slot[slot].weight << ") " << innernode->slot[slot].slotkey << " ";
             }
             std::cout << std::endl;
 
             if (recursive) {
                 for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                    print_node(innernode->childid[slot], depth + 1, recursive);
+                    print_node(innernode->slot[slot].childid, depth + 1, recursive);
                 }
             }
         }
@@ -1275,41 +1276,41 @@ private:
             vstats.innernodes++;
 
             for(width_type slot = 0; slot < inner->slotuse-1; ++slot) {
-                if (!key_lessequal(inner->slotkey[slot], inner->slotkey[slot + 1])) {
+                if (!key_lessequal(inner->slot[slot].slotkey, inner->slot[slot + 1].slotkey)) {
                     print_node(inner, 0, true);
                 }
-                assert(key_lessequal(inner->slotkey[slot], inner->slotkey[slot + 1]));
+                assert(key_lessequal(inner->slot[slot].slotkey, inner->slot[slot + 1].slotkey));
             }
 
             for(width_type slot = 0; slot < inner->slotuse; ++slot) {
-                const node *subnode = inner->childid[slot];
+                const node *subnode = inner->slot[slot].childid;
                 key_type subminkey = key_type();
                 key_type submaxkey = key_type();
 
                 assert(subnode->level + 1 == inner->level);
 
-                if ((inner != root && !(inner->weight[slot] >= minweight(inner->level-1))) || !(inner->weight[slot] <= maxweight(inner->level-1))) {
-                    std::cout << inner->weight[slot] << " min " << minweight(inner->level-1) << " max " <<maxweight(inner->level-1) << std::endl;
+                if ((inner != root && !(inner->slot[slot].weight >= minweight(inner->level-1))) || !(inner->slot[slot].weight <= maxweight(inner->level-1))) {
+                    std::cout << inner->slot[slot].weight << " min " << minweight(inner->level-1) << " max " <<maxweight(inner->level-1) << std::endl;
                     print_node(inner, 0, true);
                 }
-                assert( inner == root || inner->weight[slot] >= minweight(inner->level-1) );
-                assert( inner->weight[slot] <= maxweight(inner->level-1) );
+                assert( inner == root || inner->slot[slot].weight >= minweight(inner->level-1) );
+                assert( inner->slot[slot].weight <= maxweight(inner->level-1) );
 
                 size_type itemcount = vstats.itemcount;
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
 
-                assert(inner->weight[slot] == vstats.itemcount - itemcount);
+                assert(inner->slot[slot].weight == vstats.itemcount - itemcount);
 
                 BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
 
                 if (slot == 0) {
                     *minkey = subminkey;
                 } else {
-                    assert(key_greaterequal(subminkey, inner->slotkey[slot-1]));
+                    assert(key_greaterequal(subminkey, inner->slot[slot-1].slotkey));
                 }
-                assert(key_equal(inner->slotkey[slot], submaxkey));
+                assert(key_equal(inner->slot[slot].slotkey, submaxkey));
             }
-            *maxkey = inner->slotkey[inner->slotuse-1];
+            *maxkey = inner->slot[inner->slotuse-1].slotkey;
         }
     }
 };

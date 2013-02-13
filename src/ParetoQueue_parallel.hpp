@@ -137,10 +137,10 @@ public:
 
 			label_type min = min_label;
 			for (width_type i = 0; i<slotuse; ++i) {
-				 if (inner->minimum[i].second_weight < min.second_weight ||
-						(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->childid[i], min, this));
-					min = inner->minimum[i];
+				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
+						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
+					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, this));
+					min = inner->slot[i].minimum;
 				}
 			}
 			tbb::task::spawn_root_and_wait(root_tasks);
@@ -172,11 +172,11 @@ public:
 
 				label_type min = prefix_minima;
 				for (width_type i = 0; i<slotuse; ++i) {
-					 if (inner->minimum[i].second_weight < min.second_weight ||
-							(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->childid[i], min, tree));
+				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
+						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
+						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, tree));
 						++task_count;
-						min = inner->minimum[i];
+						min = inner->slot[i].minimum;
 					}
 				}
 				c.set_ref_count(task_count);
@@ -233,10 +233,10 @@ public:
 
 			label_type min = prefix_minima;
 			for (width_type i = 0; i<slotuse; ++i) {
-				if (inner->minimum[i].second_weight < min.second_weight ||
-						(inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-					findParetoMinRecursive(inner->childid[i], min);
-					min = inner->minimum[i];
+				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
+						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
+					findParetoMinRecursive(inner->slot[i].childid, min);
+					min = inner->slot[i].minimum;
 				}
 			}
 		}
