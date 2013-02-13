@@ -743,3 +743,151 @@ Identical Target Nodes per Iteration:
 
 1 NY1 277.201 1089 3835.63 3835  # time in [s], target node label count, memory [mb], peak memory [mb] 
 2 NY2 346.142 1469 3939.32 3939  # time in [s], target node label count, memory [mb], peak memory [mb] 
+
+
+
+
+#125 as of commit: "Copy (most) TLS updates in parallalel."
+
+## Timings [Machuca 2012] Difficult Road Instances on i10pc125 
+# ParallelParetoSearch_ParallelBTreeParetoQueue (version/commit: "Copy TLS updates in parallalel.")
+1 NY1 166.071 1089 4275.83 4275 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 207.631 1469 5317.66 5317 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+1 NY1 278.223 1089 4153.22 4153 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 340.557 1469 5148.16 5148 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+1 NY1 481.234 1089 4024.44 4024 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 613.939 1469 4649.22 4649 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+1 NY1 876.714 1089 3934.03 3934 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 1050.57 1469 3958.11 3958 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# SequentialParetoSearch_VectorParetoQueue (optimized: inplace-merge & bucket sort)
+1 NY1 572.15 1089 3884.82 3884 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 732.714 1469 4090.68 4090 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Sum
+1 NY1 1454.52 1089 6695.69 6695 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 1685.77 1469 6854.93 6854 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+
+## Subcomponent Timings [Machuca 2012] Difficult Road Instances on i10pc125 
+# ParallelParetoSearch_ParallelBTreeParetoQueue (version/commit: "Copy TLS updates in parallalel.")
+Subcomponent Timings:
+  80.5806 Find pareto min & bucket sort
+  70.6721 Update Labelsets 
+  12.6041 Sort Updates
+  47.1863 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 163.857 1089 4275.06 4275 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+Subcomponent Timings:
+  141.045 Find pareto min & bucket sort
+  115.878 Update Labelsets 
+  17.3421 Sort Updates
+  84.9975 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 274.266 1089 4148.82 4148 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+Subcomponent Timings:
+  239.647 Find pareto min & bucket sort
+  207.279 Update Labelsets 
+  29.0047 Sort Updates
+  147.519 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 475.93 1089 3974.98 3974 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# SequentialParetoSearch_VectorParetoQueue (optimized: inplace-merge & bucket sort)
+Subcomponent Timings:
+  47.5427 Find pareto min
+  53.1669 Bucket sort
+  323.729 Update Labelsets 
+  42.3977 Sort Updates
+  102.832 Update PQ 
+1 NY1 569.668 1089 3884.82 3885 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+
+# SequentialParetoSearch_VectorParetoQueue  -> sequential algo with inplace merge of the already sorted updates.
+# Exponential Graph (root degree&depth=32):
+ Statistics disabled at compile time. See options file.
+Target node label count: 0
+4.09383 226.609 # time in [s], mem in [mb]
+
+# Raith & Ehrgott Grid (200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 284
+9.33328 63.9609 # time in [s], mem in [mb]
+
+# Machuca Grid Correlated (p=0.8, 200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 23
+0.329789 3.60547 # time in [s], mem in [mb]
+
+# Machuca Grid Correlated (p=-0.8, 200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 1582
+42.6854 322.777 # time in [s], mem in [mb]
+
+
+ 
+# SequentialParetoSearch_VectorParetoQueue -> Optimized Sequential Pareto Search (Inplace merge & bucket sort) 
+# Exponential Graph (root degree&depth=32):
+ Statistics disabled at compile time. See options file.
+Target node label count: 0
+3.05904 210.281 # time in [s], mem in [mb]
+
+# Raith & Ehrgott Grid (200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 284
+7.90701 73.9531 # time in [s], mem in [mb]
+
+# Machuca Grid Correlated (p=0.8, 200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 23
+0.269046 6.64453 # time in [s], mem in [mb]
+
+# Machuca Grid Correlated (p=-0.8, 200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 1582
+31.2311 381.043 # time in [s], mem in [mb]
+
+
+# SequentialParetoSearch_BTreeParetoQueue  -> Optimized Sequential Pareto Search (Inplace merge & bucket sort) 
+# Exponential Graph (root degree&depth=32):
+Sequential BTree: 
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+ Statistics disabled at compile time. See options file.
+Target node label count: 0
+3.33039 224.801 # time in [s], mem in [mb]
+
+# Raith & Ehrgott Grid (200x200):
+Sequential BTree: 
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+ Statistics disabled at compile time. See options file.
+Target node label count: 284
+8.5249 43.4219 # time in [s], mem in [mb]
+
+# Machuca Grid Correlated (p=0.8, 200x200):
+Sequential BTree: 
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+ Statistics disabled at compile time. See options file.
+Target node label count: 23
+0.314143 6.54688 # time in [s], mem in [mb]
+
+# Machuca Grid Correlated (p=-0.8, 200x200):
+Sequential BTree: 
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+ Statistics disabled at compile time. See options file.
+Target node label count: 1582
+34.5741 379.496 # time in [s], mem in [mb]
