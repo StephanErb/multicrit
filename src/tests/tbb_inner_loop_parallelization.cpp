@@ -37,7 +37,7 @@ int main(int, char**) {
 			tbb::parallel_for(tbb::blocked_range<size_t>(0, elements.size()),
 				[&](const tbb::blocked_range<size_t>& r) {
 					for (size_t i=r.begin()+1; i!=r.end(); ++i) {
-						elements[i] += elements[i-1] + cos(elements[i]);
+						elements[i] += elements[i-1] + elements[i+1];
 					}
 				}
 			);
