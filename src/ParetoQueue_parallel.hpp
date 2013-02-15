@@ -144,6 +144,7 @@ public:
 				}
 			}
 			tbb::task::spawn_root_and_wait(root_tasks);
+			root_tasks.clear();
 		}
 	}
 
@@ -154,7 +155,7 @@ public:
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const label_type& _prefix_minima, ParallelBTreeParetoQueue* const _tree) 
+		inline FindParetMinTask(const node* const _in_node, const label_type _prefix_minima, ParallelBTreeParetoQueue* const _tree) 
 			: in_node(_in_node), prefix_minima(_prefix_minima), tree(_tree)
 		{ }
 
@@ -217,7 +218,7 @@ public:
 						const Edge& edge = graph.getEdge(eid);
 						if (local_candidates[edge.target].empty()) {
 							thread_count position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
-							candidate_bufferlist[edge.target * num_threads + position] = &local_candidates[edge.target];
+							candidate_bufferlist[edge.target * num_threads + position] = &(local_candidates[edge.target]);
 							if (position == 0) {
 								// We were the first, so we are responsible!
 								locally_affected_nodes.nodes.push_back(edge.target);

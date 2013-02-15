@@ -231,6 +231,7 @@ public:
 				}
 			}
 			tbb::task::spawn_root_and_wait(tasks);
+			tasks.clear();
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();
@@ -322,17 +323,19 @@ private:
 					const NodeID node = locally_affected_nodes[last_node_index - i];
 					const typename ParetoQueue::thread_count count = ps->pq.candidate_bufferlist_counter[node];
 		
-					typename ParetoQueue::CandLabelVec& candidates = *ps->pq.candidate_bufferlist[node * ps->pq.num_threads + 0];	
+					typename ParetoQueue::CandLabelVec* candidates = ps->pq.candidate_bufferlist[node * ps->pq.num_threads + 0];	
+					assert(candidates->size() > 0);
 					for (typename ParetoQueue::thread_count j=1; j < count; ++j) {
-						typename ParetoQueue::CandLabelVec& c = *ps->pq.candidate_bufferlist[node * ps->pq.num_threads + j];
-						candidates.insert(candidates.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
-						assert(c.size() > 0);
-						c.clear();
+						typename ParetoQueue::CandLabelVec* c = ps->pq.candidate_bufferlist[node * ps->pq.num_threads + j];
+						candidates->insert(candidates->end(), std::make_move_iterator(c->begin()), std::make_move_iterator(c->end()));
+						assert(c->size() > 0);
+						c->clear();
 					}
+
 					// batch process labels belonging to the same target node
-					std::sort(candidates.begin(), candidates.end(), groupLabels);
-					ps->updateLabelSet(node, ps->labels[node], candidates.cbegin(), candidates.cend(), local_updates);
-					candidates.clear();
+					std::sort(candidates->begin(), candidates->end(), groupLabels);
+					ps->updateLabelSet(node, ps->labels[node], candidates->cbegin(), candidates->cend(), local_updates);
+					candidates->clear();
 
 					ps->pq.candidate_bufferlist_counter[node] = 0;
 				}

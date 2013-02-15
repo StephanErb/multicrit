@@ -511,6 +511,7 @@ public:
                         }
                     }
                     tbb::task::spawn_root_and_wait(root_tasks);
+                    root_tasks.clear();
                 } else {
                     // FIXME: Should be optimized
                     TreeUpdateTask& task = *new(tbb::task::allocate_root()) TreeUpdateTask(root, unused_router, unused_min_key, upd, this);
@@ -1053,7 +1054,7 @@ private:
                             tasks.push_back(task);
                             ++task_count;
                         } else {
-                            BTREE_PRINT("Copying " << inner->childid[in] << " from " << in << " to " << out << " in " << result << std::endl);
+                            BTREE_PRINT("Copying " << inner->slot[in].childid << " from " << in << " to " << out << " in " << result << std::endl);
 
                             result->slot[out].weight = subtree_updates[in].weight;
                             result->slot[out].childid = inner->slot[in].childid;
