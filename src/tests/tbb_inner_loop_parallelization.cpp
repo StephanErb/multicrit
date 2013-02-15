@@ -10,8 +10,8 @@
 #include <stdlib.h>
 
 
-#define ITER_COUNT 10000
-#define N 1000000
+#define ITER_COUNT 10
+#define N 80000000
 
 int main(int, char**) {
 #ifdef PARALLEL_BUILD
@@ -26,23 +26,24 @@ int main(int, char**) {
 		tbb::parallel_for(tbb::blocked_range<size_t>(0, elements.size()),
 			[&](const tbb::blocked_range<size_t>& r) {
 				for (size_t i=r.begin(); i!=r.end(); ++i) {
-					elements[i] = 1;
+					elements[i] = rand() % 1000;
 				}
 			}
 		);
 
 		for (int i=0; i<ITER_COUNT; ++i) {
-			tbb::tick_count loop_start = tbb::tick_count::now();
+/*			tbb::tick_count loop_start = tbb::tick_count::now();
 			tbb::parallel_for(tbb::blocked_range<size_t>(0, elements.size()),
 				[&](const tbb::blocked_range<size_t>& r) {
 					int x = sin(r.begin());
+					//std::cout << r.size() << std::endl;
 					for (size_t i=r.begin(); i!=r.end(); ++i) {
 						elements[i] = x*elements[i];
 					}
 				}
 			);
 			tbb::tick_count loop_stop = tbb::tick_count::now();
-			timings[0] += (loop_stop-loop_start).seconds();
+			timings[0] += (loop_stop-loop_start).seconds();*/
 
 			tbb::tick_count sort_start = tbb::tick_count::now();
 			tbb::parallel_sort(elements.begin(), elements.end());
