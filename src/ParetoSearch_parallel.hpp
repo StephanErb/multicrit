@@ -74,14 +74,16 @@ private:
 						CANDIDATES_SORT=5, UPDATE_ACTUAL_LABELSET=6, COPY_UPDATES=7};
 		double timings[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-		struct tls_tim {
-			double candidates_collection = 0;
-			double candidates_sort = 0;
-			double update_labelsets = 0;
-			double copy_updates = 0;
-		};
-		typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
-		TLSTimings tls_timings;
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			struct tls_tim {
+				double candidates_collection = 0;
+				double candidates_sort = 0;
+				double update_labelsets = 0;
+				double copy_updates = 0;
+			};
+			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
+			TLSTimings tls_timings;
+		#endif
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -282,19 +284,23 @@ public:
 		#endif
 		std::cout << stats.toString(labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
-			for (typename TLSTimings::reference subtimings : tls_timings) {
-				timings[CANDIDATES_COLLECTION] = std::max(subtimings.candidates_collection, timings[CANDIDATES_COLLECTION]);
-				timings[CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[CANDIDATES_SORT]);
-				timings[UPDATE_ACTUAL_LABELSET] = std::max(subtimings.update_labelsets, timings[UPDATE_ACTUAL_LABELSET]);
-				timings[COPY_UPDATES] += subtimings.copy_updates;
-			}
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				for (typename TLSTimings::reference subtimings : tls_timings) {
+					timings[CANDIDATES_COLLECTION] = std::max(subtimings.candidates_collection, timings[CANDIDATES_COLLECTION]);
+					timings[CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[CANDIDATES_SORT]);
+					timings[UPDATE_ACTUAL_LABELSET] = std::max(subtimings.update_labelsets, timings[UPDATE_ACTUAL_LABELSET]);
+					timings[COPY_UPDATES] += subtimings.copy_updates;
+				}
+			#endif
 			std::cout << "Subcomponent Timings:" << std::endl;
 			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find pareto min & bucket sort" << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			std::cout << "      " << timings[CANDIDATES_COLLECTION] << " Collect Candidate Labels " << std::endl;
-			std::cout << "      " << timings[CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
-			std::cout << "      " << timings[UPDATE_ACTUAL_LABELSET] << " Update Labelsets " << std::endl;
-			std::cout << "      " << timings[COPY_UPDATES] << " Copy Updates " << std::endl;
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				std::cout << "      " << timings[CANDIDATES_COLLECTION] << " Collect Candidate Labels " << std::endl;
+				std::cout << "      " << timings[CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
+				std::cout << "      " << timings[UPDATE_ACTUAL_LABELSET] << " Update Labelsets " << std::endl;
+				std::cout << "      " << timings[COPY_UPDATES] << " Copy Updates " << std::endl;
+			#endif
 			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
@@ -339,7 +345,7 @@ private:
 				typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
 				const size_t last_node_index = locally_affected_nodes.size()-1;
 
-				#ifdef GATHER_SUBCOMPNENT_TIMING
+				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename TLSTimings::reference subtimings = ps->tls_timings.local();
 					tbb::tick_count start = tbb::tick_count::now();
 					tbb::tick_count stop = tbb::tick_count::now();
@@ -359,7 +365,7 @@ private:
 						assert(c->size() > 0);
 						c->clear();
 					}
-					#ifdef GATHER_SUBCOMPNENT_TIMING
+					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.candidates_collection += (stop-start).seconds();
 						start = stop;
@@ -367,7 +373,7 @@ private:
 
 					// Batch process labels belonging to the same target node
 					std::sort(candidates->begin(), candidates->end(), groupLabels);
-					#ifdef GATHER_SUBCOMPNENT_TIMING
+					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.candidates_sort += (stop-start).seconds();
 						start = stop;
@@ -375,7 +381,7 @@ private:
 
 					ps->updateLabelSet(node, ps->labels[node], candidates->cbegin(), candidates->cend(), local_updates);
 					candidates->clear();
-					#ifdef GATHER_SUBCOMPNENT_TIMING
+					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.update_labelsets += (stop-start).seconds();
 						start = stop;
@@ -384,7 +390,7 @@ private:
 			}, ps->tls_partitioner.local());
 
 			// Copy updates to globally shared data structure
-			#ifdef GATHER_SUBCOMPNENT_TIMING
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				typename TLSTimings::reference subtimings = ps->tls_timings.local();
 				tbb::tick_count start = tbb::tick_count::now();
 				tbb::tick_count stop = tbb::tick_count::now();
@@ -393,7 +399,7 @@ private:
 			const size_t position = ps->update_counter.fetch_and_add(local_updates.size());
 			assert(position + local_updates.size() < ps->updates.capacity());
 			memcpy(ps->updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
-			#ifdef GATHER_SUBCOMPNENT_TIMING
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				subtimings.copy_updates += (stop-start).seconds();
 				start = stop;
