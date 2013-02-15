@@ -95,7 +95,7 @@ public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
 		: base_type(_graph.numberOfNodes()), min_label(NodeID(0), typename data_type::label_type(std::numeric_limits<weight_type>::min(),
-			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(32*_graph.numberOfNodes())
+			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(_graph.numberOfNodes())
 	{
 		candidate_bufferlist = (CandLabelVec**) malloc(graph.numberOfNodes() * _num_threads * sizeof(CandLabelVec*));
 	}
