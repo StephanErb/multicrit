@@ -70,8 +70,18 @@ private:
 	typename std::vector<Operation<Data>> updates;
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
-		enum Component {FIND_PARETO_MIN_AND_BUCKETSORT=0, UPDATE_LABELSETS=1, SORT=2, PQ_UPDATE=3};
-		double timings[4] = {0, 0, 0, 0};
+		enum Component {FIND_PARETO_MIN_AND_BUCKETSORT=0, UPDATE_LABELSETS=1, SORT=2, PQ_UPDATE=3, CANDIDATES_COLLECTION=4,
+						CANDIDATES_SORT=5, UPDATE_ACTUAL_LABELSET=6, COPY_UPDATES=7};
+		double timings[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+		struct tls_tim {
+			double candidates_collection;
+			double candidates_sort;
+			double update_labelsets;
+			double copy_updates;
+		};
+		typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
+		TLSTimings tls_timings;
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -272,9 +282,19 @@ public:
 		#endif
 		std::cout << stats.toString(labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
+			for (typename TLSTimings::reference subtimings : tls_timings) {
+				timings[CANDIDATES_COLLECTION] += subtimings.candidates_collection;
+				timings[CANDIDATES_SORT] += subtimings.candidates_sort;
+				timings[UPDATE_ACTUAL_LABELSET] += subtimings.update_labelsets;
+				timings[COPY_UPDATES] += subtimings.copy_updates;
+			}
 			std::cout << "Subcomponent Timings:" << std::endl;
 			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find pareto min & bucket sort" << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			std::cout << "      " << timings[CANDIDATES_COLLECTION]/1000 << " Collect Candidate Labels " << std::endl;
+			std::cout << "      " << timings[CANDIDATES_SORT]/1000 << " Sort Candidate Labels " << std::endl;
+			std::cout << "      " << timings[UPDATE_ACTUAL_LABELSET]/1000 << " Update Labelsets " << std::endl;
+			std::cout << "      " << timings[COPY_UPDATES] << " Copy Updates " << std::endl;
 			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
@@ -319,9 +339,18 @@ private:
 				typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
 				const size_t last_node_index = locally_affected_nodes.size()-1;
 
-				for (size_t i = r.begin(); i != r.end(); ++i) {
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					typename TLSTimings::reference subtimings = ps->tls_timings.local();
+					tbb::tick_count start = tbb::tick_count::now();
+					tbb::tick_count stop = tbb::tick_count::now();
+				#endif
+
+				for (size_t i = r.begin(); i != r.end(); ++i) {	
 					const NodeID node = locally_affected_nodes[last_node_index - i];
+
+					// Collect candidates
 					const typename ParetoQueue::thread_count count = ps->pq.candidate_bufferlist_counter[node];
+					ps->pq.candidate_bufferlist_counter[node] = 0;
 		
 					typename ParetoQueue::CandLabelVec* candidates = ps->pq.candidate_bufferlist[node * ps->pq.num_threads + 0];	
 					assert(candidates->size() > 0);
@@ -331,20 +360,45 @@ private:
 						assert(c->size() > 0);
 						c->clear();
 					}
+					#ifdef GATHER_SUBCOMPNENT_TIMING
+						stop = tbb::tick_count::now();
+						subtimings.candidates_collection += 1000*(stop-start).seconds();
+						start = stop;
+					#endif
 
-					// batch process labels belonging to the same target node
+					// Batch process labels belonging to the same target node
 					std::sort(candidates->begin(), candidates->end(), groupLabels);
+					#ifdef GATHER_SUBCOMPNENT_TIMING
+						stop = tbb::tick_count::now();
+						subtimings.candidates_sort += 1000*(stop-start).seconds();
+						start = stop;
+					#endif
+
 					ps->updateLabelSet(node, ps->labels[node], candidates->cbegin(), candidates->cend(), local_updates);
 					candidates->clear();
-
-					ps->pq.candidate_bufferlist_counter[node] = 0;
+					#ifdef GATHER_SUBCOMPNENT_TIMING
+						stop = tbb::tick_count::now();
+						subtimings.update_labelsets += 1000*(stop-start).seconds();
+						start = stop;
+					#endif
 				}
 			}, ps->tls_partitioner.local());
+
 			// Copy updates to globally shared data structure
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				typename TLSTimings::reference subtimings = ps->tls_timings.local();
+				tbb::tick_count start = tbb::tick_count::now();
+				tbb::tick_count stop = tbb::tick_count::now();
+			#endif
 			typename ParetoQueue::TLSUpdates::reference local_updates = ps->pq.tls_local_updates.local();
 			const size_t position = ps->update_counter.fetch_and_add(local_updates.size());
 			assert(position + local_updates.size() < ps->updates.capacity());
 			memcpy(ps->updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				subtimings.copy_updates += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			local_updates.clear();
 			locally_affected_nodes.clear();
