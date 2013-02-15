@@ -20,7 +20,7 @@
 # call with DEBUG=yes for debug mode (e.g. make all DEBUG=yes)
 #
 #####################################################
-CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set time_pq_btree time_labelsetting
+CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set time_pq_btree time_labelsetting tbb_inner_loop_parallelization
 TESTS=test_labelset test_labelsetting test_pq_btree test_pq_btree_paretomin
 
 #list of all normal / parallel targets
