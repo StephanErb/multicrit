@@ -87,7 +87,7 @@ public:
 	TLSAffected tls_affected_nodes;
 	TLSMinima tls_minima;
 
-	typedef unsigned short thread_count;
+	typedef size_t thread_count;
 	const thread_count num_threads;
 
 	std::vector<tbb::atomic<thread_count>> candidate_bufferlist_counter;
