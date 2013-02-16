@@ -65,33 +65,40 @@ private:
 
 	tbb::task_list root_tasks;
 
-	;
 
 public:
 	typedef std::vector< Operation<data_type>, tbb::scalable_allocator<Operation<data_type>> > OpVec; 
-	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
-	typedef std::vector< CandLabelVec > CandLabelVecVec;
-	typedef std::vector< size_t, tbb::scalable_allocator<size_t>> CandTimestampVec;
 	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
 	typedef std::vector< data_type, tbb::scalable_allocator<data_type> > MinimaVec;
+	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
+	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > LabelVec;
+
+	struct TimestampedCandidates {
+		size_t timestamp;
+		CandLabelVec candidates;
+	};
+	typedef std::vector< TimestampedCandidates > CandLabelVecVec;
 
 	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
-	typedef tbb::enumerable_thread_specific< CandTimestampVec,tbb::cache_aligned_allocator<CandTimestampVec>,tbb::ets_key_per_instance > TLSTimestamps; 
 	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
 	typedef tbb::enumerable_thread_specific< NodeVec,         tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected;
 	typedef tbb::enumerable_thread_specific< MinimaVec,       tbb::cache_aligned_allocator<MinimaVec>,       tbb::ets_key_per_instance > TLSMinima; 
 
 	TLSUpdates tls_local_updates;
-	TLSTimestamps tls_timestamps;
+	TLSMinima tls_minima;
 	TLSCandidates tls_candidates;
 	TLSAffected tls_affected_nodes;
-	TLSMinima tls_minima;
 
 	typedef size_t thread_count;
 	const thread_count num_threads;
 
-	std::vector<tbb::atomic<thread_count>> candidate_bufferlist_counter;
-	CandLabelVec** candidate_bufferlist; // two dimensional array [node ID][thread id]
+	struct LabelSet {
+		LabelVec labels;
+		tbb::atomic<thread_count> bufferlist_counter;
+		CandLabelVec* bufferlists[2];
+		// TODO Padding
+	};
+	std::vector<LabelSet> labelsets;
 
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> update_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
@@ -103,17 +110,25 @@ public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
 		: base_type(_graph.numberOfNodes()), min_label(NodeID(0), typename data_type::label_type(std::numeric_limits<weight_type>::min(),
-			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(_graph.numberOfNodes())
+			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
 	{
-		candidate_bufferlist = (CandLabelVec**) malloc(graph.numberOfNodes() * _num_threads * sizeof(CandLabelVec*));
 		assert(num_threads > 0);
 
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		affected_nodes.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+
+		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
+		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
+
+		// add sentinals
+		for (size_t i=0; i<labelsets.size(); ++i) {
+			labelsets[i].labels.insert(labelsets[i].labels.begin(), label_type(min, max));
+			labelsets[i].labels.insert(labelsets[i].labels.end(), label_type(max, min));
+		}
 	}
 
 	~ParallelBTreeParetoQueue() {
-		free(candidate_bufferlist);
+
 	}
 
 	void init(const data_type& data) {
@@ -221,32 +236,33 @@ public:
 		}
 
 		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
-		typename TLSTimestamps::reference local_timestamps = tls_timestamps.local();
 		typename TLSCandidates::reference local_candidates = tls_candidates.local();
-		local_timestamps.resize(graph.numberOfNodes());
 		local_candidates.resize(graph.numberOfNodes());
 
 		// Derive candidates & Place into buckets
 		for (const data_type& min : minima) {
 			FORALL_EDGES(graph, min.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				if (current_timestamp != local_timestamps[edge.target]) {
-					assert(current_timestamp > local_timestamps[edge.target]);
+				TimestampedCandidates& tc = local_candidates[edge.target];
+
+				if (current_timestamp != tc.timestamp) {
+					assert(current_timestamp > tc.timestamp);
 					// Prepare candidate list for this iteration
-					local_timestamps[edge.target] = current_timestamp;
-					local_candidates[edge.target].clear();
+					tc.timestamp = current_timestamp;
+					tc.candidates.clear();
 					// Publish the candidate list
-					const thread_count position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
-					candidate_bufferlist[edge.target * num_threads + position] = &(local_candidates[edge.target]);
+					LabelSet& ls = labelsets[edge.target];
+					const thread_count position = ls.bufferlist_counter.fetch_and_increment();
+					ls.bufferlists[position] = &(tc.candidates);
 					if (position == 0) {
 						// We were the first, so we are responsible!
 						locally_affected_nodes.push_back(edge.target);
 					}
 					assert(position < num_threads);
 				} else {
-					assert(local_candidates[edge.target].size() > 0);
+					assert(tc.candidates.size() > 0);
 				}
-				local_candidates[edge.target].push_back(createNewLabel(min, edge));
+				tc.candidates.push_back(createNewLabel(min, edge));
 			}
 		}
 		if (locally_affected_nodes.size() > 0) {

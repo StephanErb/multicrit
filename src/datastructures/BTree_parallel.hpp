@@ -69,9 +69,7 @@
 #ifndef LEAF_NODE_WIDTH
 #define LEAF_NODE_WIDTH 12
 #endif
-#ifndef DCACHE_LINESIZE
-#define DCACHE_LINESIZE 64
-#endif
+
 
 template<typename data_type>
 struct Operation {

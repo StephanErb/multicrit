@@ -50,12 +50,8 @@ private:
 	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> ParetoQueue;
 	typedef typename ParetoQueue::CandLabelVec::const_iterator const_cand_iter;
 
-	typedef typename std::vector<Label, tbb::scalable_allocator<Label>> LabelVec;
-	typedef typename LabelVec::iterator label_iter;
-	typedef typename LabelVec::const_iterator const_label_iter;
-
-    // Permanent and temporary labels per node.
-	std::vector<LabelVec> labels;
+	typedef typename ParetoQueue::LabelVec::iterator label_iter;
+	typedef typename ParetoQueue::LabelVec::const_iterator const_label_iter;
 
 	const graph_slot& graph;
 
@@ -145,7 +141,7 @@ private:
 		return false;
 	}
 
-	static void updateLabelSet(const NodeID node, LabelVec& labelset, const const_cand_iter start, const const_cand_iter end, typename ParetoQueue::OpVec& updates) {
+	static void updateLabelSet(const NodeID node, typename ParetoQueue::LabelVec& labelset, const const_cand_iter start, const const_cand_iter end, typename ParetoQueue::OpVec& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
@@ -196,22 +192,12 @@ private:
 
 public:
 	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
-		labels(graph_.numberOfNodes()),
 		graph(graph_),
 		pq(graph_, num_threads)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
 		#endif
-	{
-		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
-		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
-
-		// add sentinals
-		for (size_t i=0; i<labels.size(); ++i) {
-			labels[i].insert(labels[i].begin(), Label(min, max));
-			labels[i].insert(labels[i].end(), Label(max, min));		
-		}
-	}
+	{ }
 
 	void run(const NodeID node) {
 		pq.init(Data(node, Label(0,0)));
@@ -235,7 +221,7 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_for(tbb::blocked_range<size_t>(0, pq.affected_nodes_counter, 128),
+			tbb::parallel_for(tbb::blocked_range<size_t>(0, pq.affected_nodes_counter),
 				[this](const tbb::blocked_range<size_t>& r) {
 
 				ParetoQueue& nonconst_pq = this->pq;
@@ -251,16 +237,16 @@ public:
 
 				for (size_t i = r.begin(); i != r.end(); ++i) {	
 					const NodeID node = pq.affected_nodes[i];
+					typename ParetoQueue::LabelSet& ls = nonconst_pq.labelsets[node];
+
 					// Collect candidates
-					const typename ParetoQueue::thread_count count = nonconst_pq.candidate_bufferlist_counter[node].fetch_and_store(0); // FIXME: make this non-atomic
-					if (count == 0) {
-						std::cout << " node " << node << " i " << i << " affected_counter " << pq.affected_nodes_counter << std::endl;
-					}
+					const typename ParetoQueue::thread_count count = ls.bufferlist_counter;
 					assert(count > 0);
-					typename ParetoQueue::CandLabelVec* candidates = nonconst_pq.candidate_bufferlist[node * pq.num_threads + 0];	
+
+					typename ParetoQueue::CandLabelVec* candidates = ls.bufferlists[0];
 					assert(candidates->size() > 0);
 					for (typename ParetoQueue::thread_count j=1; j < count; ++j) {
-						const typename ParetoQueue::CandLabelVec* c = pq.candidate_bufferlist[node * pq.num_threads + j];
+						const typename ParetoQueue::CandLabelVec* c = ls.bufferlists[j];
 						candidates->insert(candidates->end(), c->cbegin(), c->cend());
 						assert(c->size() > 0);
 					}
@@ -278,12 +264,14 @@ public:
 						start = stop;
 					#endif
 
-					updateLabelSet(node, labels[node], candidates->cbegin(), candidates->cend(), local_updates);
+					updateLabelSet(node, ls.labels, candidates->cbegin(), candidates->cend(), local_updates);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.update_labelsets += (stop-start).seconds();
 						start = stop;
 					#endif
+
+					ls.bufferlist_counter = 0;
 				}
 				if (local_updates.size() > 0) {
 					// Copy updates to globally shared data structure
@@ -331,7 +319,7 @@ public:
 				std::cout << i << " " << set_changes[i] << std::endl;
 			}
 		#endif
-		std::cout << stats.toString(labels) << std::endl;
+		//std::cout << stats.toString(pq.labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				for (typename TLSTimings::reference subtimings : tls_timings) {
@@ -357,12 +345,12 @@ public:
 	}
 
 	// Subtraction / addition used to hide the sentinals
-	size_t size(NodeID node) {return labels[node].size()-2; }
+	size_t size(NodeID node) {return pq.labelsets[node].labels.size()-2; }
 
-	label_iter begin(NodeID node) { return ++labels[node].begin(); }
-	const_label_iter begin(NodeID node) const { return ++labels[node].begin(); }
-	label_iter end(NodeID node) { return --labels[node].end(); }
-	const_label_iter end(NodeID node) const { return --labels[node].end(); }
+	label_iter begin(NodeID node) { return ++pq.labelsets[node].labels.begin(); }
+	const_label_iter begin(NodeID node) const { return ++pq.labelsets[node].labels.begin(); }
+	label_iter end(NodeID node) { return --pq.labelsets[node].labels.end(); }
+	const_label_iter end(NodeID node) const { return --pq.labelsets[node].labels.end(); }
 
 };
 

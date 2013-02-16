@@ -48,7 +48,7 @@ int main(int, char**) {
 			timings[0] += (loop_stop-loop_start).seconds();
 
 			tbb::tick_count stat_loop_start = tbb::tick_count::now();
-			tbb::parallel_for(tbb::blocked_range<size_t>(1, elements.size()-1, ceil(elements.size()/p)),
+			tbb::parallel_for(tbb::blocked_range<size_t>(1, elements.size()-1, elements.size()/p +1),
 				[&](const tbb::blocked_range<size_t>& r) {
 					for (size_t i=r.begin(); i!=r.end(); ++i) {
 						elements[i] += elements[i-1] + sin(elements[i+1]);
