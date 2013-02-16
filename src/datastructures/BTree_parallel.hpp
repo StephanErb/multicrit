@@ -529,15 +529,18 @@ public:
         }
     }
 
-    void find_pareto_minima(const min_key_type& prefix_minima, std::vector<key_type>& minima) const {
+    template<typename sequence_type>
+    void find_pareto_minima(const min_key_type& prefix_minima, sequence_type& minima) const {
         BTREE_ASSERT(minima.empty());
         find_pareto_minima(root, prefix_minima, minima);
     }
 
-private:
+protected:
 
 #ifdef COMPUTE_PARETO_MIN
-    void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, std::vector<key_type>& minima) const {
+
+    template<typename sequence_type>
+    void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
         if (node->isleafnode()) {
             const leaf_node* const leaf = (leaf_node*) node;
             width_type slotuse = leaf->slotuse;

@@ -70,6 +70,7 @@ public:
 	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
 	typedef std::vector< CandLabelVec > CandLabelVecVec;
 	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
+	typedef std::vector< data_type, tbb::scalable_allocator<data_type> > MinimaVec;
 
 	struct NodeVecAffinity { 
 		NodeVec nodes;
@@ -78,11 +79,13 @@ public:
 
 	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
 	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
-	typedef tbb::enumerable_thread_specific< NodeVecAffinity, tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected; 
+	typedef tbb::enumerable_thread_specific< NodeVecAffinity, tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected;
+	typedef tbb::enumerable_thread_specific< MinimaVec,       tbb::cache_aligned_allocator<MinimaVec>,       tbb::ets_key_per_instance > TLSMinima; 
 
 	TLSUpdates tls_local_updates;
 	TLSCandidates tls_candidates;
 	TLSAffected tls_affected_nodes;
+	TLSMinima tls_minima;
 
 	typedef unsigned short thread_count;
 	const thread_count num_threads;
@@ -98,6 +101,7 @@ public:
 			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), candidate_bufferlist_counter(_graph.numberOfNodes())
 	{
 		candidate_bufferlist = (CandLabelVec**) malloc(graph.numberOfNodes() * _num_threads * sizeof(CandLabelVec*));
+		assert(num_threads > 0);
 	}
 
 	~ParallelBTreeParetoQueue() {
@@ -130,7 +134,7 @@ public:
 
 	void findParetoMinima() {
 		if (base_type::root->level < PARETO_FIND_RECURSION_END_LEVEL) {
-			findParetoMinRecursive(base_type::root, min_label);
+			findParetoMinAndDistribute(base_type::root, min_label);
 		} else {
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
@@ -161,7 +165,7 @@ public:
 
 		tbb::task* execute() {
 			if (in_node->level < PARETO_FIND_RECURSION_END_LEVEL) {
-				tree->findParetoMinRecursive(in_node, prefix_minima);
+				tree->findParetoMinAndDistribute(in_node, prefix_minima);
 				return NULL;
 			} else {
 				const inner_node* const inner = (inner_node*) in_node;
@@ -193,54 +197,36 @@ public:
 		}
     };
 
-	void findParetoMinRecursive(const node* const in_node, const label_type& prefix_minima) {
-		if (in_node->isleafnode()) {
-			typename TLSUpdates::reference local_updates = tls_local_updates.local();
-			typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
-			typename TLSCandidates::reference local_candidates = tls_candidates.local();
-			local_candidates.resize(graph.numberOfNodes());
+	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima) {
+		typename TLSMinima::reference minima = tls_minima.local();
+		// Scan the tree while it is likely to be still in cache
+		base_type::find_pareto_minima(in_node, prefix_minima, minima);
 
-			const leaf_node* const leaf = (leaf_node*) in_node;
-			const width_type slotuse = leaf->slotuse;
+		typename TLSUpdates::reference local_updates = tls_local_updates.local();
+		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
+		typename TLSCandidates::reference local_candidates = tls_candidates.local();
+		local_candidates.resize(graph.numberOfNodes());
 
-			label_type min = prefix_minima;
-			for (width_type i = 0; i<slotuse; ++i) {
-				if (leaf->slotkey[i].second_weight < min.second_weight ||
-						(leaf->slotkey[i].first_weight == min.first_weight && leaf->slotkey[i].second_weight == min.second_weight)) {
-					// found a pareto optimal label
-					min = leaf->slotkey[i];
+		for (const data_type& min : minima) {
+			// Schedule minima for deletion
+			local_updates.push_back(Operation<data_type>(Operation<data_type>::DELETE, min));
 
-					// Schedule minima for deletion
-					local_updates.push_back(Operation<data_type>(Operation<data_type>::DELETE, leaf->slotkey[i]));
-
-					// Derive candidates
-					FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
-						const Edge& edge = graph.getEdge(eid);
-						if (local_candidates[edge.target].empty()) {
-							thread_count position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
-							candidate_bufferlist[edge.target * num_threads + position] = &(local_candidates[edge.target]);
-							if (position == 0) {
-								// We were the first, so we are responsible!
-								locally_affected_nodes.nodes.push_back(edge.target);
-							}
-						}
-						local_candidates[edge.target].push_back(createNewLabel(leaf->slotkey[i], edge));
-					}	
+			// Derive candidates
+			FORALL_EDGES(graph, min.node, eid) {
+				const Edge& edge = graph.getEdge(eid);
+				if (local_candidates[edge.target].empty()) {
+					const thread_count position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
+					candidate_bufferlist[edge.target * num_threads + position] = &(local_candidates[edge.target]);
+					if (position == 0) {
+						// We were the first, so we are responsible!
+						locally_affected_nodes.nodes.push_back(edge.target);
+					}
+					assert(position < num_threads);
 				}
-			}
-		} else {
-			const inner_node* const inner = (inner_node*) in_node;
-			const width_type slotuse = inner->slotuse;
-
-			label_type min = prefix_minima;
-			for (width_type i = 0; i<slotuse; ++i) {
-				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
-						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
-					findParetoMinRecursive(inner->slot[i].childid, min);
-					min = inner->slot[i].minimum;
-				}
+				local_candidates[edge.target].push_back(createNewLabel(min, edge));
 			}
 		}
+		minima.clear();
 	}
 
 	static label_type createNewLabel(const label_type& current_label, const Edge& edge) {
