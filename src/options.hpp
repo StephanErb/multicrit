@@ -74,6 +74,10 @@
  #define LARGE_ENOUGH_FOR_EVERYTHING 16777216
 
 
+#ifndef DCACHE_LINESIZE
+#define DCACHE_LINESIZE 64
+#endif
+
  std::string currentConfig() {
 	std::ostringstream out_stream;
 

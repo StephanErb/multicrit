@@ -65,24 +65,24 @@ private:
 
 	tbb::task_list root_tasks;
 
+	;
+
 public:
 	typedef std::vector< Operation<data_type>, tbb::scalable_allocator<Operation<data_type>> > OpVec; 
 	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
 	typedef std::vector< CandLabelVec > CandLabelVecVec;
+	typedef std::vector< size_t, tbb::scalable_allocator<size_t>> CandTimestampVec;
 	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
 	typedef std::vector< data_type, tbb::scalable_allocator<data_type> > MinimaVec;
 
-	struct NodeVecAffinity { 
-		NodeVec nodes;
-		tbb::task::affinity_id  affinity;
-	};
-
 	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
+	typedef tbb::enumerable_thread_specific< CandTimestampVec,tbb::cache_aligned_allocator<CandTimestampVec>,tbb::ets_key_per_instance > TLSTimestamps; 
 	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
-	typedef tbb::enumerable_thread_specific< NodeVecAffinity, tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected;
+	typedef tbb::enumerable_thread_specific< NodeVec,         tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected;
 	typedef tbb::enumerable_thread_specific< MinimaVec,       tbb::cache_aligned_allocator<MinimaVec>,       tbb::ets_key_per_instance > TLSMinima; 
 
 	TLSUpdates tls_local_updates;
+	TLSTimestamps tls_timestamps;
 	TLSCandidates tls_candidates;
 	TLSAffected tls_affected_nodes;
 	TLSMinima tls_minima;
@@ -93,6 +93,11 @@ public:
 	std::vector<tbb::atomic<thread_count>> candidate_bufferlist_counter;
 	CandLabelVec** candidate_bufferlist; // two dimensional array [node ID][thread id]
 
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> update_counter;
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
+
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> affected_nodes_counter;
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) NodeVec affected_nodes;
 
 public:
 
@@ -102,6 +107,9 @@ public:
 	{
 		candidate_bufferlist = (CandLabelVec**) malloc(graph.numberOfNodes() * _num_threads * sizeof(CandLabelVec*));
 		assert(num_threads > 0);
+
+		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+		affected_nodes.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 	}
 
 	~ParallelBTreeParetoQueue() {
@@ -132,9 +140,13 @@ public:
 		std::cout << "  leaf slots size [" << base_type::leafslotmin << ", " << base_type::leafslotmax << "]" << std::endl;
 	}
 
-	void findParetoMinima() {
+	void findParetoMinima(const size_t current_timestamp) {
+		assert(update_counter == 0);
+		assert(affected_nodes_counter == 0);
+		assert(current_timestamp > 0);
+
 		if (base_type::root->level < PARETO_FIND_RECURSION_END_LEVEL) {
-			findParetoMinAndDistribute(base_type::root, min_label);
+			findParetoMinAndDistribute(base_type::root, min_label, current_timestamp);
 		} else {
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
@@ -143,7 +155,7 @@ public:
 			for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
 						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
-					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, this));
+					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, current_timestamp, this));
 					min = inner->slot[i].minimum;
 				}
 			}
@@ -155,17 +167,18 @@ public:
     class FindParetMinTask : public tbb::task {
        	const node* const in_node;
        	const label_type prefix_minima;
+       	const size_t current_timestamp;
         ParallelBTreeParetoQueue* const tree;
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const label_type _prefix_minima, ParallelBTreeParetoQueue* const _tree) 
-			: in_node(_in_node), prefix_minima(_prefix_minima), tree(_tree)
+		inline FindParetMinTask(const node* const _in_node, const label_type _prefix_minima, const size_t _current_timestamp, ParallelBTreeParetoQueue* const _tree) 
+			: in_node(_in_node), prefix_minima(_prefix_minima), current_timestamp(_current_timestamp), tree(_tree)
 		{ }
 
 		tbb::task* execute() {
 			if (in_node->level < PARETO_FIND_RECURSION_END_LEVEL) {
-				tree->findParetoMinAndDistribute(in_node, prefix_minima);
+				tree->findParetoMinAndDistribute(in_node, prefix_minima, current_timestamp);
 				return NULL;
 			} else {
 				const inner_node* const inner = (inner_node*) in_node;
@@ -179,7 +192,7 @@ public:
 				for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
 						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
-						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, tree));
+						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, current_timestamp, tree));
 						++task_count;
 						min = inner->slot[i].minimum;
 					}
@@ -191,41 +204,58 @@ public:
 			}
 		}
 
-		virtual void note_affinity(tbb::task::affinity_id id) {
-			typename TLSAffected::reference locally_affected_nodes = tree->tls_affected_nodes.local();
-			locally_affected_nodes.affinity = id;
-		}
     };
 
-	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima) {
+	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima, const size_t current_timestamp) {
 		typename TLSMinima::reference minima = tls_minima.local();
 		// Scan the tree while it is likely to be still in cache
+		assert(minima.size() == 0);
 		base_type::find_pareto_minima(in_node, prefix_minima, minima);
+		assert(minima.size() > 0);
 
-		typename TLSUpdates::reference local_updates = tls_local_updates.local();
+		// Schedule minima for deletion
+		size_t upd_position = update_counter.fetch_and_add(minima.size());
+		assert(upd_position + minima.size() < updates.capacity());
+		for (const data_type& min : minima) {
+			updates[upd_position++] = Operation<data_type>(Operation<data_type>::DELETE, min);
+		}
+
 		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
+		typename TLSTimestamps::reference local_timestamps = tls_timestamps.local();
 		typename TLSCandidates::reference local_candidates = tls_candidates.local();
+		local_timestamps.resize(graph.numberOfNodes());
 		local_candidates.resize(graph.numberOfNodes());
 
+		// Derive candidates & Place into buckets
 		for (const data_type& min : minima) {
-			// Schedule minima for deletion
-			local_updates.push_back(Operation<data_type>(Operation<data_type>::DELETE, min));
-
-			// Derive candidates
 			FORALL_EDGES(graph, min.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				if (local_candidates[edge.target].empty()) {
+				if (current_timestamp != local_timestamps[edge.target]) {
+					assert(current_timestamp > local_timestamps[edge.target]);
+					// Prepare candidate list for this iteration
+					local_timestamps[edge.target] = current_timestamp;
+					local_candidates[edge.target].clear();
+					// Publish the candidate list
 					const thread_count position = candidate_bufferlist_counter[edge.target].fetch_and_increment();
 					candidate_bufferlist[edge.target * num_threads + position] = &(local_candidates[edge.target]);
 					if (position == 0) {
 						// We were the first, so we are responsible!
-						locally_affected_nodes.nodes.push_back(edge.target);
+						locally_affected_nodes.push_back(edge.target);
 					}
 					assert(position < num_threads);
+				} else {
+					assert(local_candidates[edge.target].size() > 0);
 				}
 				local_candidates[edge.target].push_back(createNewLabel(min, edge));
 			}
 		}
+		if (locally_affected_nodes.size() > 0) {
+			// Move affected nodes to shared data structure
+			const size_t position = affected_nodes_counter.fetch_and_add(locally_affected_nodes.size());
+			assert(position + locally_affected_nodes.size() < affected_nodes.capacity());
+			memcpy(affected_nodes.data() + position, locally_affected_nodes.data(), sizeof(NodeID) * locally_affected_nodes.size());
+		}
+		locally_affected_nodes.clear();
 		minima.clear();
 	}
 

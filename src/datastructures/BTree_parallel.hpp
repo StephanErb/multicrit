@@ -33,6 +33,7 @@
 #include <cmath>
 #include <string.h>
 #include "../utility/datastructure/NullData.hpp"
+#include "../options.hpp"
 
 #include "tbb/parallel_scan.h"
 #include "tbb/parallel_for.h"
@@ -1119,9 +1120,15 @@ private:
                     break;
                 }
             }
-            memcpy(result->slotkey + out, leaf->slotkey + in, sizeof(key_type) * (leaf->slotuse - in));
+            if (in < leaf->slotuse) {
+                assert(leaf->slotuse <= tree->leafslotmax);
+                const width_type delta = leaf->slotuse - in;
+                memcpy(result->slotkey + out, leaf->slotkey + in, sizeof(key_type) * delta);
+                out += delta;
+                assert(out <= tree->leafslotmax);
+            }
 
-            result->slotuse = out + leaf->slotuse - in;
+            result->slotuse = out;
             set_min_element(min_key, result, result->slotuse);
             router = result->slotkey[result->slotuse-1]; 
 
