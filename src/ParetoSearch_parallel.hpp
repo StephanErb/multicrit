@@ -207,6 +207,8 @@ public:
 			tbb::tick_count stop = tbb::tick_count::now();
 		#endif
 
+		tbb::auto_partitioner ap; 
+
 		size_t iter_timestamp = 0;
 		while (!pq.empty()) {
 			pq.update_counter = 0;
@@ -221,13 +223,11 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_for(tbb::blocked_range<size_t>(0, pq.affected_nodes_counter),
+			tbb::parallel_for(tbb::blocked_range<size_t>(0, pq.affected_nodes_counter, 2*(DCACHE_LINESIZE / sizeof(NodeID))),
 				[this](const tbb::blocked_range<size_t>& r) {
 
-				ParetoQueue& nonconst_pq = this->pq;
-				const ParetoQueue& pq = nonconst_pq;
-
-				typename ParetoQueue::TLSUpdates::reference local_updates = nonconst_pq.tls_local_updates.local();
+				ParetoQueue& pq = this->pq;
+				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
 
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename TLSTimings::reference subtimings = tls_timings.local();
@@ -237,10 +237,11 @@ public:
 
 				for (size_t i = r.begin(); i != r.end(); ++i) {	
 					const NodeID node = pq.affected_nodes[i];
-					typename ParetoQueue::LabelSet& ls = nonconst_pq.labelsets[node];
+					typename ParetoQueue::LabelSet& ls = pq.labelsets[node];
 
 					// Collect candidates
 					const typename ParetoQueue::thread_count count = ls.bufferlist_counter;
+					ls.bufferlist_counter = 0;
 					assert(count > 0);
 
 					typename ParetoQueue::CandLabelVec* candidates = ls.bufferlists[0];
@@ -271,14 +272,13 @@ public:
 						start = stop;
 					#endif
 
-					ls.bufferlist_counter = 0;
 				}
 				if (local_updates.size() > 0) {
 					// Copy updates to globally shared data structure
-					const size_t position = nonconst_pq.update_counter.fetch_and_add(local_updates.size());
-					assert(position + local_updates.size() < nonconst_pq.updates.capacity());
+					const size_t position = pq.update_counter.fetch_and_add(local_updates.size());
+					assert(position + local_updates.size() < pq.updates.capacity());
 					//std::cout << sizeof(Operation<Data>) << " " << local_updates.size() << std::endl;
-					memcpy(nonconst_pq.updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
+					memcpy(pq.updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
 
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
@@ -289,7 +289,7 @@ public:
 				}
 
 
-			});
+			}, ap);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();

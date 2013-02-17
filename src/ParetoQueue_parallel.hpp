@@ -127,10 +127,6 @@ public:
 		}
 	}
 
-	~ParallelBTreeParetoQueue() {
-
-	}
-
 	void init(const data_type& data) {
 		const std::vector<Operation<data_type>> upds = {{Operation<data_type>::INSERT, data}};
 		base_type::apply_updates(upds);
