@@ -92,7 +92,8 @@ struct btree_default_traits {
 
 // Number of leaves that need to be written before we try perform it in parallel
 #ifndef REWRITE_THRESHOLD
-#define REWRITE_THRESHOLD 1
+#define REWRITE_THRESHOLD 16
+
 #endif
 
 /** 
