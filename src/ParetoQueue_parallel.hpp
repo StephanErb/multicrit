@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <deque>
 
 #include "options.hpp"
 
@@ -162,12 +163,12 @@ public:
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
 
-			label_type min = min_label;
+			const label_type* min = &min_label;
 			for (width_type i = 0; i<slotuse; ++i) {
-				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
-						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
+				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
+						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
 					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, current_timestamp, this));
-					min = inner->slot[i].minimum;
+					min = &inner->slot[i].minimum;
 				}
 			}
 			tbb::task::spawn_root_and_wait(root_tasks);
@@ -177,19 +178,19 @@ public:
 
     class FindParetMinTask : public tbb::task {
        	const node* const in_node;
-       	const label_type prefix_minima;
+       	const label_type* const prefix_minima;
        	const size_t current_timestamp;
         ParallelBTreeParetoQueue* const tree;
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const label_type _prefix_minima, const size_t _current_timestamp, ParallelBTreeParetoQueue* const _tree) 
+		inline FindParetMinTask(const node* const _in_node, const label_type* const _prefix_minima, const size_t _current_timestamp, ParallelBTreeParetoQueue* const _tree)
 			: in_node(_in_node), prefix_minima(_prefix_minima), current_timestamp(_current_timestamp), tree(_tree)
 		{ }
 
 		tbb::task* execute() {
 			if (in_node->level < PARETO_FIND_RECURSION_END_LEVEL) {
-				tree->findParetoMinAndDistribute(in_node, prefix_minima, current_timestamp);
+				tree->findParetoMinAndDistribute(in_node, *prefix_minima, current_timestamp);
 				return NULL;
 			} else {
 				const inner_node* const inner = (inner_node*) in_node;
@@ -199,13 +200,13 @@ public:
 				width_type task_count = 0;
 				auto& c = *new(allocate_continuation()) tbb::empty_task(); // our parent will wait for this one
 
-				label_type min = prefix_minima;
+				const label_type* min = prefix_minima;
 				for (width_type i = 0; i<slotuse; ++i) {
-				 if (inner->slot[i].minimum.second_weight < min.second_weight ||
-						(inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
+				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
+						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
 						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, current_timestamp, tree));
 						++task_count;
-						min = inner->slot[i].minimum;
+						min = &inner->slot[i].minimum;
 					}
 				}
 				c.set_ref_count(task_count);

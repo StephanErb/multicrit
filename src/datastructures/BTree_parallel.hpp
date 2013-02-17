@@ -544,24 +544,24 @@ protected:
             const leaf_node* const leaf = (leaf_node*) node;
             width_type slotuse = leaf->slotuse;
 
-            min_key_type min = prefix_minima;
+            const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (leaf->slotkey[i].second_weight < min.second_weight ||
-                        (leaf->slotkey[i].first_weight == min.first_weight && leaf->slotkey[i].second_weight == min.second_weight)) {
+                if (leaf->slotkey[i].second_weight < min->second_weight ||
+                        (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
                     minima.push_back(leaf->slotkey[i]);
-                    min = leaf->slotkey[i];
+                    min = &leaf->slotkey[i];
                 }
             }
         } else {
             const inner_node* const inner = (inner_node*) node;
             width_type slotuse = inner->slotuse;
 
-            min_key_type min = prefix_minima;
+            const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (inner->slot[i].minimum.second_weight < min.second_weight ||
-                        (inner->slot[i].minimum.first_weight == min.first_weight && inner->slot[i].minimum.second_weight == min.second_weight)) {
-                    find_pareto_minima(inner->slot[i].childid, min, minima);
-                    min = inner->slot[i].minimum;
+                if (inner->slot[i].minimum.second_weight < min->second_weight ||
+                        (inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
+                    find_pareto_minima(inner->slot[i].childid, *min, minima);
+                    min = &inner->slot[i].minimum;
                 }
             }
         }

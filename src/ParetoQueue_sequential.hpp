@@ -68,11 +68,11 @@ public:
 		const_iterator iter = ++labels.begin(); // ignore the sentinal
 		const_iterator end = --labels.end();  // ignore the sentinal
 
-		data_type min = *iter;
+		const_iterator min = iter;
 		while (iter != end) {
-			if (iter->second_weight < min.second_weight ||
-					(iter->first_weight == min.first_weight && iter->second_weight == min.second_weight)) {
-				min = *iter;
+			if (iter->second_weight < min->second_weight ||
+					(iter->first_weight == min->first_weight && iter->second_weight == min->second_weight)) {
+				min = iter;
 				minima.push_back(*iter);
 			}
 			++iter;
