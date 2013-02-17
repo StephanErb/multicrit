@@ -272,7 +272,7 @@ protected:
     node*       root;
 
     /// Pointer to spare leaf used for merging.
-    typedef tbb::enumerable_thread_specific<node*, tbb::cache_aligned_allocator<node*>, tbb::ets_key_per_instance> SpareLeafPerThread; 
+    typedef tbb::enumerable_thread_specific<leaf_node*, tbb::cache_aligned_allocator<leaf_node*>, tbb::ets_key_per_instance> SpareLeafPerThread; 
     SpareLeafPerThread spare_leaves;
 
     /// Other small statistics about the B+ tree
@@ -569,13 +569,21 @@ protected:
     }
 
     static inline void set_min_element(min_key_type& min_key, const leaf_node* const node, width_type size) {
-        min_key = *std::min_element(node->slotkey, node->slotkey+size,
+        const min_key_type* tmp = std::min_element(node->slotkey, node->slotkey+size,
             [](const min_key_type& i, const min_key_type& j) { return i.second_weight < j.second_weight; });
+
+        if (min_key.first_weight != tmp->first_weight || min_key.second_weight != tmp->second_weight) {
+            min_key = *tmp;
+        }
     }
 
     static inline void set_min_element(min_key_type& min_key, const inner_node* const node, width_type size) {
-        min_key = (*std::min_element(node->slot, node->slot+size,
-            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })).minimum;
+        const auto* tmp = std::min_element(node->slot, node->slot+size,
+            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; });
+
+        if (min_key.first_weight != tmp->minimum.first_weight || min_key.second_weight != tmp->minimum.second_weight) {
+            min_key = tmp->minimum;
+        }
     }
 #else 
     void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
@@ -718,7 +726,7 @@ private:
                 leaf_node* result = leaves[rank_begin / designated_leafsize];
                 result->slotuse = rank_end - rank_begin;
                 set_min_element(min_key, result, result->slotuse);
-                router = result->slotkey[result->slotuse-1];
+                tree->update_router(router, result->slotkey[result->slotuse-1]);
                 out_node = result;
                 return NULL;
             } else {
@@ -729,14 +737,19 @@ private:
                     << designated_treesize << std::endl);
 
                 const width_type new_slotuse = subtrees+old_slotuse;
-                inner_node* result = reuse_node ? static_cast<inner_node*>(out_node) : tree->allocate_inner(level);
-                if (!reuse_node) result->slotuse = new_slotuse;
-                out_node = result;
 
+                inner_node* result = NULL;
+                if (reuse_node) {
+                    result = static_cast<inner_node*>(out_node);
+                } else {
+                    result = tree->allocate_inner(level);
+                    result->slotuse = new_slotuse;
+                    out_node = result;
+                }
                 BTREE_ASSERT(new_slotuse <= innerslotmax);
                 tbb::task_list tasks;
 
-                auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(result, router, min_key, new_slotuse);
+                auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(result, router, min_key, new_slotuse, tree);
                 c.set_ref_count(subtrees);
 
                 size_type rank = rank_begin;
@@ -761,19 +774,20 @@ private:
         const width_type slotuse;
         key_type& router;
         min_key_type& min_key;
+        const btree* const tree;
+
     public:
 
-        NodeFinalizerContinuationTask(const inner_node* const _result, key_type& _router, min_key_type& _min_key, const width_type _slotuse)
-            : result(_result), slotuse(_slotuse), router(_router), min_key(_min_key)
+        NodeFinalizerContinuationTask(const inner_node* const _result, key_type& _router, min_key_type& _min_key, const width_type _slotuse, const btree* const _tree)
+            : result(_result), slotuse(_slotuse), router(_router), min_key(_min_key), tree(_tree)
         { }
 
         tbb::task* execute() {
             set_min_element(min_key, result, slotuse);
-            router = result->slot[slotuse-1].slotkey;
+            tree->update_router(router, result->slot[slotuse-1].slotkey);
             return NULL;
         }
     };
-
 
     /**
      * Task that applys the given updates to the given nodes by writing the updated tree to the newly created leaves.
@@ -979,6 +993,7 @@ private:
         tbb::task* execute() {
             BTREE_PRINT("Applying updates [" << upd.upd_begin << ", " << upd.upd_end << ") to " << upd_node << " on level " << upd_node->level << std::endl);
             BTREE_ASSERT(upd.weight > 0);
+            BTREE_ASSERT(upd.upd_begin != upd.upd_end);
 
             if (upd_node->isleafnode()) {
                 update_leaf_in_current_tree();
@@ -1005,7 +1020,7 @@ private:
                 width_type task_count = 0;
 
                 if (!rebalancing_needed) {
-                    auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(inner, router, min_key, inner->slotuse);
+                    auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(inner, router, min_key, inner->slotuse, tree);
 
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
@@ -1076,7 +1091,7 @@ private:
                     set_ref_count(task_count+1);
                     spawn_and_wait_for_all(tasks);
                     set_min_element(min_key, result, out);
-                    router = result->slot[out-1].slotkey;
+                    tree->update_router(router, result->slot[out-1].slotkey);
                     tree->free_node(upd_node);
                     upd_node = result;
 
@@ -1092,30 +1107,30 @@ private:
             width_type out = 0; // position where to write
 
             bool exists;
-            auto& spare_leaf = tree->spare_leaves.local(exists);
-            if (!exists) {
-                spare_leaf = tree->allocate_leaf_without_count();
-            }
-            leaf_node* result = static_cast<leaf_node*>(spare_leaf);
-            const leaf_node* leaf = static_cast<leaf_node*>(upd_node);
+            typename SpareLeafPerThread::reference spare_leaf = tree->spare_leaves.local(exists);
+
+            leaf_node* const result = exists ? spare_leaf : tree->allocate_leaf_without_count();
+            const leaf_node* const leaf = static_cast<leaf_node*>(upd_node);
 
             BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
 
             for (size_type i = upd.upd_begin; i != upd.upd_end; ++i) {
-                switch (tree->updates[i].type) {
+                const Operation<key_type>& op = tree->updates[i];
+
+                switch (op.type) {
                 case Operation<key_type>::DELETE:
                     // We know the element is in here, so no bounds checks
-                    while (!tree->key_equal(leaf->slotkey[in], tree->updates[i].data)) {
+                    while (!tree->key_equal(leaf->slotkey[in], op.data)) {
                         BTREE_ASSERT(in < leaf->slotuse);
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
                     ++in; // delete the element by jumping over it
                     break;
                 case Operation<key_type>::INSERT:
-                    while(in < leaf->slotuse && tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
+                    while(in < leaf->slotuse && tree->key_less(leaf->slotkey[in], op.data)) {
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
-                    result->slotkey[out++] = tree->updates[i].data;
+                    result->slotkey[out++] = op.data;
                     break;
                 }
             }
@@ -1126,14 +1141,13 @@ private:
                 out += delta;
                 assert(out <= tree->leafslotmax);
             }
-
             result->slotuse = out;
-            set_min_element(min_key, result, result->slotuse);
-            router = result->slotkey[result->slotuse-1]; 
+            set_min_element(min_key, result, out);
+            tree->update_router(router, result->slotkey[out-1]); 
 
             BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);
 
-            spare_leaf = upd_node;
+            spare_leaf = static_cast<leaf_node*>(upd_node); // leaf but non-const
             upd_node = result;
         }
 
@@ -1183,7 +1197,7 @@ private:
         }
     }
 
-    static inline  size_type num_subtrees(const size_type n, const size_type subtreesize) {
+    static inline size_type num_subtrees(const size_type n, const size_type subtreesize) {
         size_type num_subtrees = n / subtreesize;
         // Squeeze remaining elements into last subtree or place in own subtree? 
         // Choose what is closer to our designated subtree size
@@ -1201,6 +1215,12 @@ private:
             return 1;
         } else {
             return ceil( log(2 * ((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
+        }
+    }
+
+    inline void update_router(key_type& router, const key_type& new_router) const {
+        if (!key_equal(router, new_router)) {
+            router = new_router;
         }
     }
 
