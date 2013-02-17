@@ -77,8 +77,8 @@ struct btree_default_traits {
     static const bool   selfverify = false;
 
     /// Configure nodes to have a fixed size of X cache lines. 
-    static const int    leafparameter_k = BTREE_MAX( 8, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 8, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key) + sizeof(_MinKey) + sizeof(size_t) + sizeof(void*)))/4 );
+    static const int    leafparameter_k = BTREE_MAX( 4, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
+    static const int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key) + sizeof(_MinKey) + sizeof(size_t) + sizeof(void*)))/4 );
 };
 
 /** 

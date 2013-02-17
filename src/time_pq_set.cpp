@@ -48,7 +48,7 @@
 			}
 			return i.x < j.x;
 		}
-	} cmp;
+	};
 #else 
 	typedef unsigned int Label;
 	typedef std::less<Label> Comparator;

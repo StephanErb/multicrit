@@ -23,7 +23,6 @@
 
 #include <valgrind/callgrind.h>
 
-
 #ifdef USE_GRAPH_LABEL
 	struct Label {
 		unsigned int x;
@@ -46,7 +45,7 @@
 			}
 			return i.x < j.x;
 		}
-	} cmp;
+	};
 #else 
 	typedef unsigned int Label;
 	typedef std::less<Label> Comparator;
@@ -68,7 +67,11 @@ void bulkConstruct(Tree& tree, size_t n) {
 		std::vector<Operation<Label>> updates;
 		updates.reserve(n);
 		for (size_t j=0; j < n; ++j) {
-			updates.push_back({Operation<Label>::INSERT, dist(gen)});
+			#ifdef USE_GRAPH_LABEL
+				updates.push_back({Operation<Label>::INSERT, {dist(gen), dist(gen), dist(gen)}});
+			#else
+				updates.push_back({Operation<Label>::INSERT, dist(gen)});
+			#endif
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		tree.apply_updates(updates);
@@ -93,7 +96,11 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		std::vector<Operation<Label>> updates;
 		updates.reserve(k);
 		for (size_t j=0; j < k; ++j) {
-			updates.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
+			#ifdef USE_GRAPH_LABEL
+				updates.push_back({Operation<Label>::INSERT, {skewed_dist(gen), skewed_dist(gen), skewed_dist(gen)}});
+			#else
+				updates.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
+			#endif
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		
