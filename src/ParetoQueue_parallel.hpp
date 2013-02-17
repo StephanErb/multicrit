@@ -106,6 +106,8 @@ public:
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> affected_nodes_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) NodeVec affected_nodes;
 
+	 tbb::atomic<size_t> current_timestamp;
+
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
@@ -152,13 +154,15 @@ public:
 		std::cout << "  leaf slots size [" << base_type::leafslotmin << ", " << base_type::leafslotmax << "]" << std::endl;
 	}
 
-	void findParetoMinima(const size_t current_timestamp) {
+	void findParetoMinima(const size_t _current_timestamp) {
 		assert(update_counter == 0);
 		assert(affected_nodes_counter == 0);
+
+		current_timestamp = _current_timestamp;
 		assert(current_timestamp > 0);
 
 		if (base_type::root->level < PARETO_FIND_RECURSION_END_LEVEL) {
-			findParetoMinAndDistribute(base_type::root, min_label, current_timestamp);
+			findParetoMinAndDistribute(base_type::root, min_label);
 		} else {
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
@@ -167,7 +171,7 @@ public:
 			for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
 						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, current_timestamp, this));
+					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, this));
 					min = &inner->slot[i].minimum;
 				}
 			}
@@ -179,18 +183,17 @@ public:
     class FindParetMinTask : public tbb::task {
        	const node* const in_node;
        	const label_type* const prefix_minima;
-       	const size_t current_timestamp;
         ParallelBTreeParetoQueue* const tree;
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const label_type* const _prefix_minima, const size_t _current_timestamp, ParallelBTreeParetoQueue* const _tree)
-			: in_node(_in_node), prefix_minima(_prefix_minima), current_timestamp(_current_timestamp), tree(_tree)
+		inline FindParetMinTask(const node* const _in_node, const label_type* const _prefix_minima, ParallelBTreeParetoQueue* const _tree)
+			: in_node(_in_node), prefix_minima(_prefix_minima), tree(_tree)
 		{ }
 
 		tbb::task* execute() {
 			if (in_node->level < PARETO_FIND_RECURSION_END_LEVEL) {
-				tree->findParetoMinAndDistribute(in_node, *prefix_minima, current_timestamp);
+				tree->findParetoMinAndDistribute(in_node, *prefix_minima);
 				return NULL;
 			} else {
 				const inner_node* const inner = (inner_node*) in_node;
@@ -204,7 +207,7 @@ public:
 				for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
 						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, current_timestamp, tree));
+						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, tree));
 						++task_count;
 						min = &inner->slot[i].minimum;
 					}
@@ -218,7 +221,7 @@ public:
 
     };
 
-	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima, const size_t current_timestamp) {
+	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima) {
 		typename TLSMinima::reference minima = tls_minima.local();
 		// Scan the tree while it is likely to be still in cache
 		assert(minima.size() == 0);
