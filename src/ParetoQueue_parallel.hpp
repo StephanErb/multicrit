@@ -71,7 +71,7 @@ public:
 	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
 	typedef std::vector< data_type, tbb::scalable_allocator<data_type> > MinimaVec;
 	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
-	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > LabelVec;
+	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > LabelVec; // When changing this type check the LabelSet struct size
 
 	struct TimestampedCandidates {
 		size_t timestamp;
@@ -89,20 +89,19 @@ public:
 	TLSCandidates tls_candidates;
 	TLSAffected tls_affected_nodes;
 
-	typedef size_t thread_count;
-	const thread_count num_threads;
+	typedef unsigned short thread_count; // When changing this type check the LabelSet struct size
+	const thread_count num_threads; 
 
-	struct LabelSet {
+	#define PE_COUNT 12
+	struct LabelSet { // With these datatypes & settings: stuct occupies 2 cache lines (64bytes each) 
 		LabelVec labels;
 		tbb::atomic<thread_count> bufferlist_counter;
-		CandLabelVec* bufferlists[2];
-		// TODO Padding
+		CandLabelVec* bufferlists[PE_COUNT]; // FIXME: too small for large instances
 	};
 	std::vector<LabelSet> labelsets;
 
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> update_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
-
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> affected_nodes_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) NodeVec affected_nodes;
 
@@ -113,6 +112,7 @@ public:
 			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
 	{
 		assert(num_threads > 0);
+		assert(PE_COUNT >= num_threads);
 
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		affected_nodes.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
