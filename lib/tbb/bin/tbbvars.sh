@@ -40,7 +40,7 @@ get_intel64(){
 }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export TBBROOT=$DIR/../lib/tbb
+export TBBROOT=$DIR/..
 if [[ "$1" != "ia32" && "$1" != "intel64" && "$1" != "ia64" ]]; then
    echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, ia64"
    return 1;
