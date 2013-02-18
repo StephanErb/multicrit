@@ -63,6 +63,22 @@ public:
 			}
 	}
 
+#ifdef PARALLEL_BUILD
+
+	std::string toString() {
+		std::ostringstream out_stream;
+		out_stream << "\nIterations: " << data[ITERATION] << "\n";
+
+		double avg_pq_size = pq_size / data[ITERATION];
+		out_stream << "ParetoQueue sizes: " << "\n";
+		out_stream << "  avg" << ": " << avg_pq_size << "\n";
+		out_stream << "  max" << ": " << peak_pq_size;
+		
+		return out_stream.str();
+	}
+
+#else
+
 	template<class T, class X>
 	std::string toString(std::vector<std::vector<T, X>>& labels) {
 		std::ostringstream out_stream;
@@ -94,15 +110,17 @@ public:
 		double avg_pq_size = pq_size / data[ITERATION];
 		out_stream << "ParetoQueue sizes: " << "\n";
 		out_stream << "  avg" << ": " << avg_pq_size << "\n";
-		out_stream << "  max" << ": " << peak_pq_size << "\n";
+		out_stream << "  max" << ": " << peak_pq_size;
 
 		if (data[MINIMA_COUNT] > 0) {
+			out_stream << "\n";
 			double avg_minima_size = minima_size / data[MINIMA_COUNT];
 			out_stream << "Pareto Optimal Elements: " << "\n";
 			out_stream << "  avg" << ": " << avg_minima_size << "\n";
-			out_stream << "  max" << ": " << peak_minima_size << "\n";
+			out_stream << "  max" << ": " << peak_minima_size;
 		}
 		if (data[IDENTICAL_TARGET_NODE] > 0) {
+			out_stream << "\n";
 			double avg_ident_target_nodes = identical_target_node / data[IDENTICAL_TARGET_NODE];
 			out_stream << "Identical Target Nodes per Iteration: " << "\n";
 			out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
@@ -110,6 +128,8 @@ public:
 		}
 		return out_stream.str();
 	}
+
+#endif
 };
 
 #else

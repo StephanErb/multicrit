@@ -149,18 +149,14 @@ private:
 			Label new_label = *candidate;
 			// short cut dominated check among candidates
 			if (new_label.second_weight >= min) { 
-				//stats.report(LABEL_DOMINATED);
-				//stats.report(DOMINATION_SHORTCUT);
 				continue; 
 			}
 			label_iter iter;
 			if (isDominated(labelset_iter, labelset.end(), new_label, iter)) {
-				//stats.report(LABEL_DOMINATED);
 				min = iter->second_weight; 
 				continue;
 			}
 			min = new_label.second_weight;
-			//stats.report(LABEL_NONDOMINATED);
 			updates.push_back(Operation<Data>(Operation<Data>::INSERT, Data(node, new_label)));
 
 			label_iter first_nondominated = y_predecessor(iter, new_label);
@@ -319,7 +315,7 @@ public:
 				std::cout << i << " " << set_changes[i] << std::endl;
 			}
 		#endif
-		//std::cout << stats.toString(pq.labels) << std::endl;
+		std::cout << stats.toString() << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				for (typename TLSTimings::reference subtimings : tls_timings) {
