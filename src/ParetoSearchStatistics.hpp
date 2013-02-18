@@ -143,14 +143,17 @@ public:
 	void report(StatElement) {}
 	void report(StatElement, unsigned long) {}
 
+#ifdef PARALLEL_BUILD
+	std::string toString() {
+#else
 	template<class T, class X>
 	std::string toString(std::vector<std::vector<T, X>>&) {
-		std::ostringstream out_stream;
-		out_stream << " Statistics disabled at compile time. See options file.";
+#endif
+	std::ostringstream out_stream;
+	out_stream << " Statistics disabled at compile time. See options file.";
 		return out_stream.str();
 	}
 };
-
 #endif
 
 #endif 
