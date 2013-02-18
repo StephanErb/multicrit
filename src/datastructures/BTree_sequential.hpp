@@ -33,6 +33,7 @@
 #include <cmath>
 #include <string.h>
 #include "../utility/datastructure/NullData.hpp"
+#include "../options.hpp"
 
 
 // *** Debugging Macros
@@ -53,13 +54,10 @@
 
 // Width of nodes given as number of cache-lines
 #ifndef INNER_NODE_WIDTH
-#define INNER_NODE_WIDTH 12
+#define INNER_NODE_WIDTH 8
 #endif
 #ifndef LEAF_NODE_WIDTH
-#define LEAF_NODE_WIDTH 12
-#endif
-#ifndef DCACHE_LINESIZE
-#define DCACHE_LINESIZE 64
+#define LEAF_NODE_WIDTH 8
 #endif
 
 template<typename data_type>
