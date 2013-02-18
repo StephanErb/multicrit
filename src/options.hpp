@@ -11,10 +11,12 @@
 
 /**
  * Configure the label setting algorithm to use.
- */ 
+ */
+#ifndef LABEL_SETTING_ALGORITHM
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
 //#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
 #define LABEL_SETTING_ALGORITHM ParetoSearch // will always use custom pareto label set
+#endif
 
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
@@ -26,8 +28,8 @@
 /**
  * Configure the linear combination used to select the best label
  */ 
-//#define PRIORITY_SUM
-#define PRIORITY_LEX
+#define PRIORITY_SUM
+//#define PRIORITY_LEX
 //#define PRIORITY_MAX
 
 /**
@@ -56,7 +58,7 @@
 /**
  * Enable the following flag to time individual substeps of the ParetoSearch algorithms
  */ 
-#define GATHER_SUBCOMPNENT_TIMING
+//#define GATHER_SUBCOMPNENT_TIMING
 //#define GATHER_SUB_SUBCOMPNENT_TIMING
 
 
