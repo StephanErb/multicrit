@@ -891,3 +891,81 @@ Sequential BTree:
  Statistics disabled at compile time. See options file.
 Target node label count: 1582
 34.5741 379.496 # time in [s], mem in [mb]
+
+
+
+
+auf der 112
+
+
+# ParallelParetoSearch_ParallelBTreeParetoQueue
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+Subcomponent Timings:
+  152.745 Find pareto min & bucket sort
+  338.964 Update Labelsets 
+  47.8835 Sort Updates
+  260.477 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 800.07 1089 3910.02 3910 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+^C# ParallelParetoSearch_ParallelBTreeParetoQueue
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+Subcomponent Timings:
+  82.1998 Find pareto min & bucket sort
+  185.481 Update Labelsets 
+  26.1227 Sort Updates
+  134.627 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 428.431 1089 3983.15 3983 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+^C# ParallelParetoSearch_ParallelBTreeParetoQueue
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+Subcomponent Timings:
+  47.3722 Find pareto min & bucket sort
+  113.492 Update Labelsets 
+  15.7996 Sort Updates
+  72.3799 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 249.044 1089 4134.74 4134 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+
+
+Die 112
+
+Subcomponent Timings:
+  49.2465 Find pareto min & bucket sort
+  112.214 Update Labelsets 
+  15.7975 Sort Updates
+  72.3647 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+1 NY1 249.623 1089 4106.05 4106 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+Subcomponent Timings:
+  50.4221 Find pareto min & bucket sort
+  179.045 Update Labelsets 
+  15.9978 Sort Updates
+  74.8508 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+2 NY2 320.316 1469 4853.82 4853 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+Subcomponent Timings:
+  89.6265 Find pareto min & bucket sort
+  575.548 Update Labelsets 
+  31.3098 Sort Updates
+  154.66 Update PQ 
+Parallel BTree (k=63, b=8):
+  inner slots size [2, 32]
+  leaf slots size [15, 63]
+3 NY3 851.144 16 8604.58 8604 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
