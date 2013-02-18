@@ -108,6 +108,23 @@ public:
 
 	 tbb::atomic<size_t> current_timestamp;
 
+	 #ifdef GATHER_SUBCOMPNENT_TIMING
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			struct tls_tim {
+				double candidates_collection = 0;
+				double candidates_sort = 0;
+				double update_labelsets = 0;
+				double copy_updates = 0;
+				double find_pareto_min = 0;
+				double group_pareto_min = 0;
+				double write_pareto_min_updates = 0;
+				double write_affected_nodes = 0;
+			};
+			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
+			TLSTimings tls_timings;
+		#endif
+	#endif
+
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
@@ -223,17 +240,33 @@ public:
 
 	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima) {
 		typename TLSMinima::reference minima = tls_minima.local();
+
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			typename TLSTimings::reference subtimings = tls_timings.local();
+			tbb::tick_count start = tbb::tick_count::now();
+			tbb::tick_count stop = tbb::tick_count::now();
+		#endif
 		// Scan the tree while it is likely to be still in cache
 		assert(minima.size() == 0);
 		base_type::find_pareto_minima(in_node, prefix_minima, minima);
 		assert(minima.size() > 0);
 
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			stop = tbb::tick_count::now();
+			subtimings.find_pareto_min += (stop-start).seconds();
+			start = stop;
+		#endif
 		// Schedule minima for deletion
 		size_t upd_position = update_counter.fetch_and_add(minima.size());
 		assert(upd_position + minima.size() < updates.capacity());
 		for (const data_type& min : minima) {
 			updates[upd_position++] = Operation<data_type>(Operation<data_type>::DELETE, min);
 		}
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			stop = tbb::tick_count::now();
+			subtimings.write_pareto_min_updates += (stop-start).seconds();
+			start = stop;
+		#endif
 
 		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
 		typename TLSCandidates::reference local_candidates = tls_candidates.local();
@@ -265,14 +298,26 @@ public:
 				tc.candidates.push_back(createNewLabel(min, edge));
 			}
 		}
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			stop = tbb::tick_count::now();
+			subtimings.group_pareto_min += (stop-start).seconds();
+			start = stop;
+		#endif
 		if (locally_affected_nodes.size() > 0) {
 			// Move affected nodes to shared data structure
 			const size_t position = affected_nodes_counter.fetch_and_add(locally_affected_nodes.size());
 			assert(position + locally_affected_nodes.size() < affected_nodes.capacity());
 			memcpy(affected_nodes.data() + position, locally_affected_nodes.data(), sizeof(NodeID) * locally_affected_nodes.size());
 		}
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			stop = tbb::tick_count::now();
+			subtimings.write_affected_nodes += (stop-start).seconds();
+			start = stop;
+		#endif
 		locally_affected_nodes.clear();
 		minima.clear();
+
+
 	}
 
 	static label_type createNewLabel(const label_type& current_label, const Edge& edge) {

@@ -58,21 +58,11 @@ private:
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
-	#ifdef GATHER_SUBCOMPNENT_TIMING
+	 #ifdef GATHER_SUBCOMPNENT_TIMING
 		enum Component {FIND_PARETO_MIN_AND_BUCKETSORT=0, UPDATE_LABELSETS=1, SORT=2, PQ_UPDATE=3, CANDIDATES_COLLECTION=4,
-						CANDIDATES_SORT=5, UPDATE_ACTUAL_LABELSET=6, COPY_UPDATES=7};
-		double timings[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			struct tls_tim {
-				double candidates_collection = 0;
-				double candidates_sort = 0;
-				double update_labelsets = 0;
-				double copy_updates = 0;
-			};
-			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
-			TLSTimings tls_timings;
-		#endif
+						CANDIDATES_SORT=5, UPDATE_ACTUAL_LABELSET=6, COPY_UPDATES=7, FIND_PARETO_MIN=8, GROUP_PARETO_MIN=9, WRITE_PARETO_MIN_UPDATES=10,
+						WRITE_AFFECTED_NODES=11};
+		double timings[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -226,7 +216,7 @@ public:
 				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
 
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-					typename TLSTimings::reference subtimings = tls_timings.local();
+					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
 					tbb::tick_count start = tbb::tick_count::now();
 					tbb::tick_count stop = tbb::tick_count::now();
 				#endif
@@ -318,7 +308,11 @@ public:
 		std::cout << stats.toString() << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				for (typename TLSTimings::reference subtimings : tls_timings) {
+				for (typename ParetoQueue::TLSTimings::reference subtimings : pq.tls_timings) {
+					timings[WRITE_PARETO_MIN_UPDATES] = std::max(subtimings.write_pareto_min_updates, timings[WRITE_PARETO_MIN_UPDATES]);
+					timings[WRITE_AFFECTED_NODES] = std::max(subtimings.write_affected_nodes, timings[WRITE_AFFECTED_NODES]);
+					timings[FIND_PARETO_MIN] = std::max(subtimings.find_pareto_min, timings[FIND_PARETO_MIN]);
+					timings[GROUP_PARETO_MIN] = std::max(subtimings.group_pareto_min, timings[GROUP_PARETO_MIN]);
 					timings[CANDIDATES_COLLECTION] = std::max(subtimings.candidates_collection, timings[CANDIDATES_COLLECTION]);
 					timings[CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[CANDIDATES_SORT]);
 					timings[UPDATE_ACTUAL_LABELSET] = std::max(subtimings.update_labelsets, timings[UPDATE_ACTUAL_LABELSET]);
@@ -326,7 +320,15 @@ public:
 				}
 			#endif
 			std::cout << "Subcomponent Timings:" << std::endl;
-			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find pareto min & bucket sort" << std::endl;
+			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find & Group Pareto Min" << std::endl;
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				std::cout << "      " << timings[FIND_PARETO_MIN_AND_BUCKETSORT] - (timings[FIND_PARETO_MIN] + timings[WRITE_PARETO_MIN_UPDATES]
+					+ timings[GROUP_PARETO_MIN] + timings[WRITE_AFFECTED_NODES]) << " Recursive TBB Tasks" << std::endl;
+				std::cout << "      " << timings[FIND_PARETO_MIN] << " Find Pareto Min " << std::endl;
+				std::cout << "      " << timings[WRITE_PARETO_MIN_UPDATES] << " Copy Updates " << std::endl;
+				std::cout << "      " << timings[GROUP_PARETO_MIN] << " Group Pareto Min  " << std::endl;
+				std::cout << "      " << timings[WRITE_AFFECTED_NODES] << " Copy Affected Nodes  " << std::endl;
+			#endif
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				std::cout << "      " << timings[CANDIDATES_COLLECTION] << " Collect Candidate Labels " << std::endl;

@@ -284,8 +284,8 @@ public:
 		std::cout << stats.toString(labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			std::cout << "Subcomponent Timings:" << std::endl;
-			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find pareto min" << std::endl;
-			std::cout << "  " << timings[BUCKETSORT]  << " Bucket sort" << std::endl;
+			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+			std::cout << "  " << timings[BUCKETSORT]  << " Group Pareto Min" << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
