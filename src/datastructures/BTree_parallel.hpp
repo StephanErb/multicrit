@@ -81,13 +81,21 @@ struct Operation {
 
 template <typename _Key, typename _MinKey>
 struct btree_default_traits {
+private:
+    struct slot {
+        _Key        slotkey;
+        size_t      weight;
+        void*       childid;
+        _MinKey    minimum; 
+    };
+public:
     /// If true, the tree will self verify it's invariants after each insert()
     /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
     static const bool   selfverify = false;
 
     /// Configure nodes to have a fixed size of X cache lines. 
     static const int    leafparameter_k = BTREE_MAX( 4, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key) + sizeof(_MinKey) + sizeof(size_t) + sizeof(void*)))/4 );
+    static const int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
 };
 
 // Number of leaves that need to be written before we try perform it in parallel
@@ -229,8 +237,10 @@ protected:
         return result;
     }
 
+    static const size_type innernodebytesize = sizeof(inner_node);
+    static const size_type leafnodebytesize  = sizeof(leaf_node);
+
 public:
-    // *** Small Statistics Structure
 
     /** A small struct containing basic statistics about the B+ tree. It can be
      * fetched using get_stats(). */

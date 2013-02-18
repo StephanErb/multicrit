@@ -22,7 +22,7 @@
 
 
 #ifndef PARETO_FIND_RECURSION_END_LEVEL
-#define PARETO_FIND_RECURSION_END_LEVEL 3
+#define PARETO_FIND_RECURSION_END_LEVEL 2
 #endif
 
 
@@ -150,8 +150,8 @@ public:
 
 	void printStatistics() {
 		std::cout << base_type::name() << " (k=" << base_type::traits::leafparameter_k << ", b=" << base_type::traits::branchingparameter_b << "):" << std::endl;
-		std::cout << "  inner slots size [" << base_type::innerslotmin << ", " << base_type::innerslotmax << "]" << std::endl;
-		std::cout << "  leaf slots size [" << base_type::leafslotmin << ", " << base_type::leafslotmax << "]" << std::endl;
+		std::cout << "  inner slots size [" << base_type::innerslotmin << ", " << base_type::innerslotmax << "]. Bytes: " << base_type::innernodebytesize << std::endl;
+		std::cout << "  leaf slots size [" << base_type::leafslotmin << ", " << base_type::leafslotmax << "]. Bytes: " << base_type::leafnodebytesize << std::endl;
 	}
 
 	void findParetoMinima(const size_t _current_timestamp) {
