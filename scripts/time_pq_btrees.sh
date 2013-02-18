@@ -17,10 +17,10 @@ do
 	./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew > $out_file
 done
 
-make -B CPPFLAGS="-DSEQUENTIAL_BTREE" time_pq_btree.par
+make -B time_pq_btree
 out_file="../timings/btree/insert_sequ_r$ratio"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree.par -c $iter_count -r $ratio -s $skew > $out_file
+./bin/time_pq_btree -c $iter_count -r $ratio -s $skew > $out_file
 
 
 # Bulk Insertion
@@ -33,10 +33,10 @@ do
 	./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew  > $out_file
 done
 
-make -B CPPFLAGS="-DSEQUENTIAL_BTREE" time_pq_btree.par
+make -B time_pq_btree
 out_file="../timings/btree/insert_sequ_r$ratio"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree.par -c $iter_count -r $ratio -s $skew  > $out_file
+./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
 
 
 # Bulk Insertion
@@ -49,7 +49,7 @@ do
 	./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew  > $out_file
 done
 
-make -B CPPFLAGS="-DSEQUENTIAL_BTREE" time_pq_btree.par
+make -B time_pq_btree
 out_file="../timings/btree/insert_sequ_r$ratio"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree.par -c $iter_count -r $ratio -s $skew  > $out_file
+./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
