@@ -154,389 +154,17 @@ __Machuca Grid Correlated (p=-0.8, 200x200):__
 
 
 
-# SequentialParetoSearch_BTreeParetoQueue
-# Exponential Graph (root degree&depth=32):
 
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-    finally dominated: 0% (=0)
-LabelSet sizes: 
-  avg: 5957
-  max: 65536
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 4095
-  max: 32768
-Target node label count: 0
-7.46374 # time in [s]
 
-# Raith & Ehrgott Grid (200x200):
-
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.4779% (=15829089)
-    via candidate shortcut: 46.6628% (=7386294)
-  initially non-dominated: 27.5221% (=6010793)
-    finally dominated: 8.93466% (=537044)
-LabelSet sizes: 
-  avg: 136
-  max: 368
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 4
-  max: 592
-Target node label count: 284
-11.4939 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
-
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 70.4468% (=956407)
-    via candidate shortcut: 48.7005% (=465775)
-  initially non-dominated: 29.5532% (=401224)
-    finally dominated: 14.951% (=59987)
-LabelSet sizes: 
-  avg: 8
-  max: 27
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 21
-Target node label count: 23
-0.422501 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
-
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 73.8799% (=82781568)
-    via candidate shortcut: 68.7152% (=56883491)
-  initially non-dominated: 26.1201% (=29267274)
-    finally dominated: 3.85961% (=1129603)
-LabelSet sizes: 
-  avg: 703
-  max: 1583
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 11
-  max: 381
-Target node label count: 1582
-50.584 # time in [s]
   
+#########################################################################
+Unordered and probably outdated Misc timings. Probably on i10pc112
 
+#########################################################################
 
-# ParallelParetoSearch_BTreeParetoQueue (only parallel Queue but everything else is sequential)
+## ParallelParetoSearch_BTreeParetoQueue (Implementation as of: Implement simple parallel ParetoSearch) -> Writing to threadlocal. THen copying all these ans sorting in final sort. Merging pareto min to delete via inplace merge.
+
 # Exponential Graph (root degree&depth=32):
-
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-    finally dominated: 0% (=0)
-LabelSet sizes: 
-  avg: 5957
-  max: 65536
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 4095
-  max: 32768
-Target node label count: 0
-6.09158 # time in [s]
-
-# Raith & Ehrgott Grid (200x200):
-
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.4779% (=15829089)
-    via candidate shortcut: 46.6628% (=7386294)
-  initially non-dominated: 27.5221% (=6010793)
-    finally dominated: 8.93466% (=537044)
-LabelSet sizes: 
-  avg: 136
-  max: 368
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 4
-  max: 592
-Target node label count: 284
-11.1101 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
-
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 70.4468% (=956407)
-    via candidate shortcut: 48.7005% (=465775)
-  initially non-dominated: 29.5532% (=401224)
-    finally dominated: 14.951% (=59987)
-LabelSet sizes: 
-  avg: 8
-  max: 27
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 21
-Target node label count: 23
-0.452003 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
-
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 73.8799% (=82781568)
-    via candidate shortcut: 68.7152% (=56883491)
-  initially non-dominated: 26.1201% (=29267274)
-    finally dominated: 3.85961% (=1129603)
-LabelSet sizes: 
-  avg: 703
-  max: 1583
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 11
-  max: 381
-Target node label count: 1582
-48.6648 # time in [s]
-
-
-
-# ParallelParetoSearch_BTreeParetoQueue with simple loop parallelization
-# Exponential Graph (root degree&depth=32):
-
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-    finally dominated: 0% (=0)
-LabelSet sizes: 
-  avg: 5957
-  max: 65536
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 4095
-  max: 32768
-Target node label count: 0
-3.66261 # time in [s]
-
-# Raith & Ehrgott Grid (200x200):
-
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.4779% (=15829089)
-    via candidate shortcut: 46.6628% (=7386294)
-  initially non-dominated: 27.5221% (=6010793)
-    finally dominated: 8.93466% (=537044)
-LabelSet sizes: 
-  avg: 136
-  max: 368
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 4
-  max: 592
-Target node label count: 284
-8.69629 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
-
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 70.4468% (=956407)
-    via candidate shortcut: 48.7005% (=465775)
-  initially non-dominated: 29.5532% (=401224)
-    finally dominated: 14.951% (=59987)
-LabelSet sizes: 
-  avg: 8
-  max: 27
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 21
-Target node label count: 23
-0.466088 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
-
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 73.8799% (=82781568)
-    via candidate shortcut: 68.7152% (=56883491)
-  initially non-dominated: 26.1201% (=29267274)
-    finally dominated: 3.85961% (=1129603)
-LabelSet sizes: 
-  avg: 703
-  max: 1583
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 11
-  max: 381
-Target node label count: 1582
-37.1617 # time in [s]
-
-
-
-# ParallelParetoSearch_BTreeParetoQueue with bucket sorting (sorting in parallel for, rest sequential)
-# Exponential Graph (root degree&depth=32):
-
-Iterations: 33
-Created Labels: 6291360
-  initially dominated: 0% (=0)
-    via candidate shortcut: -nan% (=0)
-  initially non-dominated: 100% (=6291360)
-    finally dominated: 0% (=0)
-LabelSet sizes: 
-  avg: 5957
-  max: 65536
-ParetoQueue sizes: 
-  avg: 254196
-  max: 2097152
-Pareto Optimal Elements: 
-  avg: 190647
-  max: 2097152
-Identical Target Nodes per Iteration: 
-  avg: 4191
-  max: 32768
-Target node label count: 0
-2.84312 # time in [s]
-
-# Raith & Ehrgott Grid (200x200):
-
-Iterations: 2228
-Created Labels: 21839882
-  initially dominated: 72.4779% (=15829089)
-    via candidate shortcut: 46.6628% (=7386294)
-  initially non-dominated: 27.5221% (=6010793)
-    finally dominated: 8.93466% (=537044)
-LabelSet sizes: 
-  avg: 136
-  max: 368
-ParetoQueue sizes: 
-  avg: 24609
-  max: 58144
-Pareto Optimal Elements: 
-  avg: 2456
-  max: 6059
-Identical Target Nodes per Iteration: 
-  avg: 4
-  max: 582
-Target node label count: 284
-8.67035 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
-
-Iterations: 2270
-Created Labels: 1357631
-  initially dominated: 70.4468% (=956407)
-    via candidate shortcut: 48.7005% (=465775)
-  initially non-dominated: 29.5532% (=401224)
-    finally dominated: 14.951% (=59987)
-LabelSet sizes: 
-  avg: 8
-  max: 27
-ParetoQueue sizes: 
-  avg: 1358
-  max: 3810
-Pareto Optimal Elements: 
-  avg: 150
-  max: 475
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 21
-Target node label count: 23
-0.501272 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
-
-Iterations: 4166
-Created Labels: 112048842
-  initially dominated: 73.8799% (=82781568)
-    via candidate shortcut: 68.7152% (=56883491)
-  initially non-dominated: 26.1201% (=29267274)
-    finally dominated: 3.85961% (=1129603)
-LabelSet sizes: 
-  avg: 703
-  max: 1583
-ParetoQueue sizes: 
-  avg: 70785
-  max: 152941
-Pareto Optimal Elements: 
-  avg: 6754
-  max: 15492
-Identical Target Nodes per Iteration: 
-  avg: 12
-  max: 376
-Target node label count: 1582
-34.9974 # time in [s]
-
-
-
-# ParallelParetoSearch_BTreeParetoQueue (Implementation as of: Implement simple parallel ParetoSearch) -> Writing to threadlocal. THen copying all these ans sorting in final sort. Merging pareto min to delete via inplace merge.
-# Exponential Graph (root degree&depth=32):
-
 Iterations: 33
 Created Labels: 5657958
   initially dominated: 0% (=0)
@@ -559,7 +187,6 @@ Target node label count: 0
 2.87989 # time in [s]
 
 # Raith & Ehrgott Grid (200x200):
-
 Iterations: 2228
 Created Labels: 20803769
   initially dominated: 72.0137% (=14981565)
@@ -582,7 +209,6 @@ Target node label count: 284
 9.96358 # time in [s]
 
 # Machuca Grid Correlated (p=0.8, 200x200):
-
 Iterations: 2270
 Created Labels: 1290126
   initially dominated: 70.15% (=905023)
@@ -605,7 +231,6 @@ Target node label count: 23
 0.442694 # time in [s]
 
 # Machuca Grid Correlated (p=-0.8, 200x200):
-
 Iterations: 4166
 Created Labels: 106392871
   initially dominated: 73.569% (=78272199)
@@ -627,77 +252,7 @@ Identical Target Nodes per Iteration:
 Target node label count: 1582
 33.4407 # time in [s]
 
-
-
-# ParallelParetoSearch_BTreeParetoQueue: Compute candidates in parallel -> Sorting via buckets per thread which are then pulled form the task responsible for this node
-# Exponential Graph (root degree&depth=32):
- Statistics disabled at compile time. See options file.
-Target node label count: 0
-3.60492 # time in [s]
-
-# Raith & Ehrgott Grid (200x200):
- Statistics disabled at compile time. See options file.
-Target node label count: 284
-10.0307 # time in [s]
-
-# Machuca Grid Correlated (p=0.8, 200x200):
- Statistics disabled at compile time. See options file.
-Target node label count: 23
-0.55477 # time in [s]
-
-# Machuca Grid Correlated (p=-0.8, 200x200):
- Statistics disabled at compile time. See options file.
-Target node label count: 1582
-32.8334 # time in [s]
-
-
-
-
-# Implementation with parallel sort (rest sequential)
-
-Iterations: 41683
-Created Labels: 978246494
-  initially dominated: 60.2916% (=589800871)
-    via candidate shortcut: 37.9922% (=224078125)
-  initially non-dominated: 39.7084% (=388445623)
-    finally dominated: 9.28004% (=36047901)
-LabelSet sizes: 
-  avg: 1333
-  max: 10218
-ParetoQueue sizes: 
-  avg: 680209
-  max: 1475541
-Pareto Optimal Elements: 
-  avg: 8454
-  max: 14185
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 119
-1 NY1 462.536 1089 3565.59 3565  # time in [s], target node label count, memory [mb], peak memory [mb] 
-
-Iterations: 40836
-Created Labels: 978253413
-  initially dominated: 60.6034% (=592854916)
-    via candidate shortcut: 34.9765% (=207359945)
-  initially non-dominated: 39.3966% (=385398497)
-    finally dominated: 9.30607% (=35865435)
-LabelSet sizes: 
-  avg: 1322
-  max: 9664
-ParetoQueue sizes: 
-  avg: 662178
-  max: 1455938
-Pareto Optimal Elements: 
-  avg: 8559
-  max: 17301
-Identical Target Nodes per Iteration: 
-  avg: 2
-  max: 179
-2 NY2 639.07 1469 3579.06 3579  # time in [s], target node label count, memory [mb], peak memory [mb]
-
-
 # Implementation: Implement simple parallel ParetoSearch -> (sequential) Bucketsort with writing to threadlocal. THen copying all these ans sorting in final sort. Merging pareto min to delete via inplace merge.
-
 Iterations: 41683
 Created Labels: 894626510
   initially dominated: 60.3072% (=539524096)
@@ -739,105 +294,142 @@ Identical Target Nodes per Iteration:
 2 NY2 344.905 1469 3767.42 3767  # time in [s], target node label count, memory [mb], peak memory [mb]
 
 
-# ParallelParetoSearch_BTreeParetoQueue: Compute candidates in parallel -> Sorting via buckets per thread which are then pulled form the task responsible for this node
+## ParallelParetoSearch_BTreeParetoQueue: Compute candidates in parallel -> Sorting via buckets per thread which are then pulled form the task responsible for this node
+# Exponential Graph (root degree&depth=32):
+ Statistics disabled at compile time. See options file.
+Target node label count: 0
+3.60492 # time in [s]
 
+# Raith & Ehrgott Grid (200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 284
+10.0307 # time in [s]
+
+# Machuca Grid Correlated (p=0.8, 200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 23
+0.55477 # time in [s]
+
+# Machuca Grid Correlated (p=-0.8, 200x200):
+ Statistics disabled at compile time. See options file.
+Target node label count: 1582
+32.8334 # time in [s]
+
+# ParallelParetoSearch_BTreeParetoQueue: Compute candidates in parallel -> Sorting via buckets per thread which are then pulled form the task responsible for this node
 1 NY1 277.201 1089 3835.63 3835  # time in [s], target node label count, memory [mb], peak memory [mb] 
 2 NY2 346.142 1469 3939.32 3939  # time in [s], target node label count, memory [mb], peak memory [mb] 
 
 
 
 
-#125 as of commit: "Copy (most) TLS updates in parallalel."
-
-## Timings [Machuca 2012] Difficult Road Instances on i10pc125 
-# ParallelParetoSearch_ParallelBTreeParetoQueue (version/commit: "Copy TLS updates in parallalel.")
-1 NY1 166.071 1089 4275.83 4275 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 207.631 1469 5317.66 5317 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-1 NY1 278.223 1089 4153.22 4153 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 340.557 1469 5148.16 5148 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-1 NY1 481.234 1089 4024.44 4024 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 613.939 1469 4649.22 4649 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-1 NY1 876.714 1089 3934.03 3934 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 1050.57 1469 3958.11 3958 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-# SequentialParetoSearch_VectorParetoQueue (optimized: inplace-merge & bucket sort)
-1 NY1 572.15 1089 3884.82 3884 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 732.714 1469 4090.68 4090 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Sum
-1 NY1 1454.52 1089 6695.69 6695 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 1685.77 1469 6854.93 6854 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
 
-## Subcomponent Timings [Machuca 2012] Difficult Road Instances on i10pc125 
-# ParallelParetoSearch_ParallelBTreeParetoQueue (version/commit: "Copy TLS updates in parallalel.")
-Subcomponent Timings:
-  80.5806 Find pareto min & bucket sort
-  70.6721 Update Labelsets 
-  12.6041 Sort Updates
-  47.1863 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 163.857 1089 4275.06 4275 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-Subcomponent Timings:
-  141.045 Find pareto min & bucket sort
-  115.878 Update Labelsets 
-  17.3421 Sort Updates
-  84.9975 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 274.266 1089 4148.82 4148 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#########################################################################
+Initialie Baum Impl erstmalig im ungetunten ParetoSearch Algo eingesetzt
 
-Subcomponent Timings:
-  239.647 Find pareto min & bucket sort
-  207.279 Update Labelsets 
-  29.0047 Sort Updates
-  147.519 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 475.93 1089 3974.98 3974 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-# SequentialParetoSearch_VectorParetoQueue (optimized: inplace-merge & bucket sort)
-Subcomponent Timings:
-  47.5427 Find pareto min
-  53.1669 Bucket sort
-  323.729 Update Labelsets 
-  42.3977 Sort Updates
-  102.832 Update PQ 
-1 NY1 569.668 1089 3884.82 3885 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
-
-
-# SequentialParetoSearch_VectorParetoQueue  -> sequential algo with inplace merge of the already sorted updates.
+(Anfang des Januar) --> Zeigt uns was für einen Weg wir gegangen sind
+#########################################################################
+# SequentialParetoSearch_BTreeParetoQueue
 # Exponential Graph (root degree&depth=32):
- Statistics disabled at compile time. See options file.
+Iterations: 33
+Created Labels: 6291360
+  initially dominated: 0% (=0)
+    via candidate shortcut: -nan% (=0)
+  initially non-dominated: 100% (=6291360)
+    finally dominated: 0% (=0)
+LabelSet sizes: 
+  avg: 5957
+  max: 65536
+ParetoQueue sizes: 
+  avg: 254196
+  max: 2097152
+Pareto Optimal Elements: 
+  avg: 190647
+  max: 2097152
+Identical Target Nodes per Iteration: 
+  avg: 4095
+  max: 32768
 Target node label count: 0
-4.09383 226.609 # time in [s], mem in [mb]
+7.46374 # time in [s]
 
 # Raith & Ehrgott Grid (200x200):
- Statistics disabled at compile time. See options file.
+Iterations: 2228
+Created Labels: 21839882
+  initially dominated: 72.4779% (=15829089)
+    via candidate shortcut: 46.6628% (=7386294)
+  initially non-dominated: 27.5221% (=6010793)
+    finally dominated: 8.93466% (=537044)
+LabelSet sizes: 
+  avg: 136
+  max: 368
+ParetoQueue sizes: 
+  avg: 24609
+  max: 58144
+Pareto Optimal Elements: 
+  avg: 2456
+  max: 6059
+Identical Target Nodes per Iteration: 
+  avg: 4
+  max: 592
 Target node label count: 284
-9.33328 63.9609 # time in [s], mem in [mb]
+11.4939 # time in [s]
 
 # Machuca Grid Correlated (p=0.8, 200x200):
- Statistics disabled at compile time. See options file.
+Iterations: 2270
+Created Labels: 1357631
+  initially dominated: 70.4468% (=956407)
+    via candidate shortcut: 48.7005% (=465775)
+  initially non-dominated: 29.5532% (=401224)
+    finally dominated: 14.951% (=59987)
+LabelSet sizes: 
+  avg: 8
+  max: 27
+ParetoQueue sizes: 
+  avg: 1358
+  max: 3810
+Pareto Optimal Elements: 
+  avg: 150
+  max: 475
+Identical Target Nodes per Iteration: 
+  avg: 2
+  max: 21
 Target node label count: 23
-0.329789 3.60547 # time in [s], mem in [mb]
+0.422501 # time in [s]
 
 # Machuca Grid Correlated (p=-0.8, 200x200):
- Statistics disabled at compile time. See options file.
+Iterations: 4166
+Created Labels: 112048842
+  initially dominated: 73.8799% (=82781568)
+    via candidate shortcut: 68.7152% (=56883491)
+  initially non-dominated: 26.1201% (=29267274)
+    finally dominated: 3.85961% (=1129603)
+LabelSet sizes: 
+  avg: 703
+  max: 1583
+ParetoQueue sizes: 
+  avg: 70785
+  max: 152941
+Pareto Optimal Elements: 
+  avg: 6754
+  max: 15492
+Identical Target Nodes per Iteration: 
+  avg: 11
+  max: 381
 Target node label count: 1582
-42.6854 322.777 # time in [s], mem in [mb]
+50.584 # time in [s]
 
 
- 
-# SequentialParetoSearch_VectorParetoQueue -> Optimized Sequential Pareto Search (Inplace merge & bucket sort) 
+
+
+
+
+################################################################
+Di 19. Feb 01:35:49 CET 2013
+
+Optimized Sequential Pareto Search (Inplace merge & bucket sort)
+################################################################
+## SequentialParetoSearch_VectorParetoQueue 
 # Exponential Graph (root degree&depth=32):
  Statistics disabled at compile time. See options file.
 Target node label count: 0
@@ -858,8 +450,7 @@ Target node label count: 23
 Target node label count: 1582
 31.2311 381.043 # time in [s], mem in [mb]
 
-
-# SequentialParetoSearch_BTreeParetoQueue  -> Optimized Sequential Pareto Search (Inplace merge & bucket sort) 
+## SequentialParetoSearch_BTreeParetoQueue  
 # Exponential Graph (root degree&depth=32):
 Sequential BTree: 
   inner slots size [2, 32]
@@ -895,77 +486,204 @@ Target node label count: 1582
 
 
 
-auf der 112
 
 
-# ParallelParetoSearch_ParallelBTreeParetoQueue
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
+################################################################
+Di 19. Feb 01:35:49 CET 2013
+
+Meeting on BTree results & limited scalability
+
+Results gathered on i10pc112
+Commit: https://algo2.iti.kit.edu/svn/erb@341 d8aefcb4-f1e2-11e1-aef8-dd4ad02cd871
+        95da86e65b790ee18fa9f53e69aa27c90f7a2216
+################################################################
+
+## ParallelParetoSearch_ParallelBTreeParetoQueue
+
+# PE 4:
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
 Subcomponent Timings:
-  152.745 Find pareto min & bucket sort
-  338.964 Update Labelsets 
-  47.8835 Sort Updates
-  260.477 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 800.07 1089 3910.02 3910 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
-^C# ParallelParetoSearch_ParallelBTreeParetoQueue
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
+  55.1715 Find & Group Pareto Min   # efficiency 0.82
+  112.259 Update Labelsets          # efficiency 0.74
+  17.2771 Sort Updates              # efficiency 0.70
+  74.6565 Update PQ                 # efficiency 0.89
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 259.364 1089 4113.5 4113 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# PE 3: relative speedup 2.57 efficiency 0.856
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
 Subcomponent Timings:
-  82.1998 Find pareto min & bucket sort
-  185.481 Update Labelsets 
-  26.1227 Sort Updates
-  134.627 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 428.431 1089 3983.15 3983 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
-^C# ParallelParetoSearch_ParallelBTreeParetoQueue
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
+  70.4725 Find & Group Pareto Min   # efficiency 0.84
+  134.115 Update Labelsets          # efficiency 0.82
+  20.9722 Sort Updates              # efficiency 0.77
+  95.4457 Update PQ                 # efficiency 0.93
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 321.006 1089 4035.27 4035 3  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# PE 2: relative speedup 1.85 efficiency 0.928
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
 Subcomponent Timings:
-  47.3722 Find pareto min & bucket sort
-  113.492 Update Labelsets 
-  15.7996 Sort Updates
-  72.3799 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 249.044 1089 4134.74 4134 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+  97.196 Find & Group Pareto Min    # efficiency 0.92
+  181.967 Update Labelsets          # efficiency 0.91
+  27.9455 Sort Updates              # efficiency 0.87
+  137.752 Update PQ                 # efficiency 0.97
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 444.861 1089 3977.21 3977 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# PE 1
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
+Subcomponent Timings:
+  179.193 Find & Group Pareto Min
+  331.192 Update Labelsets 
+  48.5896 Sort Updates
+  266.02 Update PQ 
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 824.995 1089 3906.33 3906 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+## SequentialParetoSearch_VectorParetoQueue
+Iterations: 41683
+Created Labels: 978246494
+  initially dominated: 60.2916% (=589800871)
+    via candidate shortcut: 37.9922% (=224078125)
+  initially non-dominated: 39.7084% (=388445623)
+    finally dominated: 9.28004% (=36047901)
+LabelSet sizes: 
+  avg: 1333
+  max: 10218
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
+Pareto Optimal Elements: 
+  avg: 8454
+  max: 14185
+Subcomponent Timings:
+  57.0922 Find Pareto Min
+  46.6239 Group Pareto Min
+  321.016 Update Labelsets 
+  39.2974 Sort Updates
+  104.639 Update PQ 
+1 NY1 568.668 1089 3884.86 3885 0  # time in [s], target node label count, memory [mb], peak memory [mb], 
+
+#SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Sum
+1 NY1 1495.47 1089 6696.43 6696 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
 
 
-Die 112
+## ParallelParetoSearch_ParallelBTreeParetoQueue
+## with Sub-Sub Component Timing
 
+# PE 4
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
 Subcomponent Timings:
-  49.2465 Find pareto min & bucket sort
-  112.214 Update Labelsets 
-  15.7975 Sort Updates
-  72.3647 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-1 NY1 249.623 1089 4106.05 4106 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+  60.5254 Find & Group Pareto Min
+      5.7838 Recursive TBB Tasks
+      22.2471 Find Pareto Min 
+      1.88078 Copy Updates 
+      29.0373 Group Pareto Min  
+      1.57636 Copy Affected Nodes  
+  125.85 Update Labelsets 
+      16.9898 Collect Candidate Labels 
+      14.3863 Sort Candidate Labels 
+      94.828 Update Labelsets 
+      2.00101 Copy Updates 
+  17.2557 Sort Updates
+  74.7888 Update PQ 
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 278.42 1089 4127.46 4127 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# PE 3
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
 Subcomponent Timings:
-  50.4221 Find pareto min & bucket sort
-  179.045 Update Labelsets 
-  15.9978 Sort Updates
-  74.8508 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-2 NY2 320.316 1469 4853.82 4853 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+  76.0922 Find & Group Pareto Min
+      7.47241 Recursive TBB Tasks
+      28.3385 Find Pareto Min 
+      2.39405 Copy Updates 
+      35.8626 Group Pareto Min  
+      2.02465 Copy Affected Nodes  
+  154.756 Update Labelsets 
+      19.0404 Collect Candidate Labels 
+      15.8416 Sort Candidate Labels 
+      117.938 Update Labelsets 
+      1.89586 Copy Updates 
+  20.9591 Sort Updates
+  95.6328 Update PQ 
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 347.44 1089 4095.49 4095 3  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# PE 2
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
 Subcomponent Timings:
-  89.6265 Find pareto min & bucket sort
-  575.548 Update Labelsets 
-  31.3098 Sort Updates
-  154.66 Update PQ 
-Parallel BTree (k=63, b=8):
-  inner slots size [2, 32]
-  leaf slots size [15, 63]
-3 NY3 851.144 16 8604.58 8604 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+  108.429 Find & Group Pareto Min
+      9.49632 Recursive TBB Tasks
+      42.6241 Find Pareto Min 
+      3.56142 Copy Updates 
+      49.8712 Group Pareto Min  
+      2.87632 Copy Affected Nodes  
+  214.767 Update Labelsets 
+      27.5844 Collect Candidate Labels 
+      28.7761 Sort Candidate Labels 
+      166.284 Update Labelsets 
+      1.44281 Copy Updates 
+  27.9409 Sort Updates
+  138.084 Update PQ 
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 489.221 1089 3976.53 3976 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+# PE 1
+Iterations: 41683
+ParetoQueue sizes: 
+  avg: 680209
+  max: 1475541
+Subcomponent Timings:
+  200.367 Find & Group Pareto Min
+      21.1344 Recursive TBB Tasks
+      80.5679 Find Pareto Min 
+      4.61795 Copy Updates 
+      89.9865 Group Pareto Min  
+      4.05987 Copy Affected Nodes  
+  397.121 Update Labelsets 
+      41.0496 Collect Candidate Labels 
+      51.5879 Sort Candidate Labels 
+      302.587 Update Labelsets 
+      1.13934 Copy Updates 
+  48.5227 Sort Updates
+  268.089 Update PQ 
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 914.099 1089 3907.61 3907 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
