@@ -1,0 +1,7 @@
+# SequentialParetoSearch_VectorParetoQueue
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+1 NY1 561.172 1089 3884.86 3885 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 726.182 1469 4089.71 4089 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 2239.83 16 8033.28 8033 0  # time in [s], target node label count, memory [mb], peak memory [mb], p

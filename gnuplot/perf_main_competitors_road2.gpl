@@ -18,12 +18,12 @@ set key samplen 1
 
 # the text along the vertical axis
 # (the numeric values are the results of trial and error experiments)
-set lmargin 7
+set lmargin 8
 set label "Runtime [s]" at screen 0.015,0.5 center  rotate
 
 # the text along the horizontal axis
 # (the numeric values are the results of trial and error experiments)
-set bmargin 6
+set bmargin 5
 set label "Road Instance (time/economic costs)" at screen 0.5,0.03 center
 
 # we are using logarithmic scales
