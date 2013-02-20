@@ -723,20 +723,16 @@ private:
         return subtree_updates[i].rebalancing_needed;
     }
 
-    inline int find_lower(const size_type begin, const size_type end, const key_type& key) const {
-        int lo = begin;
-        int hi = end - 1;
-
-        while(lo < hi) {
-            size_type mid = (lo + hi) >> 1; // FIXME: Potential integer overflow
+    inline int find_lower(int lo, int hi, const key_type& key) const {
+        while (lo < hi) {
+            int mid = (lo + hi) >> 1;
 
             if (key_less(key, updates[mid].data)) {
-                hi = mid - 1;
+                hi = mid;
             } else {
                 lo = mid + 1;
             }
         }
-        hi += (hi < 0 || key_lessequal(updates[hi].data, key));
         return hi;
     }
 
