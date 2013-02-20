@@ -500,7 +500,7 @@ Commit: https://algo2.iti.kit.edu/svn/erb@341 d8aefcb4-f1e2-11e1-aef8-dd4ad02cd8
 
 ## ParallelParetoSearch_ParallelBTreeParetoQueue
 
-# PE 4:
+# PE 4: relative speedup 3.18 efficiency 0.795
 Iterations: 41683
 ParetoQueue sizes: 
   avg: 680209
