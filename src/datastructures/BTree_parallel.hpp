@@ -1006,7 +1006,13 @@ private:
             BTREE_ASSERT(upd.upd_begin != upd.upd_end);
 
             if (upd_node->isleafnode()) {
-                update_leaf_in_current_tree();
+                bool exists;
+                typename SpareLeafPerThread::reference spare_leaf = tree->spare_leaves.local(exists);
+                leaf_node* const result = exists ? spare_leaf : tree->allocate_leaf_without_count();
+                update_leaf_in_current_tree(result, static_cast<leaf_node*>(upd_node));
+
+                spare_leaf = static_cast<leaf_node*>(upd_node);
+                upd_node = result;
                 return NULL;
             } else {
                 inner_node* const inner = static_cast<inner_node*>(upd_node);
@@ -1112,15 +1118,10 @@ private:
 
     private:
 
-        void update_leaf_in_current_tree() {
+        void update_leaf_in_current_tree(leaf_node* const result, const leaf_node* const leaf) {
             width_type in = 0; // existing key to read
             width_type out = 0; // position where to write
-
-            bool exists;
-            typename SpareLeafPerThread::reference spare_leaf = tree->spare_leaves.local(exists);
-
-            leaf_node* const result = exists ? spare_leaf : tree->allocate_leaf_without_count();
-            const leaf_node* const leaf = static_cast<leaf_node*>(upd_node);
+            const width_type in_slotuse = leaf->slotuse;
 
             BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
 
@@ -1131,20 +1132,20 @@ private:
                 case Operation<key_type>::DELETE:
                     // We know the element is in here, so no bounds checks
                     while (!tree->key_equal(leaf->slotkey[in], op.data)) {
-                        BTREE_ASSERT(in < leaf->slotuse);
+                        BTREE_ASSERT(in < in_slotuse);
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
                     ++in; // delete the element by jumping over it
                     break;
                 case Operation<key_type>::INSERT:
-                    while(in < leaf->slotuse && tree->key_less(leaf->slotkey[in], op.data)) {
+                    while(in < in_slotuse && tree->key_less(leaf->slotkey[in], op.data)) {
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
                     result->slotkey[out++] = op.data;
                     break;
                 }
             }
-            if (in < leaf->slotuse) {
+            if (in < in_slotuse) {
                 assert(leaf->slotuse <= tree->leafslotmax);
                 const width_type delta = leaf->slotuse - in;
                 memcpy(result->slotkey + out, leaf->slotkey + in, sizeof(key_type) * delta);
@@ -1156,9 +1157,6 @@ private:
             tree->update_router(router, result->slotkey[out-1]); 
 
             BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);
-
-            spare_leaf = static_cast<leaf_node*>(upd_node); // leaf but non-const
-            upd_node = result;
         }
 
     };
