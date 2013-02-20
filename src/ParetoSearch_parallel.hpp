@@ -96,12 +96,12 @@ private:
 		}
 	} firstWeightLess;
 
-	static bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
+	static inline bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
 		return i.second_weight >= j.second_weight;
 	}
 
 	/** First label where the x-coord is truly smaller */
-	static label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
+	static inline label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
 		return --std::lower_bound(begin, end, new_label, firstWeightLess);
 	}
 
@@ -131,48 +131,95 @@ private:
 		return false;
 	}
 
-	static void updateLabelSet(const NodeID node, typename ParetoQueue::LabelVec& labelset, const const_cand_iter start, const const_cand_iter end, typename ParetoQueue::OpVec& updates) {
+	static void updateLabelSet(const NodeID node, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::LabelVec& spare_labelset, const const_cand_iter start, const const_cand_iter end, typename ParetoQueue::OpVec& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
+		label_iter unprocessed_range_begin = labelset.begin();
+		bool replaced = false;
+		int replace = 0;
+		int rewrite = 0;
+		int at_end = 0;
 
-		label_iter labelset_iter = labelset.begin();
+		
 		for (const_cand_iter candidate = start; candidate != end; ++candidate) {
-			Label new_label = *candidate;
+			const Label& new_label = *candidate;
 			// short cut dominated check among candidates
 			if (new_label.second_weight >= min) { 
 				continue; 
 			}
 			label_iter iter;
-			if (isDominated(labelset_iter, labelset.end(), new_label, iter)) {
+			if (isDominated(unprocessed_range_begin, labelset.end(), new_label, iter)) {
 				min = iter->second_weight; 
 				continue;
 			}
+			// Label is not dominated. 
 			min = new_label.second_weight;
 			updates.push_back(Operation<Data>(Operation<Data>::INSERT, Data(node, new_label)));
 
-			label_iter first_nondominated = y_predecessor(iter, new_label);
-			if (iter == first_nondominated) {
+			const label_iter first_nondominated = y_predecessor(iter, new_label);
 
-				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-					set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
-				#endif
-
-				// delete range is empty, so just insert
-				labelset_iter = labelset.insert(first_nondominated, new_label);
-			} else {
-				// schedule deletion of dominated labels
-				for (label_iter i = iter; i != first_nondominated; ++i) {
-
-					#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-						if (i != iter) set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
-					#endif
-
-					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *i)));
-				}
-				// replace first dominated label and remove the rest
+			if (!replaced && first_nondominated - iter == 1) {
+				// Simple case. We can just replace the dominated label with the new one
+				replace++;
+				updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *iter)));
 				*iter = new_label;
-				labelset_iter = labelset.erase(++iter, first_nondominated);
+				unprocessed_range_begin = first_nondominated;
+			} else if (!replaced && (is_update_at_the_end(labelset, first_nondominated) || end - candidate == 1)) {
+				at_end++;
+				// We have a rather simple update (single or at the end) No need to rewrite the entire labelset.
+				if (iter == first_nondominated) {
+					unprocessed_range_begin = labelset.insert(first_nondominated, new_label);
+				} else {
+					for (label_iter i = iter; i != first_nondominated; ++i) {
+						// schedule deletion of dominated labels
+						updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *i)));
+					}
+					// replace first dominated label and remove the rest
+					*iter = new_label;
+					unprocessed_range_begin = labelset.erase(++iter, first_nondominated);
+				} 
+			} else {
+				rewrite++;
+				// This update is more complicated. We will have to rewrite our entire labelset
+				if (!replaced) {
+					replaced = true;
+					//spare_labelset.reserve(next_power_of_two(labelset.size() + (end - candidate))); // power óf to to allow efficient caching by the allocator
+					spare_labelset.insert(spare_labelset.end(), labelset.begin(), unprocessed_range_begin);
+				}
+				// Move all non-affected labels 
+				spare_labelset.insert(spare_labelset.end(), unprocessed_range_begin, iter);
+				// Insert the new label
+				spare_labelset.push_back(new_label);
+
+				// Delete all newly dominated labels by: Move till we find the first label where the y-coord is truly smaller
+				while (iter != first_nondominated) { 
+					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *iter++)));
+				}
+				unprocessed_range_begin = first_nondominated;
 			}
 		}
+		if (replaced) {
+			// copy remaining labels
+			spare_labelset.insert(spare_labelset.end(), unprocessed_range_begin, labelset.end());
+			labelset.swap(spare_labelset);
+			spare_labelset.clear();
+		}
+		std::cout << "rw " << rewrite << " rp " << replace << " at end " << at_end << std::endl;
+	}
+
+	static inline bool is_update_at_the_end(const typename ParetoQueue::LabelVec& labelset, const label_iter first_nondominated) {
+		return labelset.empty() || (first_nondominated - labelset.begin())/(double)labelset.size() > 0.5;
+	}
+
+	// http://graphics.stanford.edu/~seander/bithacks.html
+	static inline unsigned int next_power_of_two(unsigned int v) {
+		v--;
+		v |= v >> 1;
+		v |= v >> 2;
+		v |= v >> 4;
+		v |= v >> 8;
+		v |= v >> 16;
+		v++;
+		return v;
 	}
 
 
@@ -214,6 +261,7 @@ public:
 
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
+				typename ParetoQueue::TLSSpareLabelVec::reference spare_labelset = pq.tls_spare_labelset.local();
 
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
@@ -250,8 +298,7 @@ public:
 						subtimings.candidates_sort += (stop-start).seconds();
 						start = stop;
 					#endif
-
-					updateLabelSet(node, ls.labels, candidates->cbegin(), candidates->cend(), local_updates);
+					updateLabelSet(node, ls.labels, spare_labelset, candidates->cbegin(), candidates->cend(), local_updates);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.update_labelsets += (stop-start).seconds();

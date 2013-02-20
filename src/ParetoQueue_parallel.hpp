@@ -84,11 +84,13 @@ public:
 	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
 	typedef tbb::enumerable_thread_specific< NodeVec,         tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected;
 	typedef tbb::enumerable_thread_specific< MinimaVec,       tbb::cache_aligned_allocator<MinimaVec>,       tbb::ets_key_per_instance > TLSMinima; 
+	typedef tbb::enumerable_thread_specific< LabelVec,        tbb::cache_aligned_allocator<LabelVec>,        tbb::ets_key_per_instance > TLSSpareLabelVec; 
 
 	TLSUpdates tls_local_updates;
 	TLSMinima tls_minima;
 	TLSCandidates tls_candidates;
 	TLSAffected tls_affected_nodes;
+	TLSSpareLabelVec tls_spare_labelset;
 
 	typedef unsigned short thread_count; // When changing this type check the LabelSet struct size
 	const thread_count num_threads; 
