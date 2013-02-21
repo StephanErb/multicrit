@@ -579,28 +579,31 @@ protected:
     }
 
     static inline void set_min_element(min_key_type& min_key, const leaf_node* const node, width_type size) {
-        const min_key_type* tmp = std::min_element(node->slotkey, node->slotkey+size,
+        min_key = *std::min_element(node->slotkey, node->slotkey+size,
             [](const min_key_type& i, const min_key_type& j) { return i.second_weight < j.second_weight; });
+    }
 
-        if (min_key.first_weight != tmp->first_weight || min_key.second_weight != tmp->second_weight) {
-            min_key = *tmp;
-        }
+    static inline void set_min_element(min_key_type& min_key, const min_key_type& local) {
+        min_key = local;
+    }
+
+    static inline void update_local_min(min_key_type& a, const min_key_type& b) {
+        a = std::min(a, b, [](const min_key_type& a, const min_key_type& b) { return a.second_weight < b.second_weight; });
     }
 
     static inline void set_min_element(min_key_type& min_key, const inner_node* const node, width_type size) {
-        const auto* tmp = std::min_element(node->slot, node->slot+size,
-            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; });
-
-        if (min_key.first_weight != tmp->minimum.first_weight || min_key.second_weight != tmp->minimum.second_weight) {
-            min_key = tmp->minimum;
-        }
+        min_key = std::min_element(node->slot, node->slot+size,
+            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })->minimum;
     }
 #else 
     void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
         std::cout << "Pareto Min Feature disabled" << std::endl;
     }
     static inline void set_min_element(min_key_type&, const node* const, width_type) {
-
+    }
+    static inline void set_min_element(min_key_type&, const min_key_type&) {
+    }
+    static inline void update_local_min(min_key_type&, const min_key_type&) {
     }
 #endif
 
@@ -1123,6 +1126,12 @@ private:
             width_type out = 0; // position where to write
             const width_type in_slotuse = leaf->slotuse;
 
+            #ifdef COMPUTE_PARETO_MIN
+                min_key_type local_min(0, std::numeric_limits<typename min_key_type::weight_type>::max());
+            #else 
+                min_key_type local_min;
+            #endif
+
             BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
 
             for (size_type i = upd.upd_begin; i != upd.upd_end; ++i) {
@@ -1133,27 +1142,30 @@ private:
                     // We know the element is in here, so no bounds checks
                     while (!tree->key_equal(leaf->slotkey[in], op.data)) {
                         BTREE_ASSERT(in < in_slotuse);
+                        update_local_min(local_min, leaf->slotkey[in]);
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
                     ++in; // delete the element by jumping over it
                     break;
                 case Operation<key_type>::INSERT:
                     while(in < in_slotuse && tree->key_less(leaf->slotkey[in], op.data)) {
+                        update_local_min(local_min, leaf->slotkey[in]);
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
+                    update_local_min(local_min, op.data);
                     result->slotkey[out++] = op.data;
                     break;
                 }
             }
-            if (in < in_slotuse) {
-                assert(leaf->slotuse <= tree->leafslotmax);
-                const width_type delta = leaf->slotuse - in;
-                memcpy(result->slotkey + out, leaf->slotkey + in, sizeof(key_type) * delta);
-                out += delta;
-                assert(out <= tree->leafslotmax);
+            assert(leaf->slotuse <= tree->leafslotmax);
+            while (in < in_slotuse) {
+                update_local_min(local_min, leaf->slotkey[in]);
+                result->slotkey[out++] = leaf->slotkey[in++];
             }
+            assert(out <= tree->leafslotmax);
+
+            set_min_element(min_key, local_min);
             result->slotuse = out;
-            set_min_element(min_key, result, out);
             tree->update_router(router, result->slotkey[out-1]); 
 
             BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);

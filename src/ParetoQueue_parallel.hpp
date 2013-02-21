@@ -55,7 +55,7 @@ private:
 	typedef typename graph_slot::Edge Edge;
 
 	typedef typename data_type::weight_type weight_type;
-	const data_type min_label;
+	const label_type min_label;
 
 	typedef typename base_type::node node;
 	typedef typename base_type::inner_node inner_node;
@@ -130,8 +130,8 @@ public:
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
-		: base_type(_graph.numberOfNodes()), min_label(NodeID(0), typename data_type::label_type(std::numeric_limits<weight_type>::min(),
-			std::numeric_limits<weight_type>::max())), graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
+		: base_type(_graph.numberOfNodes()), min_label(std::numeric_limits<weight_type>::min(),
+			std::numeric_limits<weight_type>::max()), graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
 	{
 		assert(num_threads > 0);
 		assert(PE_COUNT >= num_threads);
