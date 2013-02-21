@@ -54,11 +54,11 @@ private:
 	typedef typename ParetoQueue::LabelVec::const_iterator const_label_iter;
 
 	struct LabelInsPos {
-		const size_t pos;
+		size_t pos;
 		const Label& label;
 	};
 
-	typedef std::vector<LabelInsPos> LabelInsertionPositionVec;
+	typedef std::vector<LabelInsPos, tbb::scalable_allocator<LabelInsPos> > LabelInsertionPositionVec;
 	typedef tbb::enumerable_thread_specific< LabelInsertionPositionVec, tbb::cache_aligned_allocator<LabelInsertionPositionVec>, tbb::ets_key_per_instance > TLSLabInsPos; 
 	TLSLabInsPos tls_insertion_positions;
 
@@ -116,9 +116,8 @@ private:
 	}
 
 	/** First label where the y-coord is truly smaller */
-	static label_iter y_predecessor(const label_iter& begin, const Label& new_label) {
-		label_iter i = begin;
-		while (secondWeightGreaterOrEquals(*i, new_label)) {
+	static size_t y_predecessor(const typename ParetoQueue::LabelVec& labelset, size_t i, const Label& new_label) {
+		while (secondWeightGreaterOrEquals(labelset[i], new_label)) {
 			++i;
 		}
 		return i;
@@ -159,88 +158,102 @@ private:
 			}
 			unprocessed_range_begin = iter;
 		}
+
 		switch (nondominated.size()) {
 		case 0:
 			break; // nothing to insert
 		case 1:
-			simple_insert(node, nondominated.front(), labelset, updates);
+			labelset_simple_insert(node, nondominated.front(), labelset, updates);
 			break;
-		default: 
+		default:
+			// Sentinal: (max position, any label)
+			nondominated.push_back({labelset.size(), nondominated.front().label});
+
 			if (is_update_at_the_end(labelset, nondominated.front().pos)) {
-				for (auto i=nondominated.rbegin(); i !=  nondominated.rend(); i++) {
-					simple_insert(node, *i, labelset, updates);
-				}
+				labelset_bulk_update(node, nondominated, labelset, updates);
 			} else {
-				bool replaced = false;
-				label_iter copied_until_iter = labelset.begin();
-				label_iter deleted_until_iter = labelset.begin();
-
-				for (LabelInsPos& op : nondominated) {
-					const label_iter op_iter = labelset.begin() + op.pos;
-					updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
-					const label_iter first_nondominated = y_predecessor(op_iter, op.label);
-
-					if (!replaced && (first_nondominated - op_iter) == 1 && deleted_until_iter != first_nondominated) {
-						// Simple case. We can just replace the dominated label with the new one
-						updates.push_back({Operation<Data>::DELETE, Data(node, *op_iter)});
-						*op_iter = op.label;
-						deleted_until_iter = first_nondominated;
-					} else {
-
-						// This update is more complicated. We will have to rewrite our entire labelset
-						if (!replaced) {
-							replaced = true;
-							// power óf to to allow efficient caching by the allocator
-							spare_labelset.reserve(next_power_of_two(labelset.size() + nondominated.size()));
-						}
-						// Move all non-affected labels
-						if (copied_until_iter < op_iter) {
-							spare_labelset.insert(spare_labelset.end(), copied_until_iter, op_iter);
-						}
-						// Insert the new label
-						spare_labelset.push_back(op.label);
-
-						// Delete all newly dominated labels by
-						deleted_until_iter = deleted_until_iter > op_iter ? deleted_until_iter : op_iter;
-						for (label_iter i = deleted_until_iter; i != first_nondominated; ++i) {
-							updates.push_back({Operation<Data>::DELETE, Data(node, *i)});
-						}
-						copied_until_iter = first_nondominated;
-						deleted_until_iter = first_nondominated;
-					}
-				}
-				if (replaced) {
-					// copy remaining labels
-					spare_labelset.insert(spare_labelset.end(), copied_until_iter, labelset.end());
-					labelset.swap(spare_labelset);
-					spare_labelset.clear();
-				}
+				labelset_rewrite(node, nondominated, labelset, spare_labelset, updates);
 			}
 		}
 		nondominated.clear();
 	}
 
-	static inline void simple_insert(const NodeID node, const LabelInsPos& op, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::OpVec& updates) {
-		const label_iter op_iter = labelset.begin() + op.pos;
+	static inline void labelset_simple_insert(const NodeID node, const LabelInsPos& op, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::OpVec& updates) {
 		updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
-		const label_iter first_nondominated = y_predecessor(op_iter, op.label);
+		const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
 
-		if (op_iter == first_nondominated) {
-			labelset.insert(op_iter, op.label);
+		if (op.pos == first_nondominated) {
+			labelset.insert(labelset.begin() + op.pos, op.label);
 		} else {
-			for (label_iter i = op_iter; i != first_nondominated; ++i) {
+			for (size_t i = op.pos; i != first_nondominated; ++i) {
 				// schedule deletion of dominated labels
-				updates.push_back({Operation<Data>::DELETE, Data(node, *i)});
+				updates.push_back({Operation<Data>::DELETE, Data(node, labelset[i])});
 			}
 			// replace first dominated label and remove the rest
-			*op_iter = op.label;
-			labelset.erase(op_iter+1, first_nondominated);
+			labelset[op.pos] = op.label;
+			labelset.erase(labelset.begin() + op.pos + 1, labelset.begin() + first_nondominated);
 		}
 	}
 
+	static inline void labelset_bulk_update(const NodeID node, LabelInsertionPositionVec& nondominated, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::OpVec& updates) {
+		size_t delta = 0;
+		for (size_t i = 0; i < nondominated.size()-1; ++i) {
+			LabelInsPos& op = nondominated[i];
+			op.pos += delta;
+
+			const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
+			const size_t range_end = std::min(first_nondominated, nondominated[i+1].pos+delta);
+			updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
+
+			if (op.pos == range_end) {
+				// No elements dominated directly by us. Just insert here
+				labelset.insert(labelset.begin() + op.pos, op.label);
+			} else {
+				for (size_t i = op.pos; i != range_end; ++i) {
+					// schedule deletion of dominated labels
+					updates.push_back({Operation<Data>::DELETE, Data(node, labelset[i])});
+				}
+				// replace first dominated label and remove the rest
+				labelset[op.pos] = op.label;
+				labelset.erase(labelset.begin() + op.pos + 1, labelset.begin() + range_end);
+			}
+			delta += op.pos - range_end + 1;
+		}
+	}
+
+	static inline void labelset_rewrite(const NodeID node, const LabelInsertionPositionVec& nondominated, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::LabelVec& spare_labelset, typename ParetoQueue::OpVec& updates) {
+		size_t copied_until = 0;
+		// power of two to allow efficient caching by the allocator
+		spare_labelset.reserve(next_power_of_two(labelset.size() + nondominated.size()));
+
+		for (size_t i = 0; i < nondominated.size()-1; ++i) {
+			const LabelInsPos& op = nondominated[i];
+			const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
+			updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
+
+			// Move all non-affected labels
+			if (copied_until < op.pos)	{
+				spare_labelset.insert(spare_labelset.end(), labelset.begin() + copied_until, labelset.begin() + op.pos);
+				copied_until = op.pos;
+			}
+			// Insert the new label
+			spare_labelset.push_back(op.label);
+
+			// Delete all dominated labels by
+			size_t range_end = std::min(first_nondominated, nondominated[i+1].pos);
+			for (size_t i = op.pos; i != range_end; ++i) {
+				updates.push_back({Operation<Data>::DELETE, Data(node, labelset[i])});
+			}
+			copied_until = range_end;
+		}
+		// copy remaining labels
+		spare_labelset.insert(spare_labelset.end(),  labelset.begin() + copied_until, labelset.end());
+		labelset.swap(spare_labelset);
+		spare_labelset.clear();
+	}
 
 	static inline bool is_update_at_the_end(const typename ParetoQueue::LabelVec& labelset, const size_t pos) {
-		return labelset.empty() || pos / (double) labelset.size() > 0.70;
+		return labelset.size() > 8 || pos / (double) labelset.size() > 0.75;
 	}
 
 	// http://graphics.stanford.edu/~seander/bithacks.html
