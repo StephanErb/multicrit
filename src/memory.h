@@ -50,7 +50,7 @@ int getPeakMemorySize(){ // this value is in KB!
 volatile char do_not_optimize = 0;
 
 void flushDataCache() {
-    const size_t size = 16*1024*1024; // Allocate 16M. Set much larger then L2
+    const size_t size = 32*1024*1024; // Allocate 32M. Set much larger then L2
     char *c = (char *)malloc(size);
     for (size_t i = 1; i < 2; i++)
         for (size_t j = 0; j < size; j++)

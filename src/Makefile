@@ -27,7 +27,7 @@ TESTS=test_labelset test_labelsetting test_pq_btree test_pq_btree_paretomin
 TARGETS = $(TESTS) $(CODE)
 PARALLEL = $(TESTS) $(CODE)
 
-DEFAULT_OPS = -Wall -Wextra -DDCACHE_LINESIZE=$(shell getconf LEVEL1_DCACHE_LINESIZE) $(CPPFLAGS)
+DEFAULT_OPS = -Wall -Wextra $(CPPFLAGS)
 
 # Sequential
 CXXFLAGS = -O3 -mtune=native -march=native -fomit-frame-pointer -DNDEBUG $(DEFAULT_OPS) -std=c++11 

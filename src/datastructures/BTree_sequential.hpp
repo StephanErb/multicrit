@@ -54,10 +54,10 @@
 
 // Width of nodes given as number of cache-lines
 #ifndef INNER_NODE_WIDTH
-#define INNER_NODE_WIDTH 8
+#define INNER_NODE_WIDTH 4
 #endif
 #ifndef LEAF_NODE_WIDTH
-#define LEAF_NODE_WIDTH 8
+#define LEAF_NODE_WIDTH 4
 #endif
 
 template<typename data_type>

@@ -95,13 +95,17 @@ public:
 	typedef unsigned short thread_count; // When changing this type check the LabelSet struct size
 	const thread_count num_threads; 
 
-	#define PE_COUNT 12
+	#define MAX_PE_COUNT 32
 	struct LabelSet { // With these datatypes & settings: stuct occupies 2 cache lines (64bytes each) 
 		LabelVec labels;
 		tbb::atomic<thread_count> bufferlist_counter;
-		CandLabelVec* bufferlists[PE_COUNT]; // FIXME: too small for large instances
+		CandLabelVec* bufferlists[MAX_PE_COUNT];
 	};
-	std::vector<LabelSet> labelsets;
+	struct PaddedLabelSet : public LabelSet {
+		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
+	};
+
+	std::vector<PaddedLabelSet> labelsets;
 
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> update_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
