@@ -926,7 +926,7 @@ private:
                 switch (tree->updates[i].type) {
                 case Operation<key_type>::DELETE:
                     // We know the element is in here, so no bounds checks
-                    while (!tree->key_equal(leaf->slotkey[in], tree->updates[i].data)) {
+                    while (tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
                         BTREE_ASSERT(in < leaf->slotuse);
                         result->slotkey[out++] = leaf->slotkey[in++];
 
@@ -1140,7 +1140,7 @@ private:
                 switch (op.type) {
                 case Operation<key_type>::DELETE:
                     // We know the element is in here, so no bounds checks
-                    while (!tree->key_equal(leaf->slotkey[in], op.data)) {
+                    while (tree->key_less(leaf->slotkey[in], op.data)) {
                         BTREE_ASSERT(in < in_slotuse);
                         update_local_min(local_min, leaf->slotkey[in]);
                         result->slotkey[out++] = leaf->slotkey[in++];
