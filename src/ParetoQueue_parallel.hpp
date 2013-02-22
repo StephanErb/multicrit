@@ -68,17 +68,17 @@ private:
 
 
 public:
-	typedef std::vector< Operation<data_type>, tbb::scalable_allocator<Operation<data_type>> > OpVec; 
-	typedef std::vector< NodeID, tbb::scalable_allocator<NodeID> > NodeVec;
-	typedef std::vector< data_type, tbb::scalable_allocator<data_type> > MinimaVec;
-	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > CandLabelVec;
-	typedef std::vector< label_type, tbb::scalable_allocator<label_type> > LabelVec; // When changing this type check the LabelSet struct size
+	typedef std::vector< Operation<data_type>, tbb::cache_aligned_allocator<Operation<data_type>> > OpVec; 
+	typedef std::vector< NodeID, tbb::cache_aligned_allocator<NodeID> > NodeVec;
+	typedef std::vector< data_type, tbb::cache_aligned_allocator<data_type> > MinimaVec;
+	typedef std::vector< label_type, tbb::cache_aligned_allocator<label_type> > CandLabelVec;
+	typedef std::vector< label_type, tbb::cache_aligned_allocator<label_type> > LabelVec; // When changing this type check the LabelSet struct size
 
 	struct TimestampedCandidates {
 		size_t timestamp;
 		CandLabelVec candidates;
 	};
-	typedef std::vector< TimestampedCandidates > CandLabelVecVec;
+	typedef std::vector< TimestampedCandidates, tbb::cache_aligned_allocator<TimestampedCandidates> > CandLabelVecVec;
 
 	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
 	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 

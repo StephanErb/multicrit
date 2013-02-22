@@ -58,7 +58,7 @@ private:
 		const Label& label;
 	};
 
-	typedef std::vector<LabelInsPos, tbb::scalable_allocator<LabelInsPos> > LabelInsertionPositionVec;
+	typedef std::vector<LabelInsPos, tbb::cache_aligned_allocator<LabelInsPos> > LabelInsertionPositionVec;
 	typedef tbb::enumerable_thread_specific< LabelInsertionPositionVec, tbb::cache_aligned_allocator<LabelInsertionPositionVec>, tbb::ets_key_per_instance > TLSLabInsPos; 
 	TLSLabInsPos tls_insertion_positions;
 

@@ -116,7 +116,7 @@ template <typename _Key,
           typename _Compare = std::less<_Key>,
           typename _Traits = btree_default_traits<_Key, utility::NullData>,
     #endif
-        typename _Alloc = tbb::scalable_allocator<_Key>>
+        typename _Alloc = tbb::cache_aligned_allocator<_Key>>
 class btree {
     friend class TreeCreationTask;
     friend class TreeRewriteTask;
