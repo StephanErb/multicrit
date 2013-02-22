@@ -62,6 +62,10 @@ private:
 	typedef tbb::enumerable_thread_specific< LabelInsertionPositionVec, tbb::cache_aligned_allocator<LabelInsertionPositionVec>, tbb::ets_key_per_instance > TLSLabInsPos; 
 	TLSLabInsPos tls_insertion_positions;
 
+	typedef tbb::enumerable_thread_specific< typename ParetoQueue::CandLabelVec, tbb::cache_aligned_allocator<typename ParetoQueue::CandLabelVec>, tbb::ets_key_per_instance > TLSLocalCandidates; 
+	TLSLocalCandidates tls_local_candidates;
+	
+
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
@@ -308,6 +312,7 @@ public:
 				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
 				typename ParetoQueue::TLSSpareLabelVec::reference spare_labelset = pq.tls_spare_labelset.local();
 				typename TLSLabInsPos::reference nondominated_labels = tls_insertion_positions.local();
+				typename TLSLocalCandidates::reference candidates = tls_local_candidates.local();
 
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
@@ -324,12 +329,10 @@ public:
 					ls.bufferlist_counter = 0;
 					assert(count > 0);
 
-					typename ParetoQueue::CandLabelVec* candidates = ls.bufferlists[0];
-					assert(candidates->size() > 0);
-					for (typename ParetoQueue::thread_count j=1; j < count; ++j) {
+					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
 						const typename ParetoQueue::CandLabelVec* c = ls.bufferlists[j];
-						candidates->insert(candidates->end(), c->cbegin(), c->cend());
 						assert(c->size() > 0);
+						candidates.insert(candidates.end(), c->cbegin(), c->cend());
 					}
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
@@ -338,13 +341,14 @@ public:
 					#endif
 
 					// Batch process labels belonging to the same target node
-					std::sort(candidates->begin(), candidates->end(), groupLabels);
+					std::sort(candidates.begin(), candidates.end(), groupLabels);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.candidates_sort += (stop-start).seconds();
 						start = stop;
 					#endif
-					updateLabelSet(node, ls.labels, spare_labelset, candidates->cbegin(), candidates->cend(), local_updates, nondominated_labels);
+					updateLabelSet(node, ls.labels, spare_labelset, candidates.cbegin(), candidates.cend(), local_updates, nondominated_labels);
+					candidates.clear();
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.update_labelsets += (stop-start).seconds();
