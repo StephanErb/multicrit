@@ -68,7 +68,7 @@ private:
 	const graph_slot& graph;
 
 
-	 #ifdef GATHER_SUBCOMPNENT_TIMING
+	#ifdef GATHER_SUBCOMPNENT_TIMING
 		enum Component {FIND_PARETO_MIN_AND_BUCKETSORT=0, UPDATE_LABELSETS=1, SORT=2, PQ_UPDATE=3, CANDIDATES_COLLECTION=4,
 						CANDIDATES_SORT=5, UPDATE_ACTUAL_LABELSET=6, COPY_UPDATES=7, FIND_PARETO_MIN=8, GROUP_PARETO_MIN=9, WRITE_PARETO_MIN_UPDATES=10,
 						WRITE_AFFECTED_NODES=11};
@@ -365,8 +365,6 @@ public:
 					#endif
 					local_updates.clear();
 				}
-
-
 			}, ap);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();

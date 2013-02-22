@@ -65,6 +65,7 @@ private:
 	const graph_slot& graph;
 
 	tbb::task_list root_tasks;
+	size_t current_timestamp;
 
 
 public:
@@ -112,7 +113,6 @@ public:
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> affected_nodes_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) NodeVec affected_nodes;
 
-	 tbb::atomic<size_t> current_timestamp;
 
 	 #ifdef GATHER_SUBCOMPNENT_TIMING
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -138,7 +138,7 @@ public:
 			std::numeric_limits<weight_type>::max()), graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
 	{
 		assert(num_threads > 0);
-		assert(PE_COUNT >= num_threads);
+		assert(MAX_PE_COUNT >= num_threads);
 
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		affected_nodes.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
@@ -241,7 +241,6 @@ public:
 				return &task;
 			}
 		}
-
     };
 
 	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima) {
@@ -274,9 +273,14 @@ public:
 			start = stop;
 		#endif
 
+		bool exists;
 		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
-		typename TLSCandidates::reference local_candidates = tls_candidates.local();
-		local_candidates.resize(graph.numberOfNodes());
+		typename TLSCandidates::reference local_candidates = tls_candidates.local(exists);
+		if (!exists) {
+			local_candidates.resize(graph.numberOfNodes());
+		}
+
+		const size_t local_current_timestamp = current_timestamp;
 
 		// Derive candidates & Place into buckets
 		for (const data_type& min : minima) {
@@ -284,10 +288,10 @@ public:
 				const Edge& edge = graph.getEdge(eid);
 				TimestampedCandidates& tc = local_candidates[edge.target];
 
-				if (current_timestamp != tc.timestamp) {
-					assert(current_timestamp > tc.timestamp);
+				if (local_current_timestamp != tc.timestamp) {
+					assert(local_current_timestamp > tc.timestamp);
 					// Prepare candidate list for this iteration
-					tc.timestamp = current_timestamp;
+					tc.timestamp = local_current_timestamp;
 					tc.candidates.clear();
 					// Publish the candidate list
 					LabelSet& ls = labelsets[edge.target];
@@ -322,8 +326,6 @@ public:
 		#endif
 		locally_affected_nodes.clear();
 		minima.clear();
-
-
 	}
 
 	static label_type createNewLabel(const label_type& current_label, const Edge& edge) {
