@@ -305,6 +305,15 @@ public:
 				start = stop;
 			#endif
 
+			for (typename ParetoQueue::TLSAffected::reference a : pq.tls_affected_nodes) {
+				if (!a.empty()) {
+					const size_t position = pq.affected_nodes_counter.fetch_and_add(a.size());
+					assert(position + a.size() < pq.affected_nodes.capacity());
+					memcpy(pq.affected_nodes.data() + position, a.data(), sizeof(NodeID) * a.size());
+					a.clear();
+				}
+			}
+
 			tbb::parallel_for(tbb::blocked_range<size_t>(0, pq.affected_nodes_counter, 2*(DCACHE_LINESIZE / sizeof(NodeID))),
 				[this](const tbb::blocked_range<size_t>& r) {
 
@@ -356,18 +365,18 @@ public:
 					#endif
 
 				}
-				if (local_updates.size() > 0) {
+				if (local_updates.size() > 512) {
 					// Copy updates to globally shared data structure
 					const size_t position = pq.update_counter.fetch_and_add(local_updates.size());
 					assert(position + local_updates.size() < pq.updates.capacity());
 					memcpy(pq.updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
+					local_updates.clear();
 
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.copy_updates += (stop-start).seconds();
 						start = stop;
 					#endif
-					local_updates.clear();
 				}
 			}, ap);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -375,6 +384,15 @@ public:
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();
 				start = stop;
 			#endif
+
+			for (typename ParetoQueue::TLSUpdates::reference u : pq.tls_local_updates) {
+				if (!u.empty()) {
+					const size_t position = pq.update_counter.fetch_and_add(u.size());
+					assert(position + u.size() < pq.updates.capacity());
+					memcpy(pq.updates.data() + position, u.data(), sizeof(Operation<Data>) * u.size());
+					u.clear();
+				}
+			}
 
 			tbb::parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -403,7 +421,6 @@ public:
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				for (typename ParetoQueue::TLSTimings::reference subtimings : pq.tls_timings) {
-					timings[WRITE_PARETO_MIN_UPDATES] = std::max(subtimings.write_pareto_min_updates, timings[WRITE_PARETO_MIN_UPDATES]);
 					timings[WRITE_AFFECTED_NODES] = std::max(subtimings.write_affected_nodes, timings[WRITE_AFFECTED_NODES]);
 					timings[FIND_PARETO_MIN] = std::max(subtimings.find_pareto_min, timings[FIND_PARETO_MIN]);
 					timings[GROUP_PARETO_MIN] = std::max(subtimings.group_pareto_min, timings[GROUP_PARETO_MIN]);
@@ -419,7 +436,6 @@ public:
 				std::cout << "      " << timings[FIND_PARETO_MIN_AND_BUCKETSORT] - (timings[FIND_PARETO_MIN] + timings[WRITE_PARETO_MIN_UPDATES]
 					+ timings[GROUP_PARETO_MIN] + timings[WRITE_AFFECTED_NODES]) << " Recursive TBB Tasks" << std::endl;
 				std::cout << "      " << timings[FIND_PARETO_MIN] << " Find Pareto Min " << std::endl;
-				std::cout << "      " << timings[WRITE_PARETO_MIN_UPDATES] << " Copy Updates " << std::endl;
 				std::cout << "      " << timings[GROUP_PARETO_MIN] << " Group Pareto Min  " << std::endl;
 				std::cout << "      " << timings[WRITE_AFFECTED_NODES] << " Copy Affected Nodes  " << std::endl;
 			#endif

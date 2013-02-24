@@ -123,7 +123,6 @@ public:
 				double copy_updates = 0;
 				double find_pareto_min = 0;
 				double group_pareto_min = 0;
-				double write_pareto_min_updates = 0;
 				double write_affected_nodes = 0;
 			};
 			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
@@ -261,19 +260,9 @@ public:
 			subtimings.find_pareto_min += (stop-start).seconds();
 			start = stop;
 		#endif
-		// Schedule minima for deletion
-		size_t upd_position = update_counter.fetch_and_add(minima.size());
-		assert(upd_position + minima.size() < updates.capacity());
-		for (const data_type& min : minima) {
-			updates[upd_position++] = Operation<data_type>(Operation<data_type>::DELETE, min);
-		}
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			stop = tbb::tick_count::now();
-			subtimings.write_pareto_min_updates += (stop-start).seconds();
-			start = stop;
-		#endif
 
 		bool exists;
+		typename TLSUpdates::reference local_updates = tls_local_updates.local();
 		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
 		typename TLSCandidates::reference local_candidates = tls_candidates.local(exists);
 		if (!exists) {
@@ -284,6 +273,8 @@ public:
 
 		// Derive candidates & Place into buckets
 		for (const data_type& min : minima) {
+			local_updates.push_back({Operation<data_type>::DELETE, min});
+
 			FORALL_EDGES(graph, min.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
 				TimestampedCandidates& tc = local_candidates[edge.target];
@@ -308,24 +299,25 @@ public:
 				tc.candidates.push_back(createNewLabel(min, edge));
 			}
 		}
+		minima.clear();
+
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			stop = tbb::tick_count::now();
 			subtimings.group_pareto_min += (stop-start).seconds();
 			start = stop;
 		#endif
-		if (locally_affected_nodes.size() > 0) {
+		if (locally_affected_nodes.size() > 128) {
 			// Move affected nodes to shared data structure
 			const size_t position = affected_nodes_counter.fetch_and_add(locally_affected_nodes.size());
 			assert(position + locally_affected_nodes.size() < affected_nodes.capacity());
 			memcpy(affected_nodes.data() + position, locally_affected_nodes.data(), sizeof(NodeID) * locally_affected_nodes.size());
+			locally_affected_nodes.clear();
 		}
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			stop = tbb::tick_count::now();
 			subtimings.write_affected_nodes += (stop-start).seconds();
 			start = stop;
 		#endif
-		locally_affected_nodes.clear();
-		minima.clear();
 	}
 
 	static label_type createNewLabel(const label_type& current_label, const Edge& edge) {
