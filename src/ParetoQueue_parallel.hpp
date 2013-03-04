@@ -109,6 +109,7 @@ public:
 				double update_labelsets = 0;
 				double find_pareto_min = 0;
 				double write_local_to_shared = 0;
+				double create_candidates = 0;
 			};
 			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
 			TLSTimings tls_timings;
@@ -245,6 +246,12 @@ public:
 				tl.candidates.push_back(NodeLabel(edge.target, createNewLabel(min, edge)));
 			}
 		}
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			stop = tbb::tick_count::now();
+			subtimings.create_candidates += (stop-start).seconds();
+			start = stop;
+		#endif
+
 		// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
 		if (tl.candidates.size() > BATCH_SIZE) {
 			const size_t aligned_size = ROUND_DOWN(tl.candidates.size(), DCACHE_LINESIZE / sizeof(CandLabelVec::value_type));

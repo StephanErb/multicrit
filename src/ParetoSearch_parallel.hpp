@@ -60,8 +60,8 @@ private:
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
 		enum Component {FIND_PARETO_MIN=0, UPDATE_LABELSETS=1, SORT_CANDIDATES=2, SORT_UPDATES=3, PQ_UPDATE=4, CLEAR_BUFFERS=9,
-						TL_CANDIDATES_SORT=5, TL_UPDATE_LABELSETS=6, TL_FIND_PARETO_MIN=7, TL_WRITE_LOCAL_TO_SHARED=8};
-		double timings[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+						TL_CANDIDATES_SORT=5, TL_UPDATE_LABELSETS=6, TL_FIND_PARETO_MIN=7, TL_WRITE_LOCAL_TO_SHARED=8, TL_CREATE_CANDIDATES=10};
+		double timings[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -347,6 +347,11 @@ public:
 					auto& ls = pq.labelsets[node];
 					#ifdef RADIX_SORT
 						std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
+						#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+							stop = tbb::tick_count::now();
+							subtimings.candidates_sort += (stop-start).seconds();
+							start = stop;
+						#endif
 					#endif
 					updateLabelSet(node, ls.labels, tl.spare_labelset, pq.candidates.begin()+range_start, pq.candidates.begin()+i, tl.updates, nondominated_labels);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -472,10 +477,15 @@ public:
 					timings[TL_FIND_PARETO_MIN] = std::max(subtimings.find_pareto_min, timings[TL_FIND_PARETO_MIN]);
 					timings[TL_UPDATE_LABELSETS] = std::max(subtimings.update_labelsets, timings[TL_UPDATE_LABELSETS]);
 					timings[TL_WRITE_LOCAL_TO_SHARED] = std::max(subtimings.write_local_to_shared, timings[TL_WRITE_LOCAL_TO_SHARED]);
+					timings[TL_CREATE_CANDIDATES] = std::max(subtimings.create_candidates, timings[TL_CREATE_CANDIDATES]);
 				}
 			#endif
 			std::cout << "Subcomponent Timings:" << std::endl;
 			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				std::cout << "      " << timings[TL_FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+				std::cout << "      " << timings[TL_CREATE_CANDIDATES]  << " Create Candidates" << std::endl;
+			#endif
 			std::cout << "  " << timings[SORT_CANDIDATES] << " Sort Candidates"  << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
