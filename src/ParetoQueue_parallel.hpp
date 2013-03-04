@@ -26,6 +26,13 @@
 #define PARETO_FIND_RECURSION_END_LEVEL 2
 #endif
 
+#ifndef BATCH_SIZE
+#define BATCH_SIZE 128
+#endif
+
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+
+
 template<typename type>
 struct BTreeSetOrderer {
 	inline bool operator() (const type& i, const type& j) const {
@@ -63,41 +70,25 @@ private:
 	const graph_slot& graph;
 
 	tbb::task_list root_tasks;
-	size_t current_timestamp;
 
 public:
 	typedef std::vector< Operation<NodeLabel>, tbb::cache_aligned_allocator<Operation<NodeLabel>> > OpVec; 
-	typedef std::vector< NodeID, tbb::cache_aligned_allocator<NodeID> > NodeVec;
-	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<NodeLabel> > MinimaVec;
-	typedef std::vector< Label, tbb::cache_aligned_allocator<Label> > CandLabelVec;
-	typedef std::vector< Label, tbb::cache_aligned_allocator<Label> > LabelVec; // When changing this type check the LabelSet struct size
+	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<Label> > CandLabelVec;
+	typedef std::vector< Label, tbb::cache_aligned_allocator<Label> > LabelVec; 
 
-	struct TimestampedCandidates {
-		size_t timestamp;
+	struct ThreadData {
+		OpVec updates;
 		CandLabelVec candidates;
-	};
-	typedef std::vector< TimestampedCandidates, tbb::cache_aligned_allocator<TimestampedCandidates> > CandLabelVecVec;
+		LabelVec spare_labelset;
+	};	
+	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
+	TLSData tls_data;
 
-	typedef tbb::enumerable_thread_specific< OpVec,           tbb::cache_aligned_allocator<OpVec>,           tbb::ets_key_per_instance > TLSUpdates; 
-	typedef tbb::enumerable_thread_specific< CandLabelVecVec, tbb::cache_aligned_allocator<CandLabelVecVec>, tbb::ets_key_per_instance > TLSCandidates; 
-	typedef tbb::enumerable_thread_specific< NodeVec,         tbb::cache_aligned_allocator<NodeVec>,         tbb::ets_key_per_instance > TLSAffected;
-	typedef tbb::enumerable_thread_specific< MinimaVec,       tbb::cache_aligned_allocator<MinimaVec>,       tbb::ets_key_per_instance > TLSMinima; 
-	typedef tbb::enumerable_thread_specific< LabelVec,        tbb::cache_aligned_allocator<LabelVec>,        tbb::ets_key_per_instance > TLSSpareLabelVec; 
-
-	TLSUpdates tls_local_updates;
-	TLSMinima tls_minima;
-	TLSCandidates tls_candidates;
-	TLSAffected tls_affected_nodes;
-	TLSSpareLabelVec tls_spare_labelset;
-
-	typedef unsigned short thread_count; // When changing this type check the LabelSet struct size
+	typedef unsigned short thread_count;
 	const thread_count num_threads; 
 
-	#define MAX_PE_COUNT 32
-	struct LabelSet { // With these datatypes & settings: stuct occupies 2 cache lines (64bytes each) 
+	struct LabelSet { 
 		LabelVec labels;
-		tbb::atomic<thread_count> bufferlist_counter;
-		CandLabelVec* bufferlists[MAX_PE_COUNT];
 	};
 	struct PaddedLabelSet : public LabelSet {
 		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
@@ -107,20 +98,17 @@ public:
 
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> update_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> affected_nodes_counter;
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) NodeVec affected_nodes;
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> candidate_counter;
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) CandLabelVec candidates;
 
 
 	 #ifdef GATHER_SUBCOMPNENT_TIMING
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			struct tls_tim {
-				double candidates_collection = 0;
 				double candidates_sort = 0;
 				double update_labelsets = 0;
-				double copy_updates = 0;
 				double find_pareto_min = 0;
-				double group_pareto_min = 0;
-				double write_affected_nodes = 0;
+				double write_local_to_shared = 0;
 			};
 			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
 			TLSTimings tls_timings;
@@ -134,10 +122,9 @@ public:
 			graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
 	{
 		assert(num_threads > 0);
-		assert(MAX_PE_COUNT >= num_threads);
 
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
-		affected_nodes.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+		candidates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 
 		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
 		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
@@ -173,13 +160,7 @@ public:
 		std::cout << "  leaf slots size [" << base_type::leafslotmin << ", " << base_type::leafslotmax << "]. Bytes: " << base_type::leafnodebytesize << std::endl;
 	}
 
-	void findParetoMinima(const size_t _current_timestamp) {
-		assert(update_counter == 0);
-		assert(affected_nodes_counter == 0);
-
-		current_timestamp = _current_timestamp;
-		assert(current_timestamp > 0);
-
+	void findParetoMinima() {
 		if (base_type::root->level < PARETO_FIND_RECURSION_END_LEVEL) {
 			findParetoMinAndDistribute(base_type::root, min_label);
 		} else {
@@ -240,7 +221,7 @@ public:
     };
 
 	void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
-		typename TLSMinima::reference minima = tls_minima.local();
+		typename TLSData::reference tl = tls_data.local();
 
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			typename TLSTimings::reference subtimings = tls_timings.local();
@@ -248,71 +229,38 @@ public:
 			tbb::tick_count stop = tbb::tick_count::now();
 		#endif
 		// Scan the tree while it is likely to be still in cache
-		assert(minima.size() == 0);
-		base_type::find_pareto_minima(in_node, prefix_minima, minima);
-		assert(minima.size() > 0);
-
+		const size_t pre_size = tl.updates.size();
+		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates);
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			stop = tbb::tick_count::now();
 			subtimings.find_pareto_min += (stop-start).seconds();
 			start = stop;
 		#endif
 
-		bool exists;
-		typename TLSUpdates::reference local_updates = tls_local_updates.local();
-		typename TLSAffected::reference locally_affected_nodes = tls_affected_nodes.local();
-		typename TLSCandidates::reference local_candidates = tls_candidates.local(exists);
-		if (!exists) {
-			local_candidates.resize(graph.numberOfNodes());
-		}
-
-		const size_t local_current_timestamp = current_timestamp;
-
-		// Derive candidates & Place into buckets
-		for (const NodeLabel& min : minima) {
-			local_updates.push_back({Operation<NodeLabel>::DELETE, min});
-
+		// Derive candidates 
+		for (size_t i=pre_size; i < tl.updates.size(); ++i) {
+			const NodeLabel& min = tl.updates[i].data;
 			FORALL_EDGES(graph, min.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				TimestampedCandidates& tc = local_candidates[edge.target];
-
-				if (local_current_timestamp != tc.timestamp) {
-					assert(local_current_timestamp > tc.timestamp);
-					// Prepare candidate list for this iteration
-					tc.timestamp = local_current_timestamp;
-					tc.candidates.clear();
-					// Publish the candidate list
-					LabelSet& ls = labelsets[edge.target];
-					const thread_count position = ls.bufferlist_counter.fetch_and_increment();
-					ls.bufferlists[position] = &(tc.candidates);
-					if (position == 0) {
-						// We were the first, so we are responsible!
-						locally_affected_nodes.push_back(edge.target);
-					}
-					assert(position < num_threads);
-				} else {
-					assert(tc.candidates.size() > 0);
-				}
-				tc.candidates.push_back(createNewLabel(min, edge));
+				tl.candidates.push_back(NodeLabel(edge.target, createNewLabel(min, edge)));
 			}
 		}
-		minima.clear();
-
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			stop = tbb::tick_count::now();
-			subtimings.group_pareto_min += (stop-start).seconds();
-			start = stop;
-		#endif
-		if (locally_affected_nodes.size() > 128) {
-			// Move affected nodes to shared data structure
-			const size_t position = affected_nodes_counter.fetch_and_add(locally_affected_nodes.size());
-			assert(position + locally_affected_nodes.size() < affected_nodes.capacity());
-			memcpy(affected_nodes.data() + position, locally_affected_nodes.data(), sizeof(NodeID) * locally_affected_nodes.size());
-			locally_affected_nodes.clear();
+		// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
+		if (tl.updates.size() > BATCH_SIZE) {
+			const size_t position = update_counter.fetch_and_add(tl.updates.size());
+			assert(position + tl.updates.size() < updates.capacity());
+			memcpy(updates.data() + position, tl.updates.data(), sizeof(OpVec::value_type) * tl.updates.size());
+			tl.updates.clear();
+		}	
+		if (tl.candidates.size() > BATCH_SIZE) {
+			const size_t position = candidate_counter.fetch_and_add(tl.candidates.size());
+			assert(position + tl.candidates.size() < candidates.capacity());
+			memcpy(candidates.data() + position, tl.candidates.data(), sizeof(CandLabelVec::value_type) * tl.candidates.size());
+			tl.candidates.clear();
 		}
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			stop = tbb::tick_count::now();
-			subtimings.write_affected_nodes += (stop-start).seconds();
+			subtimings.write_local_to_shared += (stop-start).seconds();
 			start = stop;
 		#endif
 	}

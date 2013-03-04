@@ -183,7 +183,7 @@ public:
 		labels.apply_updates(upds);
 	}
 
-	void findParetoMinima(std::vector<NodeLabel>& minima) const {
+	void findParetoMinima(std::vector<Operation<NodeLabel>>& minima) const {
 		labels.find_pareto_minima(min_label, minima);
 	}
 

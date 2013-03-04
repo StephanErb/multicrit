@@ -79,6 +79,8 @@ struct Operation {
     OpType type;
     data_type data;
     Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
+    Operation() {}
+
 };
 
 template <typename _Key, typename _MinKey>
@@ -569,7 +571,7 @@ protected:
             for (width_type i = 0; i<slotuse; ++i) {
                 if (leaf->slotkey[i].second_weight < min->second_weight ||
                         (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
-                    minima.push_back(leaf->slotkey[i]);
+                    minima.push_back({Operation<key_type>::DELETE, leaf->slotkey[i]});
                     min = &leaf->slotkey[i];
                 }
             }

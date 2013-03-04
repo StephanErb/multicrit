@@ -37,10 +37,9 @@ private:
 	typedef typename graph_slot::Edge Edge;
 
 	typedef ParallelBTreeParetoQueue<graph_slot> ParetoQueue;
-	typedef typename ParetoQueue::CandLabelVec::const_iterator const_cand_iter;
 
 	typedef typename ParetoQueue::LabelVec::iterator label_iter;
-	typedef typename ParetoQueue::LabelVec::const_iterator const_label_iter;
+	typedef typename ParetoQueue::CandLabelVec::iterator const_label_iter;
 
 	struct LabelInsPos {
 		size_t pos;
@@ -51,21 +50,15 @@ private:
 	typedef tbb::enumerable_thread_specific< LabelInsertionPositionVec, tbb::cache_aligned_allocator<LabelInsertionPositionVec>, tbb::ets_key_per_instance > TLSLabInsPos; 
 	TLSLabInsPos tls_insertion_positions;
 
-	typedef tbb::enumerable_thread_specific< typename ParetoQueue::CandLabelVec, tbb::cache_aligned_allocator<typename ParetoQueue::CandLabelVec>, tbb::ets_key_per_instance > TLSLocalCandidates; 
-	TLSLocalCandidates tls_local_candidates;
-	
-
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
-
 	const graph_slot& graph;
 
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
-		enum Component {FIND_PARETO_MIN_AND_BUCKETSORT=0, UPDATE_LABELSETS=1, SORT=2, PQ_UPDATE=3, CANDIDATES_COLLECTION=4,
-						CANDIDATES_SORT=5, UPDATE_ACTUAL_LABELSET=6, COPY_UPDATES=7, FIND_PARETO_MIN=8, GROUP_PARETO_MIN=9, WRITE_PARETO_MIN_UPDATES=10,
-						WRITE_AFFECTED_NODES=11};
-		double timings[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		enum Component {FIND_PARETO_MIN=0, UPDATE_LABELSETS=1, SORT_CANDIDATES=2, SORT_UPDATES=3, PQ_UPDATE=4, CLEAR_BUFFERS=9,
+						TL_CANDIDATES_SORT=5, TL_UPDATE_LABELSETS=6, TL_FIND_PARETO_MIN=7, TL_WRITE_LOCAL_TO_SHARED=8};
+		double timings[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -84,11 +77,23 @@ private:
 		}
 	} groupByWeight;
 
-	static struct GroupByNodeComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-			if (i.first_weight == j.first_weight) {
+	struct GroupNodeLabelsByNodeComp {
+		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
+			if (i.node == j.node) {
+				if (i.first_weight == j.first_weight) {
 					return i.second_weight < j.second_weight;
 				}
+				return i.first_weight < j.first_weight;
+			}
+			return i.node < j.node;
+		}
+	} groupCandidates;
+
+	struct GroupLabelsByNodeComp {
+		inline bool operator() (const Label& i, const Label& j) const {
+			if (i.first_weight == j.first_weight) {
+				return i.second_weight < j.second_weight;
+			}
 			return i.first_weight < j.first_weight;
 		}
 	} groupLabels;
@@ -133,11 +138,12 @@ private:
 		return false;
 	}
 
-	static void updateLabelSet(const NodeID node, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::LabelVec& spare_labelset, const const_cand_iter start, const const_cand_iter end, typename ParetoQueue::OpVec& updates, LabelInsertionPositionVec& nondominated) {
+	template<class iter_type>
+	static void updateLabelSet(const NodeID node, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::LabelVec& spare_labelset, const iter_type start, const iter_type end, typename ParetoQueue::OpVec& updates, LabelInsertionPositionVec& nondominated) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter unprocessed_range_begin = labelset.begin();
-		for (const_cand_iter candidate = start; candidate != end; ++candidate) {
+		for (iter_type candidate = start; candidate != end; ++candidate) {
 			// short cut dominated check among candidates
 			if (candidate->second_weight >= min) { 
 				continue; 
@@ -151,7 +157,6 @@ private:
 			}
 			unprocessed_range_begin = iter;
 		}
-
 		switch (nondominated.size()) {
 		case 0:
 			break; // nothing to insert
@@ -278,39 +283,45 @@ public:
 			tbb::tick_count stop = tbb::tick_count::now();
 		#endif
 
-		tbb::auto_partitioner ap; 
-
-		size_t iter_timestamp = 0;
 		while (!pq.empty()) {
 			pq.update_counter = 0;
-			pq.affected_nodes_counter = 0;
+			pq.candidate_counter = 0;
 			stats.report(ITERATION, pq.size());
 
-			// write minimas & candidates to thread locals in pq.*
-			pq.findParetoMinima(++iter_timestamp); 
+			// write updates & candidates to thread locals in pq.*
+			pq.findParetoMinima(); 
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
-				timings[FIND_PARETO_MIN_AND_BUCKETSORT] += (stop-start).seconds();
+				timings[FIND_PARETO_MIN] += (stop-start).seconds();
 				start = stop;
 			#endif
 
-			for (typename ParetoQueue::TLSAffected::reference a : pq.tls_affected_nodes) {
-				if (!a.empty()) {
-					const size_t position = pq.affected_nodes_counter.fetch_and_add(a.size());
-					assert(position + a.size() < pq.affected_nodes.capacity());
-					memcpy(pq.affected_nodes.data() + position, a.data(), sizeof(NodeID) * a.size());
-					a.clear();
+			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
+				if (!tl.candidates.empty()) {
+					const size_t position = pq.candidate_counter.fetch_and_add(tl.candidates.size());
+					assert(position + tl.candidates.size() < pq.candidates.capacity());
+					memcpy(pq.candidates.data() + position, tl.candidates.data(), sizeof(Operation<NodeLabel>) * tl.candidates.size());
+					tl.candidates.clear();
 				}
 			}
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[CLEAR_BUFFERS] += (stop-start).seconds();
+				start = stop;
+			#endif
 
-			tbb::parallel_for(tbb::blocked_range<size_t>(0, pq.affected_nodes_counter, 2*(DCACHE_LINESIZE / sizeof(NodeID))),
-				[this](const tbb::blocked_range<size_t>& r) {
+			tbb::parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates);
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[SORT_CANDIDATES] += (stop-start).seconds();
+				start = stop;
+			#endif
 
+			tbb::parallel_for(candidate_range(&pq, 2*(DCACHE_LINESIZE / sizeof(NodeID))),
+			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
-				typename ParetoQueue::TLSUpdates::reference local_updates = pq.tls_local_updates.local();
-				typename ParetoQueue::TLSSpareLabelVec::reference spare_labelset = pq.tls_spare_labelset.local();
+				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
 				typename TLSLabInsPos::reference nondominated_labels = tls_insertion_positions.local();
-				typename TLSLocalCandidates::reference candidates = tls_local_candidates.local();
 
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
@@ -318,75 +329,60 @@ public:
 					tbb::tick_count stop = tbb::tick_count::now();
 				#endif
 
-				for (size_t i = r.begin(); i != r.end(); ++i) {	
-					const NodeID node = pq.affected_nodes[i];
-					typename ParetoQueue::LabelSet& ls = pq.labelsets[node];
-
-					// Collect candidates
-					const typename ParetoQueue::thread_count count = ls.bufferlist_counter;
-					ls.bufferlist_counter = 0;
-					assert(count > 0);
-
-					for (typename ParetoQueue::thread_count j=0; j < count; ++j) {
-						const typename ParetoQueue::CandLabelVec* c = ls.bufferlists[j];
-						assert(c->size() > 0);
-						candidates.insert(candidates.end(), c->cbegin(), c->cend());
+				size_t i = r.begin();
+				while(i != r.end()) {
+					const size_t range_start = i;
+					const NodeID node = pq.candidates[i].node;
+					while (i != r.end() && pq.candidates[i].node == node) {
+						++i;
 					}
-					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-						stop = tbb::tick_count::now();
-						subtimings.candidates_collection += (stop-start).seconds();
-						start = stop;
-					#endif
-
-					// Batch process labels belonging to the same target node
-					std::sort(candidates.begin(), candidates.end(), groupLabels);
-					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-						stop = tbb::tick_count::now();
-						subtimings.candidates_sort += (stop-start).seconds();
-						start = stop;
-					#endif
-					updateLabelSet(node, ls.labels, spare_labelset, candidates.cbegin(), candidates.cend(), local_updates, nondominated_labels);
-					candidates.clear();
+					auto& ls = pq.labelsets[node];
+					updateLabelSet(node, ls.labels, tl.spare_labelset, pq.candidates.begin()+range_start, pq.candidates.begin()+i, tl.updates, nondominated_labels);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.update_labelsets += (stop-start).seconds();
 						start = stop;
 					#endif
 
-				}
-				if (local_updates.size() > 512) {
-					// Copy updates to globally shared data structure
-					const size_t position = pq.update_counter.fetch_and_add(local_updates.size());
-					assert(position + local_updates.size() < pq.updates.capacity());
-					memcpy(pq.updates.data() + position, local_updates.data(), sizeof(Operation<NodeLabel>) * local_updates.size());
-					local_updates.clear();
-
+					// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
+					if (tl.updates.size() > BATCH_SIZE) {
+						const size_t position = pq.update_counter.fetch_and_add(tl.updates.size());
+						assert(position + tl.updates.size() < pq.updates.capacity());
+						memcpy(pq.updates.data() + position, tl.updates.data(), sizeof(Operation<NodeLabel>) * tl.updates.size() );
+						tl.updates.clear();
+					}
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
-						subtimings.copy_updates += (stop-start).seconds();
+						subtimings.write_local_to_shared += (stop-start).seconds();
 						start = stop;
 					#endif
+
 				}
-			}, ap);
+			});
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();
 				start = stop;
 			#endif
 
-			for (typename ParetoQueue::TLSUpdates::reference u : pq.tls_local_updates) {
-				if (!u.empty()) {
-					const size_t position = pq.update_counter.fetch_and_add(u.size());
-					assert(position + u.size() < pq.updates.capacity());
-					memcpy(pq.updates.data() + position, u.data(), sizeof(Operation<NodeLabel>) * u.size());
-					u.clear();
+			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
+				if (!tl.updates.empty()) {
+					const size_t position = pq.update_counter.fetch_and_add(tl.updates.size());
+					assert(position + tl.updates.size() < pq.updates.capacity());
+					memcpy(pq.updates.data() + position, tl.updates.data(), sizeof(Operation<NodeLabel>) * tl.updates.size());
+					tl.updates.clear();
 				}
 			}
+			#ifdef GATHER_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				timings[CLEAR_BUFFERS] += (stop-start).seconds();
+				start = stop;
+			#endif
 
 			tbb::parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
-				timings[SORT] += (stop-start).seconds();
+				timings[SORT_UPDATES] += (stop-start).seconds();
 				start = stop;
 			#endif
 
@@ -399,6 +395,54 @@ public:
 		}		
 	}
 
+
+	class candidate_range {
+	public:
+		typedef size_t Value;
+	    typedef size_t size_type;
+	    typedef Value const_iterator;
+
+	    candidate_range() {}
+
+	    candidate_range(ParetoQueue* _pq, size_type grainsize_=1) : 
+	        my_end(_pq->candidate_counter), my_begin(0), my_grainsize(grainsize_), my_pq(_pq)
+	    {}
+
+	    const_iterator begin() const {return my_begin;}
+	    const_iterator end() const {return my_end;}
+
+	    size_type size() const {
+	        return size_type(my_end-my_begin);
+	    }
+	    size_type grainsize() const {return my_grainsize;}
+
+	    bool empty() const {return !(my_begin<my_end);}
+	    bool is_divisible() const {return my_grainsize<size();}
+
+	    candidate_range(candidate_range& r, tbb::split) : 
+	        my_end(r.my_end),
+	        my_begin(do_split(r)),
+	        my_grainsize(r.my_grainsize),
+	        my_pq(r.my_pq)
+	    {}
+
+	private:
+	    Value my_end;
+	    Value my_begin;
+	    size_type my_grainsize;
+	    ParetoQueue* my_pq;
+
+	    static Value do_split( candidate_range& r ) {
+	        Value middle = r.my_begin + (r.my_end-r.my_begin)/2u;
+	        const NodeID node = r.my_pq->candidates[middle].node;
+	        while (middle < r.my_end && r.my_pq->candidates[middle].node == node) {
+	        	++middle;
+	        }
+	        r.my_end = middle;
+	        return middle;
+	    }
+	};
+
 	void printStatistics() {
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			std::cout << "# LabelSet Modifications" << std::endl;
@@ -410,33 +454,26 @@ public:
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 				for (typename ParetoQueue::TLSTimings::reference subtimings : pq.tls_timings) {
-					timings[WRITE_AFFECTED_NODES] = std::max(subtimings.write_affected_nodes, timings[WRITE_AFFECTED_NODES]);
-					timings[FIND_PARETO_MIN] = std::max(subtimings.find_pareto_min, timings[FIND_PARETO_MIN]);
-					timings[GROUP_PARETO_MIN] = std::max(subtimings.group_pareto_min, timings[GROUP_PARETO_MIN]);
-					timings[CANDIDATES_COLLECTION] = std::max(subtimings.candidates_collection, timings[CANDIDATES_COLLECTION]);
-					timings[CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[CANDIDATES_SORT]);
-					timings[UPDATE_ACTUAL_LABELSET] = std::max(subtimings.update_labelsets, timings[UPDATE_ACTUAL_LABELSET]);
-					timings[COPY_UPDATES] += subtimings.copy_updates;
+					timings[TL_CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[TL_CANDIDATES_SORT]);
+					timings[TL_FIND_PARETO_MIN] = std::max(subtimings.find_pareto_min, timings[TL_FIND_PARETO_MIN]);
+					timings[TL_UPDATE_LABELSETS] = std::max(subtimings.update_labelsets, timings[TL_UPDATE_LABELSETS]);
+					timings[TL_WRITE_LOCAL_TO_SHARED] = std::max(subtimings.write_local_to_shared, timings[TL_WRITE_LOCAL_TO_SHARED]);
 				}
 			#endif
 			std::cout << "Subcomponent Timings:" << std::endl;
-			std::cout << "  " << timings[FIND_PARETO_MIN_AND_BUCKETSORT]  << " Find & Group Pareto Min" << std::endl;
-			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "      " << timings[FIND_PARETO_MIN_AND_BUCKETSORT] - (timings[FIND_PARETO_MIN] + timings[WRITE_PARETO_MIN_UPDATES]
-					+ timings[GROUP_PARETO_MIN] + timings[WRITE_AFFECTED_NODES]) << " Recursive TBB Tasks" << std::endl;
-				std::cout << "      " << timings[FIND_PARETO_MIN] << " Find Pareto Min " << std::endl;
-				std::cout << "      " << timings[GROUP_PARETO_MIN] << " Group Pareto Min  " << std::endl;
-				std::cout << "      " << timings[WRITE_AFFECTED_NODES] << " Copy Affected Nodes  " << std::endl;
-			#endif
+			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+			std::cout << "  " << timings[SORT_CANDIDATES] << " Sort Candidates"  << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "      " << timings[CANDIDATES_COLLECTION] << " Collect Candidate Labels " << std::endl;
-				std::cout << "      " << timings[CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
-				std::cout << "      " << timings[UPDATE_ACTUAL_LABELSET] << " Update Labelsets " << std::endl;
-				std::cout << "      " << timings[COPY_UPDATES] << " Copy Updates " << std::endl;
+				std::cout << "      " << timings[TL_CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
+				std::cout << "      " << timings[TL_UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#endif
-			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
+			std::cout << "  " << timings[SORT_UPDATES] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				std::cout << "  " << timings[TL_WRITE_LOCAL_TO_SHARED] << " Writing thread local data to shared memory"  << std::endl;
+				std::cout << "  " << timings[CLEAR_BUFFERS] << " Copying remainig data from thread local buffers"  << std::endl;
+			#endif
 		#endif
 		pq.printStatistics();
 	}
