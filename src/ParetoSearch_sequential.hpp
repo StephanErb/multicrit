@@ -25,25 +25,25 @@ private:
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
 
-	typedef typename std::vector<Label>::iterator label_iter;
-	typedef typename std::vector<Label>::const_iterator const_label_iter;
-	typedef typename std::vector<NodeLabel>::iterator pareto_iter;
-	typedef typename std::vector<NodeLabel>::const_iterator const_pareto_iter;
+	typedef std::vector< Label > LabelVec;
 
-	typedef std::vector< Label > CandLabelVec;
-	typedef std::vector< CandLabelVec > CandLabelVecVec;
+	typedef typename LabelVec::iterator label_iter;
+	typedef typename LabelVec::const_iterator const_label_iter;
 
-    // Permanent and temporary labels per node.
-	std::vector<std::vector<Label>> labels;
-
-	CandLabelVecVec candidates;
+	struct LabelSetStruct {
+		#ifdef BUCKET_SORT
+			LabelVec candidates;
+		#endif
+		LabelVec labels;
+	};
+	std::vector<LabelSetStruct> labels;
 
 	const graph_slot& graph;
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
-		enum Component {FIND_PARETO_MIN=0, BUCKETSORT=1, UPDATE_LABELSETS=2, SORT=3, PQ_UPDATE=4};
+		enum Component {FIND_PARETO_MIN=0, CANDIDATE_SORT=1, UPDATE_LABELSETS=2, UPDATES_SORT=3, PQ_UPDATE=4};
 		double timings[5] = {0, 0, 0, 0, 0};
 	#endif
 
@@ -51,7 +51,19 @@ private:
 		std::vector<unsigned long> set_changes;
 	#endif
 
-	struct GroupByNodeComp {
+	struct GroupNodeLabelsByNodeComp {
+		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
+			if (i.node == j.node) {
+				if (i.first_weight == j.first_weight) {
+					return i.second_weight < j.second_weight;
+				}
+				return i.first_weight < j.first_weight;
+			}
+			return i.node < j.node;
+		}
+	} groupCandidates;
+
+	struct GroupLabelsByNodeComp {
 		inline bool operator() (const Label& i, const Label& j) const {
 			if (i.first_weight == j.first_weight) {
 				return i.second_weight < j.second_weight;
@@ -117,11 +129,12 @@ private:
 		return false;
 	}
 
-	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const const_label_iter start, const const_label_iter end, std::vector<Operation<NodeLabel>>& updates) {
+	template<class candidates_iter_type>
+	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const candidates_iter_type start, const candidates_iter_type end, std::vector<Operation<NodeLabel>>& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
-		for (const_label_iter candidate = start; candidate != end; ++candidate) {
+		for (candidates_iter_type candidate = start; candidate != end; ++candidate) {
 			Label new_label = *candidate;
 			// short cut dominated check among candidates
 			if (new_label.second_weight >= min) { 
@@ -168,7 +181,6 @@ private:
 public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()), 
-		candidates(graph_.numberOfNodes()),
 		graph(graph_)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
@@ -179,14 +191,16 @@ public:
 
 		// add sentinals
 		for (size_t i=0; i<labels.size(); ++i) {
-			labels[i].insert(labels[i].begin(), Label(min, max));
-			labels[i].insert(labels[i].end(), Label(max, min));		
+			auto& l = labels[i].labels;
+			l.insert(l.begin(), Label(min, max));
+			l.insert(l.end(), Label(max, min));
 		}
 	}
 
 	void run(const NodeID node) {
 		std::vector<Operation<NodeLabel> > updates;
 		std::vector<NodeID> affected_nodes;
+		std::vector<NodeLabel> candidates;
 		pq.init(NodeLabel(node, Label(0,0)));
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -206,33 +220,68 @@ public:
 				start = stop;
 			#endif
 
-			for (const auto& op : updates) {
-				const NodeLabel& min = op.data;
-				FORALL_EDGES(graph, min.node, eid) {
-					const Edge& edge = graph.getEdge(eid);
-					if (candidates[edge.target].empty()) {
-						affected_nodes.push_back(edge.target);
+			#ifdef BUCKET_SORT
+				for (const auto& op : updates) {
+					const NodeLabel& min = op.data;
+					FORALL_EDGES(graph, min.node, eid) {
+						const Edge& edge = graph.getEdge(eid);
+						auto& c = labels[edge.target].candidates;
+						if (c.empty()) {
+							affected_nodes.push_back(edge.target);
+						}
+						c.push_back(createNewLabel(min, edge));
 					}
-					candidates[edge.target].push_back(createNewLabel(min, edge));
 				}
-			}
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[BUCKETSORT] += (stop-start).seconds();
-				start = stop;
-			#endif
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					stop = tbb::tick_count::now();
+					timings[CANDIDATE_SORT] += (stop-start).seconds();
+					start = stop;
+				#endif
+				for (size_t i=0; i<affected_nodes.size(); ++i) {
+					// batch process labels belonging to the same target node
+					const NodeID node = affected_nodes[i];
+					auto& ls = labels[node];
+					std::sort(ls.candidates.begin(), ls.candidates.end(), groupLabels);
+					updateLabelSet(node, ls.labels, ls.candidates.cbegin(), ls.candidates.cend(), updates);
+					ls.candidates.clear();
+				}
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					stop = tbb::tick_count::now();
+					timings[UPDATE_LABELSETS] += (stop-start).seconds();
+					start = stop;
+				#endif
 
-			for (size_t i=0; i<affected_nodes.size(); ++i) {
-				const NodeID node = affected_nodes[affected_nodes.size()-1 - i];
-				// batch process labels belonging to the same target node
-				std::sort(candidates[node].begin(), candidates[node].end(), groupLabels);
-				updateLabelSet(node, labels[node], candidates[node].cbegin(), candidates[node].cend(), updates);
-				candidates[node].clear();
-			}
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[UPDATE_LABELSETS] += (stop-start).seconds();
-				start = stop;
+			#else 
+				// Comparision-based sort of candidates to group them by their target node
+				for (const auto& op : updates) {
+					const NodeLabel& min = op.data;
+					FORALL_EDGES(graph, min.node, eid) {
+						const Edge& edge = graph.getEdge(eid);
+						candidates.push_back(NodeLabel(edge.target, createNewLabel(min, edge)));
+					}
+ 				}
+				std::sort(candidates.begin(), candidates.end(), groupCandidates);
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					stop = tbb::tick_count::now();
+					timings[CANDIDATE_SORT] += (stop-start).seconds();
+					start = stop;
+				#endif
+
+				auto cand_iter = candidates.cbegin();
+				while (cand_iter != candidates.cend()) {
+					// find all labels belonging to the same target node
+					auto range_start = cand_iter;
+					while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
+						++cand_iter;
+					}
+					auto& ls = labels[range_start->node];
+					updateLabelSet(range_start->node, ls.labels, range_start, cand_iter, updates);
+				}
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					stop = tbb::tick_count::now();
+					timings[UPDATE_LABELSETS] += (stop-start).seconds();
+					start = stop;
+				#endif
 			#endif
 
 			// Sort sequence for batch update
@@ -240,7 +289,7 @@ public:
 			std::inplace_merge(updates.begin(), updates.begin()+minima_count, updates.end(), groupByWeight);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
-				timings[SORT] += (stop-start).seconds();
+				timings[UPDATES_SORT] += (stop-start).seconds();
 				start = stop;
 			#endif
 
@@ -252,6 +301,7 @@ public:
 			#endif
 
 			updates.clear();
+			candidates.clear();
 			affected_nodes.clear();
 		}		
 	}
@@ -267,21 +317,21 @@ public:
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			std::cout << "Subcomponent Timings:" << std::endl;
 			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
-			std::cout << "  " << timings[BUCKETSORT]  << " Group Pareto Min" << std::endl;
+			std::cout << "  " << timings[CANDIDATE_SORT]  << " Group Pareto Min" << std::endl;
 			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			std::cout << "  " << timings[SORT] << " Sort Updates"  << std::endl;
+			std::cout << "  " << timings[UPDATES_SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
 		pq.printStatistics();
 	}
 
 	// Subtraction / addition used to hide the sentinals
-	size_t size(NodeID node) {return labels[node].size()-2; }
+	size_t size(NodeID node) {return labels[node].labels.size()-2; }
 
-	label_iter begin(NodeID node) { return ++labels[node].begin(); }
-	const_label_iter begin(NodeID node) const { return ++labels[node].begin(); }
-	label_iter end(NodeID node) { return --labels[node].end(); }
-	const_label_iter end(NodeID node) const { return --labels[node].end(); }
+	label_iter begin(NodeID node) { return ++labels[node].labels.begin(); }
+	const_label_iter begin(NodeID node) const { return ++labels[node].labels.begin(); }
+	label_iter end(NodeID node) { return --labels[node].labels.end(); }
+	const_label_iter end(NodeID node) const { return --labels[node].labels.end(); }
 };
 
 
