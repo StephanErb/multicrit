@@ -60,18 +60,18 @@ class quick_sort_range {
 
 public:
 
-    static const size_t grainsize = 500;
+    const size_t grainsize;
     const Compare &comp;
     RandomAccessIterator begin;
     size_t size;
 
-    quick_sort_range( RandomAccessIterator begin_, size_t size_, const Compare &comp_ ) :
-        comp(comp_), begin(begin_), size(size_) {}
+    quick_sort_range( RandomAccessIterator begin_, size_t size_, const Compare &comp_, const size_t grainsize_) :
+        grainsize(grainsize_), comp(comp_), begin(begin_), size(size_) {}
 
     bool empty() const {return size==0;}
     bool is_divisible() const {return size>=grainsize;}
 
-    quick_sort_range( quick_sort_range& range, tbb::split ) : comp(range.comp) {
+    quick_sort_range( quick_sort_range& range, tbb::split ) : grainsize(range.grainsize), comp(range.comp) {
         RandomAccessIterator array = range.begin;
         RandomAccessIterator key0 = range.begin; 
         size_t m = pseudo_median_of_nine(array, range);
@@ -129,13 +129,13 @@ struct radix_sort_body {
     The compare object must define a bool operator() function.
     @ingroup algorithms **/
 template<typename RandomAccessIterator, typename Compare, typename Partitioner>
-void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare& comp, Partitioner& partitioner) { 
+void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare& comp, Partitioner& partitioner, const size_t grainsize) { 
     const int min_parallel_size = 500; 
     if( end > begin ) {
         if (end - begin < min_parallel_size) { 
             std::sort(begin, end, comp);
         } else {
-            tbb::parallel_for( quick_sort_range<RandomAccessIterator,Compare>(begin, end-begin, comp), 
+            tbb::parallel_for( quick_sort_range<RandomAccessIterator,Compare>(begin, end-begin, comp, grainsize), 
                       quick_sort_body<RandomAccessIterator,Compare>(), partitioner );
         }
     }
@@ -143,14 +143,14 @@ void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const C
 
 
 template<typename T, typename KeyExtractor, typename Partitioner>
-void parallel_radix_sort(T* data , size_t size, const KeyExtractor& key, Partitioner& partitioner) { 
+void parallel_radix_sort(T* data , size_t size, const KeyExtractor& key, Partitioner& partitioner, const size_t grainsize) { 
     const unsigned int min_parallel_size = 500; 
     if( size > 0 ) {
         if (size < min_parallel_size) { 
             radix_sort(data, size, key);
         } else {
             auto key_compare = [key](const T& a, const T& b){ return key(a) < key(b); };
-            tbb::parallel_for( quick_sort_range<T*, decltype(key_compare)>(data, size, key_compare), 
+            tbb::parallel_for( quick_sort_range<T*, decltype(key_compare)>(data, size, key_compare, grainsize), 
                 radix_sort_body<T*,decltype(key_compare),KeyExtractor>(key), partitioner);
         }
     }

@@ -315,9 +315,9 @@ public:
 
 			tbb::affinity_partitioner ap;
 			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap);
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap, 1000);
 			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap);
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap, 500);
 			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -393,7 +393,7 @@ public:
 			#endif
 
 			tbb::auto_partitioner unused_ap;
-			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, unused_ap);
+			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, unused_ap, 500);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_UPDATES] += (stop-start).seconds();
