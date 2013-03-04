@@ -143,7 +143,7 @@ public:
 	 {}
 
 	void run(NodeID node) {
-		heap.push((Priority) 0, Data(node, Label(0,0)));
+		heap.push((Priority) 0, NodeLabel(node, Label(0,0)));
 
 		while (!heap.empty()) {
 			const NodeLabel current = heap.getUserData(heap.getMin());

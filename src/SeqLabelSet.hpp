@@ -24,14 +24,16 @@
 template<typename label_type, typename label_type_extended>
 class LabelSetBase {
 public:
-	typedef unsigned int Priority;
+	typedef uint64_t Priority;
 
 	static inline Priority computePriority(const label_type& label) {
 		#ifdef PRIORITY_SUM
-			return label.first_weight + label.second_weight;
+			return (uint64_t) label.first_weight + (uint64_t) label.second_weight;
 		#endif
 		#ifdef PRIORITY_LEX
-			return label.first_weight * MAX_COST + label.second_weight;
+  			const uint32_t mostSignificantWord = label.first_weight;
+			const uint32_t leastSignificantWord = label.second_weight;
+  			return (uint64_t) mostSignificantWord << 32 | leastSignificantWord;
 		#endif
 		#ifdef PRIORITY_MAX
 			return std::max(label.first_weight, label.second_weight);

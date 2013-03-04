@@ -63,13 +63,6 @@
 
 
 /**
- * Maximal costs used to compute the lexicographic priority.
- * Must be appropriate to the problem size!
- */
- #define MAX_COST 20000
-
-
-/**
  * A suitable size for dynamic but pre-allocated data structures where we want
  * to actually reserve memory only when we trigger a page fault.
  */
