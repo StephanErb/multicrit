@@ -88,7 +88,9 @@ private:
         _Key        slotkey;
         size_t      weight;
         void*       childid;
-        _MinKey     minimum; 
+    #ifdef COMPUTE_PARETO_MIN
+        _MinKey     minimum;
+    #endif
     };
 public:
     /// If true, the tree will self verify it's invariants after each insert()
@@ -191,8 +193,10 @@ protected:
         size_type       weight;
         /// Pointers to children
         node*           childid;
+    #ifdef COMPUTE_PARETO_MIN
         /// Heighest key in the subtree with the same slot index
         min_key_type    minimum; 
+    #endif
     };
 
     struct inner_node : public node {
@@ -584,30 +588,30 @@ protected:
         }
     }
 
-    static inline void set_min_element(min_key_type& min_key, const leaf_node* const node, width_type size) {
-        min_key = *std::min_element(node->slotkey, node->slotkey+size,
+    static inline void set_min_element(inner_node_data& slot, const leaf_node* const node) {
+        slot.minimum = *std::min_element(node->slotkey, node->slotkey+node->slotuse,
             [](const min_key_type& i, const min_key_type& j) { return i.second_weight < j.second_weight; });
     }
 
-    static inline void set_min_element(min_key_type& min_key, const min_key_type& local) {
-        min_key = local;
+    static inline void set_min_element(inner_node_data& slot, const min_key_type& local) {
+        slot.minimum = local;
     }
 
     static inline void update_local_min(min_key_type& a, const min_key_type& b) {
         a = std::min(a, b, [](const min_key_type& a, const min_key_type& b) { return a.second_weight < b.second_weight; });
     }
 
-    static inline void set_min_element(min_key_type& min_key, const inner_node* const node, width_type size) {
-        min_key = std::min_element(node->slot, node->slot+size,
+    static inline void set_min_element(inner_node_data& slot, const inner_node* const node) {
+        slot.minimum = std::min_element(node->slot, node->slot+node->slotuse,
             [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })->minimum;
     }
 #else 
     void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
         std::cout << "Pareto Min Feature disabled" << std::endl;
     }
-    static inline void set_min_element(min_key_type&, const node* const, width_type) {
+    static inline void set_min_element(inner_node_data&, const leaf_node* const) {
     }
-    static inline void set_min_element(min_key_type&, const min_key_type&) {
+    static inline void set_min_element(inner_node_data&, const min_key_type&) {
     }
     static inline void update_local_min(min_key_type&, const min_key_type&) {
     }
@@ -758,7 +762,7 @@ private:
                 // Just re-use the pre-alloced and filled leaf
                 leaf_node* result = leaves[rank_begin / designated_leafsize];
                 result->slotuse = rank_end - rank_begin;
-                set_min_element(slot.minimum, result, result->slotuse);
+                set_min_element(slot, result);
                 tree->update_router(slot.slotkey, result->slotkey[result->slotuse-1]);
                 slot.childid = result;
                 return NULL;
@@ -814,7 +818,7 @@ private:
 
         tbb::task* execute() {
             inner_node* const inner = (inner_node*) slot.childid;
-            set_min_element(slot.minimum, inner, inner->slotuse);
+            set_min_element(slot, inner);
             tree->update_router(slot.slotkey, inner->slot[inner->slotuse-1].slotkey);
             return NULL;
         }
@@ -1124,7 +1128,7 @@ private:
                     result->slotuse = out;
                     set_ref_count(task_count+1);
                     spawn_and_wait_for_all(tasks);
-                    set_min_element(slot.minimum, result, out);
+                    set_min_element(slot, result);
                     tree->update_router(slot.slotkey, result->slot[out-1].slotkey);
                     tree->free_node(slot.childid);
                     slot.childid = result;
@@ -1179,7 +1183,7 @@ private:
             }
             assert(out <= tree->leafslotmax);
 
-            set_min_element(slot.minimum, local_min);
+            set_min_element(slot, local_min);
             result->slotuse = out;
             tree->update_router(slot.slotkey, result->slotkey[out-1]); 
 
