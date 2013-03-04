@@ -7,7 +7,8 @@
 #include "options.hpp"
 
 #define COMPUTE_PARETO_MIN
-#include "datastructures/BTree.hpp"
+#include "datastructures/BTree_sequential.hpp"
+#include "Label.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -17,17 +18,17 @@
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename data_type, typename min_key_type=data_type>
+
 class VectorParetoQueue {
 private:
 
-	typedef std::vector<data_type> QueueType;
+	typedef std::vector<NodeLabel> QueueType;
 	QueueType labels;
 	QueueType temp;
 	
 	typedef typename QueueType::iterator iterator;
 	typedef typename QueueType::const_iterator const_iterator;
-	typedef typename data_type::weight_type weight_type;
+	typedef typename Label::weight_type weight_type;
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> pq_inserts;
@@ -44,7 +45,7 @@ private:
 
 public:
 
-	VectorParetoQueue(const size_t)
+	VectorParetoQueue()
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		: pq_inserts(101), pq_deletes(101)
 		#endif
@@ -56,15 +57,15 @@ public:
 		temp.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 
 		// add sentinals
-		labels.insert(labels.begin(), data_type(NodeID(0), typename data_type::label_type(min, max)));
-		labels.insert(labels.end(), data_type(NodeID(0), typename data_type::label_type(max, min)));
+		labels.insert(labels.begin(), NodeLabel(NodeID(0), Label(min, max)));
+		labels.insert(labels.end(), NodeLabel(NodeID(0), Label(max, min)));
 	}
 
-	void init(const data_type& data) {
+	void init(const NodeLabel& data) {
 		labels.insert(++labels.begin(), data);
 	}
 
-	void findParetoMinima(std::vector<data_type>& minima) const {
+	void findParetoMinima(std::vector<NodeLabel>& minima) const {
 		const_iterator iter = ++labels.begin(); // ignore the sentinal
 		const_iterator end = --labels.end();  // ignore the sentinal
 
@@ -79,8 +80,8 @@ public:
 		}
 	}
 
-	void applyUpdates(const std::vector<Operation<data_type> >& updates) {
-		typedef typename std::vector<Operation<data_type> >::const_iterator u_iterator;
+	void applyUpdates(const std::vector<Operation<NodeLabel> >& updates) {
+		typedef typename std::vector<Operation<NodeLabel> >::const_iterator u_iterator;
 
 		iterator label_iter = labels.begin();
 		u_iterator update_iter = updates.begin();
@@ -89,7 +90,7 @@ public:
 
 		while (update_iter != updates.end()) {
 			switch (update_iter->type) {
-			case Operation<data_type>::DELETE:
+			case Operation<NodeLabel>::DELETE:
 			  	// We know the element is in here
 				while (label_iter->first_weight != update_iter->data.first_weight ||
 						label_iter->second_weight != update_iter->data.second_weight ||
@@ -102,7 +103,7 @@ public:
 				++label_iter; // delete the element by jumping over it
                 ++update_iter;
                 continue;
-	        case Operation<data_type>::INSERT:
+	        case Operation<NodeLabel>::INSERT:
 				// insertion bounded by sentinal
 				while (label_iter->first_weight < update_iter->data.first_weight) {
 					temp.push_back(*label_iter++);
@@ -149,7 +150,6 @@ public:
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename data_type, typename min_key_type>
 class BTreeParetoQueue {
 private:
 
@@ -165,29 +165,29 @@ private:
   			return i.first_weight < j.first_weight;
   		}
 	};
-	typedef btree<data_type, min_key_type, SetOrderer<data_type>> QueueType;
+	typedef btree<NodeLabel, Label, SetOrderer<NodeLabel>> QueueType;
 	QueueType labels;
 
-	typedef typename data_type::weight_type weight_type;
-	const data_type min_label;
+	typedef typename Label::weight_type weight_type;
+	const Label min_label;
 	
 public:
 
-	BTreeParetoQueue(const size_t node_count)
-		: labels(node_count), min_label(NodeID(0), typename data_type::label_type(
-			std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()))
+	BTreeParetoQueue()
+		: min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max())
 	{}
 
-	void init(const data_type& data) {
-		const std::vector<Operation<data_type>> upds = {{Operation<data_type>::INSERT, data}};
+	void init(const NodeLabel& data) {
+		std::vector<Operation<NodeLabel>> upds;
+		upds.push_back({Operation<NodeLabel>::INSERT, data});
 		labels.apply_updates(upds);
 	}
 
-	void findParetoMinima(std::vector<data_type>& minima) const {
+	void findParetoMinima(std::vector<NodeLabel>& minima) const {
 		labels.find_pareto_minima(min_label, minima);
 	}
 
-	void applyUpdates(const std::vector<Operation<data_type>>& updates) {
+	void applyUpdates(const std::vector<Operation<NodeLabel>>& updates) {
 		labels.apply_updates(updates);
 	}
 
@@ -206,11 +206,10 @@ public:
 	}
 };
 
-template<typename data_type, typename min_key_type>
-class ParetoQueue : public PARETO_QUEUE<data_type, min_key_type> {
+class ParetoQueue : public PARETO_QUEUE {
 public:
-	ParetoQueue(const size_t numberOfNodes):
-		PARETO_QUEUE<data_type, min_key_type>(numberOfNodes)
+	ParetoQueue():
+		PARETO_QUEUE()
 	 {}
 };
 

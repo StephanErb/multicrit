@@ -301,7 +301,8 @@ protected:
     const Operation<key_type>* updates;
 
     // Weight delta of currently running updates
-    typedef std::vector<signed long> weightdelta_list;
+    typedef typename _Alloc::template rebind<signed long>::other weightdelta_listalloc_type;
+    typedef std::vector<signed long, weightdelta_listalloc_type> weightdelta_list;
     weightdelta_list weightdelta;
 
     struct UpdateDescriptor {

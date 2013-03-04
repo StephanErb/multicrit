@@ -12,6 +12,7 @@
 #include "ParetoQueue_sequential.hpp"
 #include "ParetoSearchStatistics.hpp"
 #include <algorithm>
+#include "Label.hpp"
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
 #include "tbb/tick_count.h"
@@ -23,24 +24,11 @@ private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
-	typedef typename Edge::edge_data Label;
-
-	struct Data : public Label {
-		NodeID node;
-  		typedef Label label_type;
- 		Data(const NodeID& x, const Label& y) : Label(y), node(x) {}
- 		Data() : Label(0,0), node(0) {}
-
- 		friend std::ostream& operator<<(std::ostream& os, const Data& data) {
-			os << " (" << data.node << ": " << data.first_weight << "," << data.second_weight << ")";
-			return os;
-		}
-	};
 
 	typedef typename std::vector<Label>::iterator label_iter;
 	typedef typename std::vector<Label>::const_iterator const_label_iter;
-	typedef typename std::vector<Data>::iterator pareto_iter;
-	typedef typename std::vector<Data>::const_iterator const_pareto_iter;
+	typedef typename std::vector<NodeLabel>::iterator pareto_iter;
+	typedef typename std::vector<NodeLabel>::const_iterator const_pareto_iter;
 
 	typedef std::vector< Label > CandLabelVec;
 	typedef std::vector< CandLabelVec > CandLabelVecVec;
@@ -51,7 +39,7 @@ private:
 	CandLabelVecVec candidates;
 
 	const graph_slot& graph;
-	ParetoQueue<Data, Label> pq;
+	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -73,7 +61,7 @@ private:
 	} groupLabels;
 
 	struct GroupByWeightComp {
-		inline bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
+		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
 			if (i.data.first_weight == j.data.first_weight) {
 				if (i.data.second_weight == j.data.second_weight) {
 					return i.data.node < j.data.node;
@@ -129,7 +117,7 @@ private:
 		return false;
 	}
 
-	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const const_label_iter start, const const_label_iter end, std::vector<Operation<Data>>& updates) {
+	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const const_label_iter start, const const_label_iter end, std::vector<Operation<NodeLabel>>& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
 
 		label_iter labelset_iter = labelset.begin();
@@ -149,7 +137,7 @@ private:
 			}
 			min = new_label.second_weight;
 			stats.report(LABEL_NONDOMINATED);
-			updates.push_back(Operation<Data>(Operation<Data>::INSERT, Data(node, new_label)));
+			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
 
 			label_iter first_nondominated = y_predecessor(iter, new_label);
 			if (iter == first_nondominated) {
@@ -168,7 +156,7 @@ private:
 						if (i != iter) set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
 					#endif
 
-					updates.push_back(Operation<Data>(Operation<Data>::DELETE, Data(node, *i)));
+					updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, *i)});
 				}
 				// replace first dominated label and remove the rest
 				*iter = new_label;
@@ -181,8 +169,7 @@ public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()), 
 		candidates(graph_.numberOfNodes()),
-		graph(graph_),
-		pq(graph_.numberOfNodes())
+		graph(graph_)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
 		#endif
@@ -198,10 +185,10 @@ public:
 	}
 
 	void run(const NodeID node) {
-		std::vector<Data> globalMinima;
-		std::vector<Operation<Data> > updates;
+		std::vector<NodeLabel> globalMinima;
+		std::vector<Operation<NodeLabel> > updates;
 		std::vector<NodeID> affected_nodes;
-		pq.init(Data(node, Label(0,0)));
+		pq.init(NodeLabel(node, Label(0,0)));
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
@@ -252,7 +239,7 @@ public:
 			// Schedule optima for deletion
 			size_t size = updates.size();
 			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				updates.push_back(Operation<Data>(Operation<Data>::DELETE, *i));
+				updates.push_back({Operation<NodeLabel>::DELETE, *i});
 			}
 			std::inplace_merge(updates.begin(), updates.begin()+size, updates.end(), groupByWeight);
 			#ifdef GATHER_SUBCOMPNENT_TIMING

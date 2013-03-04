@@ -8,11 +8,12 @@
 #include "options.hpp"
 
 #define COMPUTE_PARETO_MIN
-#include "datastructures/BTree.hpp"
+#include "datastructures/BTree_parallel.hpp"
 
 #include <algorithm>
 #include <limits>
 #include "utility/datastructure/graph/GraphMacros.h"
+#include "Label.hpp"
 
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"
@@ -24,7 +25,6 @@
 #ifndef PARETO_FIND_RECURSION_END_LEVEL
 #define PARETO_FIND_RECURSION_END_LEVEL 2
 #endif
-
 
 template<typename type>
 struct BTreeSetOrderer {
@@ -39,22 +39,21 @@ struct BTreeSetOrderer {
 	}
 };
 
-
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename graph_slot, typename data_type, typename label_type>
-class ParallelBTreeParetoQueue : public btree<data_type, label_type, BTreeSetOrderer<data_type>> {
+template<typename graph_slot>
+class ParallelBTreeParetoQueue : public btree<NodeLabel, Label, BTreeSetOrderer<NodeLabel>> {
 	friend class FindParetMinTask;
 private:
-	typedef btree<data_type, label_type, BTreeSetOrderer<data_type>> base_type;
+	typedef btree<NodeLabel, Label, BTreeSetOrderer<NodeLabel>> base_type;
 
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
 
-	typedef typename data_type::weight_type weight_type;
-	const label_type min_label;
+	typedef typename Label::weight_type weight_type;
+	const Label min_label;
 
 	typedef typename base_type::node node;
 	typedef typename base_type::inner_node inner_node;
@@ -66,13 +65,12 @@ private:
 	tbb::task_list root_tasks;
 	size_t current_timestamp;
 
-
 public:
-	typedef std::vector< Operation<data_type>, tbb::cache_aligned_allocator<Operation<data_type>> > OpVec; 
+	typedef std::vector< Operation<NodeLabel>, tbb::cache_aligned_allocator<Operation<NodeLabel>> > OpVec; 
 	typedef std::vector< NodeID, tbb::cache_aligned_allocator<NodeID> > NodeVec;
-	typedef std::vector< data_type, tbb::cache_aligned_allocator<data_type> > MinimaVec;
-	typedef std::vector< label_type, tbb::cache_aligned_allocator<label_type> > CandLabelVec;
-	typedef std::vector< label_type, tbb::cache_aligned_allocator<label_type> > LabelVec; // When changing this type check the LabelSet struct size
+	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<NodeLabel> > MinimaVec;
+	typedef std::vector< Label, tbb::cache_aligned_allocator<Label> > CandLabelVec;
+	typedef std::vector< Label, tbb::cache_aligned_allocator<Label> > LabelVec; // When changing this type check the LabelSet struct size
 
 	struct TimestampedCandidates {
 		size_t timestamp;
@@ -132,8 +130,8 @@ public:
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
-		: base_type(_graph.numberOfNodes()), min_label(std::numeric_limits<weight_type>::min(),
-			std::numeric_limits<weight_type>::max()), graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
+		: min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()),
+			graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
 	{
 		assert(num_threads > 0);
 		assert(MAX_PE_COUNT >= num_threads);
@@ -141,19 +139,19 @@ public:
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		affected_nodes.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
+		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
+		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
 
 		// add sentinals
 		for (size_t i=0; i<labelsets.size(); ++i) {
-			labelsets[i].labels.insert(labelsets[i].labels.begin(), label_type(min, max));
-			labelsets[i].labels.insert(labelsets[i].labels.end(), label_type(max, min));
+			labelsets[i].labels.insert(labelsets[i].labels.begin(), Label(min, max));
+			labelsets[i].labels.insert(labelsets[i].labels.end(), Label(max, min));
 		}
 	}
 
-	void init(const data_type& data) {
-		const std::vector<Operation<data_type>> upds = {{Operation<data_type>::INSERT, data}};
-		base_type::apply_updates(upds);
+	void init(const NodeLabel& data) {
+		Operation<NodeLabel> op = {Operation<NodeLabel>::INSERT, data};
+		base_type::apply_updates(&op, 1);
 	}
 
 	template<typename T>
@@ -188,7 +186,7 @@ public:
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
 
-			const label_type* min = &min_label;
+			const Label* min = &min_label;
 			for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
 						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
@@ -203,12 +201,12 @@ public:
 
     class FindParetMinTask : public tbb::task {
        	const node* const in_node;
-       	const label_type* const prefix_minima;
+       	const Label* const prefix_minima;
         ParallelBTreeParetoQueue* const tree;
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const label_type* const _prefix_minima, ParallelBTreeParetoQueue* const _tree)
+		inline FindParetMinTask(const node* const _in_node, const Label* const _prefix_minima, ParallelBTreeParetoQueue* const _tree)
 			: in_node(_in_node), prefix_minima(_prefix_minima), tree(_tree)
 		{ }
 
@@ -224,7 +222,7 @@ public:
 				width_type task_count = 0;
 				auto& c = *new(allocate_continuation()) tbb::empty_task(); // our parent will wait for this one
 
-				const label_type* min = prefix_minima;
+				const Label* min = prefix_minima;
 				for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
 						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
@@ -241,7 +239,7 @@ public:
 		}
     };
 
-	void findParetoMinAndDistribute(const node* const in_node, const label_type& prefix_minima) {
+	void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
 		typename TLSMinima::reference minima = tls_minima.local();
 
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -271,8 +269,8 @@ public:
 		const size_t local_current_timestamp = current_timestamp;
 
 		// Derive candidates & Place into buckets
-		for (const data_type& min : minima) {
-			local_updates.push_back({Operation<data_type>::DELETE, min});
+		for (const NodeLabel& min : minima) {
+			local_updates.push_back({Operation<NodeLabel>::DELETE, min});
 
 			FORALL_EDGES(graph, min.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
@@ -319,8 +317,8 @@ public:
 		#endif
 	}
 
-	static label_type createNewLabel(const label_type& current_label, const Edge& edge) {
-		return label_type(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
+	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
+		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
 
 };

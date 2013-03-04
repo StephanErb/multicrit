@@ -478,32 +478,33 @@ public:
 private:
 
 #ifdef COMPUTE_PARETO_MIN
-    void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, std::vector<key_type>& minima) const {
-        if (node->isleafnode()) {
+    template<typename sequence_type>
+    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
+ /*       if (node->isleafnode()) {
             const leaf_node* const leaf = (leaf_node*) node;
             const width_type slotuse = leaf->slotuse;
 
-            min_key_type min = prefix_minima;
+            const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (leaf->slotkey[i].second_weight < min.second_weight ||
-                        (leaf->slotkey[i].first_weight == min.first_weight && leaf->slotkey[i].second_weight == min.second_weight)) {
+                if (leaf->slotkey[i].second_weight < min->second_weight ||
+                        (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
                     minima.push_back(leaf->slotkey[i]);
-                    min = leaf->slotkey[i];
+                    min = &leaf->slotkey[i];
                 }
             }
         } else {
             const inner_node* const inner = (inner_node*) node;
             const width_type slotuse = inner->slotuse;
 
-            const min_key_type min = prefix_minima;
+            const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (inner->minimum[i].second_weight < min.second_weight ||
-                        (inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
-                    find_pareto_minima(inner->childid[i], min, minima);
-                    min = inner->minimum[i];
+                if (inner->slot[i].minimum.second_weight < min->second_weight ||
+                        (inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
+                    find_pareto_minima(inner->slot[i].childid, *min, minima);
+                    min = &inner->slot[i].minimum;
                 }
             }
-        }
+        }*/
     }
 
     static inline void set_min_element(min_key_type& min_key, const leaf_node* const node, width_type size) {

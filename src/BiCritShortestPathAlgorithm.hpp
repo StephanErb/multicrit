@@ -30,7 +30,6 @@ const unsigned short my_default_thread_count = 0;
 typedef utility::datastructure::IntegerBiWeightedEdge Edge;
 typedef utility::datastructure::KGraph<Edge> Graph;
 typedef utility::datastructure::NodeID NodeID;
-typedef Edge::edge_data Label;
 
 class LabelSettingAlgorithm : public LABEL_SETTING_ALGORITHM<Graph> {
 public:

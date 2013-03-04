@@ -9,6 +9,7 @@
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "utility/datastructure/container/BinaryHeap.hpp"
 #include "datastructures/UnboundBinaryHeap.hpp"
+#include "Label.hpp"
 
 #include <iostream>
 #include <vector>
@@ -22,7 +23,6 @@ private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
-	typedef typename Edge::edge_data Label;
 	typedef typename LabelSet<Label>::Priority Priority;
 	typedef typename utility::datastructure::BinaryHeap<NodeID, Priority, std::numeric_limits<Priority>, Label> BinaryHeap;
 
@@ -31,7 +31,7 @@ private:
 	const graph_slot& graph;
 	LabelSettingStatistics stats;
 
-	static Label createNewLabel(const Label& current_label, const Edge& edge) {
+	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
 
@@ -116,16 +116,9 @@ private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
-	typedef typename Edge::edge_data Label;
 	typedef typename LabelSet<Label>::Priority Priority;
 
-	struct Data {
-		NodeID node;
-  		Label label;
- 		Data(const NodeID& x, const Label& y) : node(x), label(y) {}
-    	Data(const Data &p) : node(p.node), label(p.label) { }
-	};
-	typedef UnboundBinaryHeap<Priority, std::numeric_limits<Priority>, Data> BinaryHeap;
+	typedef UnboundBinaryHeap<Priority, std::numeric_limits<Priority>, NodeLabel> BinaryHeap;
 	typedef typename BinaryHeap::handle handle;
 
 	BinaryHeap heap;
@@ -153,7 +146,7 @@ public:
 		heap.push((Priority) 0, Data(node, Label(0,0)));
 
 		while (!heap.empty()) {
-			const Data current = heap.getUserData(heap.getMin());
+			const NodeLabel current = heap.getUserData(heap.getMin());
 			heap.deleteMin();
 			stats.report(NEXT_ITERATION, current.node);
 
@@ -162,7 +155,7 @@ public:
 
 			FORALL_EDGES(graph, current.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				const Label new_label = createNewLabel(current.label, edge);
+				const Label new_label = createNewLabel(current, edge);
 
 				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
 

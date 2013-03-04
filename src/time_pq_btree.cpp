@@ -102,7 +102,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		
-		Tree tree(std::max(n, k));
+		Tree tree;
 		if (n > 0) bulkConstruct(tree, n);
 
 		memory[i] = getCurrentMemorySize();

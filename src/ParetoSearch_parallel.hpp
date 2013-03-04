@@ -12,6 +12,7 @@
 #include "ParetoQueue_parallel.hpp"
 #include "ParetoSearchStatistics.hpp"
 #include "assert.h"
+#include "Label.hpp"
 
 #include "tbb/parallel_sort.h"
 #include "tbb/concurrent_vector.h"
@@ -34,20 +35,8 @@ private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
-	typedef typename Edge::edge_data Label;
 
-	struct Data : public Label {
-		NodeID node;
-  		typedef Label label_type;
- 		Data(const NodeID& x, const Label& y) : Label(y), node(x) {}
- 		Data() : Label(0,0), node(0) {}
-
- 		friend std::ostream& operator<<(std::ostream& os, const Data& data) {
-			os << " (" << data.node << ": " << data.first_weight << "," << data.second_weight << ")";
-			return os;
-		}
-	};
-	typedef ParallelBTreeParetoQueue<graph_slot, Data, Label> ParetoQueue;
+	typedef ParallelBTreeParetoQueue<graph_slot> ParetoQueue;
 	typedef typename ParetoQueue::CandLabelVec::const_iterator const_cand_iter;
 
 	typedef typename ParetoQueue::LabelVec::iterator label_iter;
@@ -84,7 +73,7 @@ private:
 	#endif
 
 	struct GroupByWeightComp {
-		inline bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
+		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
 			if (i.data.first_weight == j.data.first_weight) {
 				if (i.data.second_weight == j.data.second_weight) {
 					return i.data.node < j.data.node;
@@ -183,7 +172,7 @@ private:
 	}
 
 	static inline void labelset_simple_insert(const NodeID node, const LabelInsPos& op, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::OpVec& updates) {
-		updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
+		updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.label)});
 		const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
 
 		if (op.pos == first_nondominated) {
@@ -191,7 +180,7 @@ private:
 		} else {
 			for (size_t i = op.pos; i != first_nondominated; ++i) {
 				// schedule deletion of dominated labels
-				updates.push_back({Operation<Data>::DELETE, Data(node, labelset[i])});
+				updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labelset[i])});
 			}
 			// replace first dominated label and remove the rest
 			labelset[op.pos] = op.label;
@@ -207,7 +196,7 @@ private:
 
 			const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
 			const size_t range_end = std::min(first_nondominated, nondominated[i+1].pos+delta);
-			updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
+			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.label)});
 
 			if (op.pos == range_end) {
 				// No elements dominated directly by us. Just insert here
@@ -215,7 +204,7 @@ private:
 			} else {
 				for (size_t i = op.pos; i != range_end; ++i) {
 					// schedule deletion of dominated labels
-					updates.push_back({Operation<Data>::DELETE, Data(node, labelset[i])});
+					updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labelset[i])});
 				}
 				// replace first dominated label and remove the rest
 				labelset[op.pos] = op.label;
@@ -233,7 +222,7 @@ private:
 		for (size_t i = 0; i < nondominated.size()-1; ++i) {
 			const LabelInsPos& op = nondominated[i];
 			const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
-			updates.push_back({Operation<Data>::INSERT, Data(node, op.label)});
+			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.label)});
 
 			// Move all non-affected labels
 			if (copied_until < op.pos)	{
@@ -246,7 +235,7 @@ private:
 			// Delete all dominated labels by
 			size_t range_end = std::min(first_nondominated, nondominated[i+1].pos);
 			for (size_t i = op.pos; i != range_end; ++i) {
-				updates.push_back({Operation<Data>::DELETE, Data(node, labelset[i])});
+				updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labelset[i])});
 			}
 			copied_until = range_end;
 		}
@@ -282,7 +271,7 @@ public:
 	{ }
 
 	void run(const NodeID node) {
-		pq.init(Data(node, Label(0,0)));
+		pq.init(NodeLabel(node, Label(0,0)));
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
@@ -369,7 +358,7 @@ public:
 					// Copy updates to globally shared data structure
 					const size_t position = pq.update_counter.fetch_and_add(local_updates.size());
 					assert(position + local_updates.size() < pq.updates.capacity());
-					memcpy(pq.updates.data() + position, local_updates.data(), sizeof(Operation<Data>) * local_updates.size());
+					memcpy(pq.updates.data() + position, local_updates.data(), sizeof(Operation<NodeLabel>) * local_updates.size());
 					local_updates.clear();
 
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -389,7 +378,7 @@ public:
 				if (!u.empty()) {
 					const size_t position = pq.update_counter.fetch_and_add(u.size());
 					assert(position + u.size() < pq.updates.capacity());
-					memcpy(pq.updates.data() + position, u.data(), sizeof(Operation<Data>) * u.size());
+					memcpy(pq.updates.data() + position, u.data(), sizeof(Operation<NodeLabel>) * u.size());
 					u.clear();
 				}
 			}

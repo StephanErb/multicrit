@@ -93,7 +93,7 @@ static void readGraphFromFile(Graph& graph, std::ifstream& timings, std::ifstrea
 		case 'a':
 			unsigned int start, end, weight;
 			in_stream >> ignore >> start >> end >> weight;
-			edges.push_back(std::make_pair(NodeID(start), Edge(NodeID(end), Label(getWeightOf(temp_graph, start, end), weight))));
+			edges.push_back(std::make_pair(NodeID(start), Edge(NodeID(end), Edge::edge_data(getWeightOf(temp_graph, start, end), weight))));
 			break;
 		case 'c':
 			continue;
