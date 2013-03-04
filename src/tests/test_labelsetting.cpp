@@ -21,16 +21,16 @@ void createGridSimple(Graph& graph) {
 	const NodeID END = NodeID(1);
 
 	graph.addNode(); // non-dominated path from start to end
-	graph.addEdge(START, Edge(NodeID(2), Label(1,2)));
-	graph.addEdge(NodeID(2), Edge(END, Label(1,1)));
+	graph.addEdge(START, Edge(NodeID(2), Edge::edge_data(1,2)));
+	graph.addEdge(NodeID(2), Edge(END, Edge::edge_data(1,1)));
 
 	graph.addNode(); // non-dominated path from start to end
-	graph.addEdge(START, Edge(NodeID(3), Label(2,1)));
-	graph.addEdge(NodeID(3), Edge(END, Label(1,1)));
+	graph.addEdge(START, Edge(NodeID(3), Edge::edge_data(2,1)));
+	graph.addEdge(NodeID(3), Edge(END, Edge::edge_data(1,1)));
 
 	graph.addNode(); // dominated path from start to end
-	graph.addEdge(START, Edge(NodeID(4), Label(1,1)));
-	graph.addEdge(NodeID(4), Edge(END, Label(4,4)));
+	graph.addEdge(START, Edge(NodeID(4), Edge::edge_data(1,1)));
+	graph.addEdge(NodeID(4), Edge(END, Edge::edge_data(4,4)));
 
 	graph.finalize();
 }

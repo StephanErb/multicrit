@@ -16,6 +16,14 @@ struct Label {
 		: first_weight( first_weight_ ), second_weight( second_weight_ ) 
 	{}
 
+	bool operator==(const Label& other) const {
+		return other.first_weight == first_weight && other.second_weight == second_weight;
+	}
+
+	bool operator!=(const Label& other) const {
+		return other.first_weight != first_weight || other.second_weight != second_weight;
+	}
+
 	std::string toString() const {
 		std::ostringstream oss;
 		oss << (first_weight ) << ":" << (second_weight) ;
