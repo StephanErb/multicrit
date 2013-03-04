@@ -599,10 +599,6 @@ protected:
         slot.minimum = local;
     }
 
-    static inline void update_local_min(min_key_type& a, const min_key_type& b) {
-        a = std::min(a, b, [](const min_key_type& a, const min_key_type& b) { return a.second_weight < b.second_weight; });
-    }
-
     static inline void set_min_element(inner_node_data& slot, const inner_node* const node) {
         slot.minimum = std::min_element(node->slot, node->slot+node->slotuse,
             [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })->minimum;
@@ -614,8 +610,6 @@ protected:
     static inline void set_min_element(inner_node_data&, const leaf_node* const) {
     }
     static inline void set_min_element(inner_node_data&, const min_key_type&) {
-    }
-    static inline void update_local_min(min_key_type&, const min_key_type&) {
     }
 #endif
 
@@ -1148,9 +1142,10 @@ private:
             const width_type in_slotuse = leaf->slotuse;
 
             #ifdef COMPUTE_PARETO_MIN
-                min_key_type local_min(0, std::numeric_limits<typename min_key_type::weight_type>::max());
+                const min_key_type local_min_dummy(0, std::numeric_limits<typename min_key_type::weight_type>::max());
+                const min_key_type* local_min =&local_min_dummy;
             #else 
-                min_key_type local_min;
+                min_key_type* local_min;
             #endif
 
             BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
@@ -1163,29 +1158,37 @@ private:
                     // We know the element is in here, so no bounds checks
                     while (tree->key_less(leaf->slotkey[in], op.data)) {
                         BTREE_ASSERT(in < in_slotuse);
-                        update_local_min(local_min, leaf->slotkey[in]);
+                        #ifdef COMPUTE_PARETO_MIN
+                            local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
+                        #endif 
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
                     ++in; // delete the element by jumping over it
                     break;
                 case Operation<key_type>::INSERT:
                     while(in < in_slotuse && tree->key_less(leaf->slotkey[in], op.data)) {
-                        update_local_min(local_min, leaf->slotkey[in]);
+                        #ifdef COMPUTE_PARETO_MIN
+                            local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
+                        #endif
                         result->slotkey[out++] = leaf->slotkey[in++];
                     }
-                    update_local_min(local_min, op.data);
+                     #ifdef COMPUTE_PARETO_MIN
+                        local_min = op.data.second_weight < local_min->second_weight ? &op.data : local_min;
+                    #endif
                     result->slotkey[out++] = op.data;
                     break;
                 }
             }
             assert(leaf->slotuse <= tree->leafslotmax);
             while (in < in_slotuse) {
-                update_local_min(local_min, leaf->slotkey[in]);
+                #ifdef COMPUTE_PARETO_MIN
+                    local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
+                #endif
                 result->slotkey[out++] = leaf->slotkey[in++];
             }
             assert(out <= tree->leafslotmax);
 
-            set_min_element(slot, local_min);
+            set_min_element(slot, *local_min);
             result->slotuse = out;
             tree->update_router(slot.slotkey, result->slotkey[out-1]); 
 
