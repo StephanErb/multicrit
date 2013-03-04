@@ -313,11 +313,11 @@ public:
 				start = stop;
 			#endif
 
-			tbb::affinity_partitioner ap1;
+			tbb::affinity_partitioner ap;
 			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap1);
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap);
 			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap1);
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap);
 			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -325,7 +325,7 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_for(candidate_range(&pq, 2*(DCACHE_LINESIZE / sizeof(NodeID))),
+			tbb::parallel_for(candidate_range(&pq, 2*(DCACHE_LINESIZE / sizeof(NodeLabel))),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
@@ -390,7 +390,8 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight);
+			tbb::auto_partitioner unused_ap;
+			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, unused_ap);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_UPDATES] += (stop-start).seconds();
