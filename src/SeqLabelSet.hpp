@@ -26,7 +26,7 @@ class LabelSetBase {
 public:
 	typedef unsigned int Priority;
 
-	static Priority computePriority(const label_type& label) {
+	static inline Priority computePriority(const label_type& label) {
 		#ifdef PRIORITY_SUM
 			return label.first_weight + label.second_weight;
 		#endif
@@ -59,12 +59,12 @@ protected:
 		}
 	} firstWeightLess;
 
-	static bool secondWeightGreaterOrEquals(const label_type& i, const label_type& j) {
+	static inline bool secondWeightGreaterOrEquals(const label_type& i, const label_type& j) {
 		return i.second_weight >= j.second_weight;
 	}
 
 	/** First label where the x-coord is truly smaller */
-	static iterator x_predecessor(Set& labels, const label_type& new_label) {
+	static inline iterator x_predecessor(Set& labels, const label_type& new_label) {
 #ifdef TREE_SET
 		return --labels.lower_bound(label_type_extended(new_label));
 #else
@@ -73,7 +73,7 @@ protected:
 	}
 
 	/** First label where the y-coord is truly smaller */
-	static iterator y_predecessor(const iterator& begin, const label_type& new_label) {
+	static inline iterator y_predecessor(const iterator& begin, const label_type& new_label) {
 		iterator i = begin;
 		while (secondWeightGreaterOrEquals(*i, new_label)) {
 			++i;
@@ -92,7 +92,7 @@ protected:
 		std::cout << std::endl;
 	}
 
-	static bool isDominated(Set& labels, const label_type& new_label, iterator& iter) {
+	static inline bool isDominated(Set& labels, const label_type& new_label, iterator& iter) {
 		iter = x_predecessor(labels, new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {
@@ -109,7 +109,7 @@ protected:
 		return false;
 	}
 
-	static void insertAndRemoveDominated(Set &labels, const label_type_extended& new_label, iterator iter) {
+	static inline void insertAndRemoveDominated(Set &labels, const label_type_extended& new_label, iterator iter) {
 		iterator first_nondominated = y_predecessor(iter, new_label);
 
 #ifdef TREE_SET

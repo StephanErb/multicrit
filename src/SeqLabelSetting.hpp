@@ -143,6 +143,7 @@ public:
 	typedef typename SharedHeapLabelSet<Label, BinaryHeap>::iterator const_iterator;
 
 	SharedHeapLabelSettingAlgorithm(const graph_slot& graph_):
+		heap(LARGE_ENOUGH_FOR_EVERYTHING),
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
 		stats(graph.numberOfNodes())
@@ -161,7 +162,7 @@ public:
 
 			FORALL_EDGES(graph, current.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				Label new_label = createNewLabel(current.label, edge);
+				const Label new_label = createNewLabel(current.label, edge);
 
 				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
 

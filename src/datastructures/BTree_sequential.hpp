@@ -191,11 +191,11 @@ private:
         }
     };
 
-    static size_type minweight(level_type level) {
+    static size_type minweight(const level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k / 4;
     }
 
-    static size_type maxweight(level_type level) {
+    static size_type maxweight(const level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k;
     }
 
@@ -294,11 +294,11 @@ public:
 
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
-    explicit inline btree(size_type size_hint=0, const allocator_type &alloc = allocator_type())
+    explicit inline btree(const allocator_type &alloc=allocator_type())
         : root(NULL), allocator(alloc)
     {
         spare_leaf = allocate_leaf_without_count();
-        weightdelta.reserve(size_hint+1);
+        weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
     }
 
     /// Frees up all used B+ tree memory pages
@@ -481,7 +481,7 @@ private:
     void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, std::vector<key_type>& minima) const {
         if (node->isleafnode()) {
             const leaf_node* const leaf = (leaf_node*) node;
-            width_type slotuse = leaf->slotuse;
+            const width_type slotuse = leaf->slotuse;
 
             min_key_type min = prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
@@ -493,9 +493,9 @@ private:
             }
         } else {
             const inner_node* const inner = (inner_node*) node;
-            width_type slotuse = inner->slotuse;
+            const width_type slotuse = inner->slotuse;
 
-            min_key_type min = prefix_minima;
+            const min_key_type min = prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
                 if (inner->minimum[i].second_weight < min.second_weight ||
                         (inner->minimum[i].first_weight == min.first_weight && inner->minimum[i].second_weight == min.second_weight)) {
@@ -526,7 +526,7 @@ private:
 
 private:
 
-    size_type setOperationsAndComputeWeightDelta(const update_list& _updates) {
+    inline size_type setOperationsAndComputeWeightDelta(const update_list& _updates) {
         updates = _updates.data();
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
@@ -535,8 +535,6 @@ private:
         if (size() == 0) {
             return _updates.size(); // Shortcut, we know this is a bulk insertion and don't need any weights
         } else {
-            weightdelta.reserve(_updates.size() + 1);
-
             long val = 0; // exclusive prefix sum
             weightdelta[0] = val;
             for (size_type i = 0; i < _updates.size();) {
@@ -547,7 +545,7 @@ private:
         }
     }
 
-    void allocate_new_leaves(size_type n) {
+    inline void allocate_new_leaves(size_type n) {
         BTREE_PRINT("Allocating " << num_subtrees(n, designated_leafsize) << " new  nodes for tree of size " << n << std::endl);
         size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.clear();

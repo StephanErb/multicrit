@@ -86,7 +86,7 @@ private:
         _Key        slotkey;
         size_t      weight;
         void*       childid;
-        _MinKey    minimum; 
+        _MinKey     minimum; 
     };
 public:
     /// If true, the tree will self verify it's invariants after each insert()
@@ -101,7 +101,6 @@ public:
 // Number of leaves that need to be written before we try perform it in parallel
 #ifndef REWRITE_THRESHOLD
 #define REWRITE_THRESHOLD 16
-
 #endif
 
 /** 
@@ -220,11 +219,11 @@ protected:
         }
     };
 
-    static size_type minweight(level_type level) {
+    static size_type minweight(const level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k / 4;
     }
 
-    static size_type maxweight(level_type level) {
+    static size_type maxweight(const level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k;
     }
 
@@ -324,10 +323,10 @@ public:
 
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
-    explicit inline btree(size_type size_hint=0, const allocator_type &alloc = allocator_type())
+    explicit inline btree(const allocator_type &alloc=allocator_type())
         : root(NULL), allocator(alloc)
     {
-            weightdelta.reserve(size_hint+1);
+        weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
     }
 
     /// Frees up all used B+ tree memory pages
@@ -360,11 +359,11 @@ private:
 private:
     // *** Node Object Allocation and Deallocation Functions
 
-    typename leaf_node::alloc_type leaf_node_allocator() {
+    inline typename leaf_node::alloc_type leaf_node_allocator() {
         return typename leaf_node::alloc_type(allocator);
     }
 
-    typename inner_node::alloc_type inner_node_allocator() {
+    inline typename inner_node::alloc_type inner_node_allocator() {
         return typename inner_node::alloc_type(allocator);
     }
 
@@ -407,7 +406,7 @@ private:
 public:
     // *** Fast Destruction of the B+ Tree
 
-    void clear() {
+    inline void clear() {
         if (root) {
             clear_recursive(root);
             root = NULL;
@@ -553,10 +552,10 @@ protected:
 #ifdef COMPUTE_PARETO_MIN
 
     template<typename sequence_type>
-    void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
+    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
         if (node->isleafnode()) {
             const leaf_node* const leaf = (leaf_node*) node;
-            width_type slotuse = leaf->slotuse;
+            const width_type slotuse = leaf->slotuse;
 
             const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
@@ -568,7 +567,7 @@ protected:
             }
         } else {
             const inner_node* const inner = (inner_node*) node;
-            width_type slotuse = inner->slotuse;
+            const width_type slotuse = inner->slotuse;
 
             const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
@@ -659,12 +658,11 @@ private:
     };
     
     template<typename T>
-    size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count) {
+    inline size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count) {
         updates = _updates;
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
-        weightdelta.reserve(update_count + 1);
         weightdelta[0] = 0;
         // If the tree is empty, then the updates can only contain insertions.
         const signed char all_ops_identical = size() == 0; 
