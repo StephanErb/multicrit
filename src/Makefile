@@ -31,12 +31,12 @@ DEFAULT_OPS = -Wall -Wextra $(CPPFLAGS)
 
 # Sequential
 CXXFLAGS = -O3 -mtune=native -march=native -fomit-frame-pointer -DNDEBUG $(DEFAULT_OPS) -std=c++11 
-CXXFLAGSDBG = -O3 -fno-inline -fno-default-inline -fno-builtin -g3 -W $(DEFAULT_OPS) -std=c++11
+CXXFLAGSDBG = -O3 -mtune=native -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 # -fno-inline -fno-default-inline -fno-builtin
 CXXLIBS= -lrt -ltbb
 
 # Parallel
 CXXPFLAGS = -O3 -mtune=native -march=native -fomit-frame-pointer -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
-CXXPFLAGSDBG = -O3 -fno-inline -fno-default-inline -fno-builtin -g3 -W $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1
+CXXPFLAGSDBG = -O3 -mtune=native -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1 # -fno-inline -fno-default-inline -fno-builtin 
 CXXPLIBS= -lrt -ltbb -ltbbmalloc -lpthread
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
