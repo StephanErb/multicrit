@@ -369,7 +369,7 @@ public:
 					#endif
 
 				}
-			}, ap1);
+			}, ap);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();
