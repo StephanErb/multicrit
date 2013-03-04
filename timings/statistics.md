@@ -326,7 +326,7 @@ Target node label count: 1582
 
 
 #########################################################################
-Initialie Baum Impl erstmalig im ungetunten ParetoSearch Algo eingesetzt
+Initiale Baum Impl erstmalig im ungetunten ParetoSearch Algo eingesetzt
 
 (Anfang des Januar) --> Zeigt uns was für einen Weg wir gegangen sind
 #########################################################################
@@ -687,3 +687,79 @@ Parallel BTree (k=85, b=6):
   inner slots size [1, 24]. Bytes: 968
   leaf slots size [21, 85]. Bytes: 1024
 1 NY1 914.099 1089 3907.61 3907 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+
+
+
+################################################################
+Di 26. Feb 20:21:15 CET 2013
+
+Rollback to basic algo, because cache misses are eating our scalability
+
+Results gathered on i10pc112
+Commit: https://algo2.iti.kit.edu/svn/erb@355 d8aefcb4-f1e2-11e1-aef8-dd4ad02cd871
+        e12f0afddd5d428bde40e33d4caa3879caac1cee
+################################################################
+
+We have the problem that our efficiency is going lower and lower when we add more PEs. We came to the conclusion that this is due to an algorithm which is not cache efficient: The thread local bucket sorting has to go away.
+
+./bin/time_road_instances2.par.dbg -d ../instances/ -g NY -c 1 -v -p 4 
+# ParallelParetoSearch_ParallelBTreeParetoQueue
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+Statistics disabled at compile time. See options file.
+Subcomponent Timings:
+  55.6483 Find & Group Pareto Min
+  119.134 Update Labelsets 
+  17.919 Sort Updates
+  78.144 Update PQ 
+Parallel BTree (k=85, b=6):
+  inner slots size [1, 24]. Bytes: 968
+  leaf slots size [21, 85]. Bytes: 1024
+1 NY1 270.845 1089 4252.16 4252 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+
+
+`perf stat -d ./bin/time_road_instances2.par.dbg -d ../instances/ -g NY -c 1 -v -p 4`:
+
+        1077202,783634 task-clock:HG             #    3,920 CPUs utilized          
+               225.378 context-switches:HG       #    0,209 K/sec                  
+                    35 CPU-migrations:HG         #    0,000 K/sec                  
+             1.101.499 page-faults:HG            #    0,001 M/sec                  
+     3.048.817.763.834 cycles:HG                 #    2,830 GHz                     [74,99%]
+       <not supported> stalled-cycles-frontend:HG
+       <not supported> stalled-cycles-backend:HG
+     2.214.192.034.785 instructions:HG           #    0,73  insns per cycle         [83,34%]
+       393.363.775.048 branches:HG               #  365,172 M/sec                   [83,34%]
+        48.540.879.791 branch-misses:HG          #   12,34% of all branches         [83,34%]
+       867.814.724.143 L1-dcache-loads:HG        #  805,619 M/sec                   [83,34%]
+       275.953.198.408 L1-dcache-load-misses:HG  #   31,80% of all L1-dcache hits   [83,32%]
+        30.657.848.741 LLC-loads:HG              #   28,461 M/sec                   [33,33%]
+        24.094.476.812 LLC-load-misses:HG        #   78,59% of all LL-cache hits    [33,35%]
+
+         274,819497091 seconds time elapsed
+
+
+`perf stat -e r20f ./bin/time_road_instances2.par.dbg -d ../instances/ -g NY -c 1 -v -p 4`
+
+    Before commit "Perform bulk update of global data structures"(e15ddc0d89fea921309b851a4b0bbb102b16ee81)
+      281.350.533 raw 0x20f:HG 
+
+    After commit "Perform bulk update of global data structures"(e15ddc0d89fea921309b851a4b0bbb102b16ee81)
+      127.300.429 raw 0x20f:HG 
+
+    This showed we heavily reduced the number of false sharing issues. Well but unfortunately the timing did not change!
+
+* Cache misses:
+    35% der cache faults in der binaray search des is_dominated check
+    10-14% in irgend einem vectror constructor
+    12-13% bei update leaf in current tree
+    10-12% beim find pareto min
+    9% für das injecten des lokalen candidate pointers
+    8% für den vergleich in einem update ob das blatt ein leaf ist oder nicht
+
+* Branch misses:
+    17% in der update leaf in current tree routine
+    16% in der find pareto min methode
+    14% in der binary search des update labelsets
+    10% beim vergleich in einem update ob das ein blatt oder ein leaf ist oder nicht
