@@ -55,20 +55,24 @@ protected:
 		size_t data_index;
 	};
 
-	std::vector< HeapElement > heap;
-	std::vector< DataElement<key_slot, data_slot> > data_elements;
-
 public:
 	typedef size_t handle;
 	typedef key_slot key_type;
 	typedef meta_key_slot meta_key_type;
 	typedef data_slot data_type;
 
+private:
+	std::vector< HeapElement > heap;
+	std::vector< DataElement<key_slot, data_slot> > data_elements;
+	std::vector< handle > free_list;
+
+public:
 	UnboundBinaryHeap(size_t reserve_size = 0 ) {
 		heap.reserve( reserve_size + 1);
 		heap.push_back( HeapElement( meta_key_slot::min() ) );	//insert the sentinel element into the heap
 
 		data_elements.reserve( reserve_size );
+		free_list.reserve( reserve_size );
 	}
 
 	size_t size() const{
@@ -179,7 +183,7 @@ public:
 	}
 
 	void clear(){
-		freeList.clear();
+		free_list.clear();
 		heap.resize( 1 );	//remove anything but the sentinel
 		data_elements.clear();
 	}
@@ -187,27 +191,21 @@ public:
 
 protected:
 
-	std::vector< handle> freeList;
-
-	void free(const handle& id) {
-		if (id == data_elements.size()-1) {
-			data_elements.pop_back();
-		} else {
-			freeList.push_back(id);
-		}
+	inline void free(const handle& id) {
+		free_list.push_back(id);
 	}
 
-	handle freeHandle() {
-		if (freeList.empty()) {
+	inline handle freeHandle() {
+		if (free_list.empty()) {
 			return data_elements.size();
 		} else {
-			const handle ret = freeList.back();
-			freeList.pop_back();
+			const handle ret = free_list.back();
+			free_list.pop_back();
 			return ret;
 		}
 	}
 
-	bool isExistingHandle(const handle& id) const {
+	inline bool isExistingHandle(const handle& id) const {
 		return id < data_elements.size(); 
 	}
 
