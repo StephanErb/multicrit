@@ -357,10 +357,12 @@ public:
 
 					// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
 					if (tl.updates.size() > BATCH_SIZE) {
-						const size_t position = pq.update_counter.fetch_and_add(tl.updates.size());
+						const size_t aligned_size = ROUND_DOWN(tl.updates.size(), DCACHE_LINESIZE / sizeof(Operation<NodeLabel>) );
+						const size_t remaining = tl.updates.size() - aligned_size;
+						const size_t position = pq.update_counter.fetch_and_add(aligned_size);
 						assert(position + tl.updates.size() < pq.updates.capacity());
-						memcpy(pq.updates.data() + position, tl.updates.data(), sizeof(Operation<NodeLabel>) * tl.updates.size() );
-						tl.updates.clear();
+						memcpy(pq.updates.data() + position, tl.updates.data()+remaining, sizeof(Operation<NodeLabel>) * aligned_size );
+						tl.updates.resize(remaining);
 					}
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();

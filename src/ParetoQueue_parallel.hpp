@@ -247,16 +247,20 @@ public:
 		}
 		// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
 		if (tl.updates.size() > BATCH_SIZE) {
-			const size_t position = update_counter.fetch_and_add(tl.updates.size());
+			const size_t aligned_size = ROUND_DOWN(tl.updates.size(), DCACHE_LINESIZE / sizeof(OpVec::value_type));
+			const size_t remaining = tl.updates.size() - aligned_size;
+			const size_t position = update_counter.fetch_and_add(aligned_size);
 			assert(position + tl.updates.size() < updates.capacity());
-			memcpy(updates.data() + position, tl.updates.data(), sizeof(OpVec::value_type) * tl.updates.size());
-			tl.updates.clear();
+			memcpy(updates.data() + position, tl.updates.data()+remaining, sizeof(OpVec::value_type) * aligned_size);
+			tl.updates.resize(remaining);
 		}	
 		if (tl.candidates.size() > BATCH_SIZE) {
-			const size_t position = candidate_counter.fetch_and_add(tl.candidates.size());
+			const size_t aligned_size = ROUND_DOWN(tl.candidates.size(), DCACHE_LINESIZE / sizeof(CandLabelVec::value_type));
+			const size_t remaining = tl.candidates.size() - aligned_size;
+			const size_t position = candidate_counter.fetch_and_add(aligned_size);
 			assert(position + tl.candidates.size() < candidates.capacity());
-			memcpy(candidates.data() + position, tl.candidates.data(), sizeof(CandLabelVec::value_type) * tl.candidates.size());
-			tl.candidates.clear();
+			memcpy(candidates.data() + position, tl.candidates.data()+remaining, sizeof(CandLabelVec::value_type) * aligned_size);
+			tl.candidates.resize(remaining);
 		}
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 			stop = tbb::tick_count::now();
