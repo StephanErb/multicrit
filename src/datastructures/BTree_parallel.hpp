@@ -35,6 +35,8 @@
 #include "../utility/datastructure/NullData.hpp"
 #include "../options.hpp"
 
+#include "../tbb/cache_aligned_blocked_range.hpp"
+
 #include "tbb/parallel_scan.h"
 #include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"
@@ -624,7 +626,7 @@ private:
             : sum(0), out(b.out), in(b.in), all_ops_identical(b.all_ops_identical) {}
 
         template<typename Tag>
-        void operator() (const tbb::blocked_range<size_type>& r, Tag) {
+        void operator() (const cache_aligned_blocked_range<size_type>& r, Tag) {
 
             if (!all_ops_identical) {
                 // Mixed insertions and deletions. Need to perform full prefix sum.
@@ -666,7 +668,7 @@ private:
         const signed char all_ops_identical = size() == 0; 
 
         PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates, all_ops_identical);
-        tbb::parallel_scan(tbb::blocked_range<size_type>(0, update_count, traits::leafparameter_k), body);
+        tbb::parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, traits::leafparameter_k), body);
 
         return size() + body.get_sum();
     }
