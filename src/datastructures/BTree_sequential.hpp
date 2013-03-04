@@ -701,13 +701,10 @@ private:
                         }
                     } else {
                         BTREE_PRINT("Copying " << in << " to " << out << " " << inner->childid[in] << std::endl);
+                        result->slot[out] = inner->slot[in];
                         result->slot[out].weight = subtree_updates[in].weight;
-                        result->slot[out].childid = inner->slot[in].childid;
-                        result->slot[out].minimum = inner->slot[in].minimum;
                         if (hasUpdates(subtree_updates[in])) {
                             update(result->slot[out], /*unused rank*/ -1, subtree_updates[in], false);
-                        } else {
-                            result->slot[out].slotkey = inner->slot[in].slotkey;
                         }
                         ++out;
                         ++in;
