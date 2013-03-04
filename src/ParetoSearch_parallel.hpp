@@ -14,6 +14,9 @@
 #include "assert.h"
 #include "Label.hpp"
 
+#define RADIX_SORT
+#include "tbb/parallel_sort.hpp"
+
 #include "tbb/parallel_sort.h"
 #include "tbb/concurrent_vector.h"
 #include "tbb/parallel_for.h"
@@ -310,7 +313,12 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates);
+			tbb::affinity_partitioner ap1;
+			#ifdef RADIX_SORT
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap1);
+			#else
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap1);
+			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_CANDIDATES] += (stop-start).seconds();
@@ -337,6 +345,9 @@ public:
 						++i;
 					}
 					auto& ls = pq.labelsets[node];
+					#ifdef RADIX_SORT
+						std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
+					#endif
 					updateLabelSet(node, ls.labels, tl.spare_labelset, pq.candidates.begin()+range_start, pq.candidates.begin()+i, tl.updates, nondominated_labels);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
@@ -358,7 +369,7 @@ public:
 					#endif
 
 				}
-			});
+			}, ap1);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();
