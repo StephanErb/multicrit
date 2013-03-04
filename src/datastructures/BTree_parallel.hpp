@@ -923,13 +923,14 @@ private:
 
             leaf_node* result = getOrCreateLeaf(leaf_number);
             const leaf_node* const leaf = (leaf_node*)(source_node);
+            const width_type in_slotuse = leaf->slotuse;
 
             for (size_type i = upd_begin; i != upd_end; ++i) {
                 switch (tree->updates[i].type) {
                 case Operation<key_type>::DELETE:
                     // We know the element is in here, so no bounds checks
                     while (tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
-                        BTREE_ASSERT(in < leaf->slotuse);
+                        BTREE_ASSERT(in < in_slotuse);
                         result->slotkey[out++] = leaf->slotkey[in++];
 
                         if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
@@ -940,7 +941,7 @@ private:
                     ++in; // delete the element by jumping over it
                     break;
                 case Operation<key_type>::INSERT:
-                    while(in < leaf->slotuse && tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
+                    while(in < in_slotuse && tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
                         result->slotkey[out++] = leaf->slotkey[in++];
 
                         if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
@@ -959,10 +960,10 @@ private:
             } 
             if (upd_end == upd.upd_end) {
                 // Reached the total end of the update range. Have to write the remaining elements
-                while (in < leaf->slotuse) {
+                while (in < in_slotuse) {
                     result->slotkey[out++] = leaf->slotkey[in++];
 
-                    if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
+                    if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < in_slotuse) {
                         result = getOrCreateLeaf(++leaf_number);
                         out = 0;
                     }
