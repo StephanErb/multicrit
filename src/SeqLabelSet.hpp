@@ -40,7 +40,7 @@ public:
 
 #ifdef TREE_SET
 	struct SetOrderer {
-  		bool operator() (const label_type_extended& i, const label_type_extended& j) const {
+  		inline ool operator() (const label_type_extended& i, const label_type_extended& j) const {
   			return i.first_weight < j.first_weight;
   		}
 	};
@@ -54,7 +54,7 @@ public:
 
 protected:
 	static struct WeightLessComp {
-		bool operator() (const label_type& i, const label_type& j) const {
+		inline bool operator() (const label_type& i, const label_type& j) const {
 			return i.first_weight < j.first_weight;
 		}
 	} firstWeightLess;

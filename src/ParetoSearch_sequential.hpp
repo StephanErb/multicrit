@@ -64,7 +64,7 @@ private:
 	#endif
 
 	struct GroupByNodeComp {
-		bool operator() (const Label& i, const Label& j) const {
+		inline bool operator() (const Label& i, const Label& j) const {
 			if (i.first_weight == j.first_weight) {
 				return i.second_weight < j.second_weight;
 			}
@@ -73,7 +73,7 @@ private:
 	} groupLabels;
 
 	struct GroupByWeightComp {
-		bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
+		inline bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
 			if (i.data.first_weight == j.data.first_weight) {
 				if (i.data.second_weight == j.data.second_weight) {
 					return i.data.node < j.data.node;
@@ -84,27 +84,27 @@ private:
 		}
 	} groupByWeight;
 
-	static Label createNewLabel(const Label& current_label, const Edge& edge) {
+	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
 		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
 	}
 
 	static struct WeightLessComp {
-		bool operator() (const Label& i, const Label& j) const {
+		inline bool operator() (const Label& i, const Label& j) const {
 			return i.first_weight < j.first_weight;
 		}
 	} firstWeightLess;
 
-	static bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
+	static inline bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
 		return i.second_weight >= j.second_weight;
 	}
 
 	/** First label where the x-coord is truly smaller */
-	static label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
+	static inline label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
 		return --std::lower_bound(begin, end, new_label, firstWeightLess);
 	}
 
 	/** First label where the y-coord is truly smaller */
-	static label_iter y_predecessor(const label_iter& begin, const Label& new_label) {
+	static inline label_iter y_predecessor(const label_iter& begin, const Label& new_label) {
 		label_iter i = begin;
 		while (secondWeightGreaterOrEquals(*i, new_label)) {
 			++i;
@@ -112,7 +112,7 @@ private:
 		return i;
 	}
 
-	static bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
+	static inline bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
 		iter = x_predecessor(begin, end, new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {

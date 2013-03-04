@@ -155,7 +155,7 @@ private:
 
 	template<typename type>
 	struct SetOrderer {
-  		bool operator() (const type& i, const type& j) const {
+  		inline bool operator() (const type& i, const type& j) const {
   			if (i.first_weight == j.first_weight) {
   				if (i.second_weight == j.second_weight) {
   					return i.node < j.node;

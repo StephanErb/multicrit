@@ -84,7 +84,7 @@ private:
 	#endif
 
 	struct GroupByWeightComp {
-		bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
+		inline bool operator() (const Operation<Data>& i, const Operation<Data>& j) const {
 			if (i.data.first_weight == j.data.first_weight) {
 				if (i.data.second_weight == j.data.second_weight) {
 					return i.data.node < j.data.node;
@@ -96,7 +96,7 @@ private:
 	} groupByWeight;
 
 	static struct GroupByNodeComp {
-		bool operator() (const Label& i, const Label& j) const {
+		inline bool operator() (const Label& i, const Label& j) const {
 			if (i.first_weight == j.first_weight) {
 					return i.second_weight < j.second_weight;
 				}
@@ -105,7 +105,7 @@ private:
 	} groupLabels;
 
 	static struct WeightLessComp {
-		bool operator() (const Label& i, const Label& j) const {
+		inline bool operator() (const Label& i, const Label& j) const {
 			return i.first_weight < j.first_weight;
 		}
 	} firstWeightLess;
@@ -120,14 +120,14 @@ private:
 	}
 
 	/** First label where the y-coord is truly smaller */
-	static size_t y_predecessor(const typename ParetoQueue::LabelVec& labelset, size_t i, const Label& new_label) {
+	static inline size_t y_predecessor(const typename ParetoQueue::LabelVec& labelset, size_t i, const Label& new_label) {
 		while (secondWeightGreaterOrEquals(labelset[i], new_label)) {
 			++i;
 		}
 		return i;
 	}
 
-	static bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
+	static inline bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
 		iter = x_predecessor(begin, end, new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {
