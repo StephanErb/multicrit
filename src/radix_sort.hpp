@@ -40,7 +40,7 @@ permitted provided that the following conditions are met:
 #define MIN_BUCKET_SIZE 16
 
 template<class T, class KeyExtractor>
-inline void insertion_sort(T* array, int offset, int end, KeyExtractor key) {
+inline void insertion_sort(T* array, const int offset, const int end, const KeyExtractor key) {
     int x, y;
     T temp;
     for (x=offset; x<end; ++x) {
@@ -54,7 +54,7 @@ inline void insertion_sort(T* array, int offset, int end, KeyExtractor key) {
 
 
 template<class T, class KeyExtractor>
-void radix_sort(T* array, int offset, int end, int shift, KeyExtractor key) {
+inline void radix_sort(T* array, const int offset, const int end, const int shift, const KeyExtractor key) {
     int x, y, tmp;
     T value, temp;
     unsigned int last[256] = { 0 }, pointer[256];
@@ -85,11 +85,10 @@ void radix_sort(T* array, int offset, int end, int shift, KeyExtractor key) {
     }
 
     if (shift > 0) {
-        shift -= 8;
         for (x=0; x<256; ++x) {
             tmp = x > 0 ? pointer[x] - pointer[x-1] : pointer[0] - offset;
             if (tmp > MIN_BUCKET_SIZE) {
-                radix_sort(array, pointer[x] - tmp, pointer[x], shift, key);
+                radix_sort(array, pointer[x] - tmp, pointer[x], shift-8, key);
             } else if (tmp > 1) {
                 insertion_sort(array, pointer[x] - tmp, pointer[x], key);
             }
@@ -99,7 +98,7 @@ void radix_sort(T* array, int offset, int end, int shift, KeyExtractor key) {
 
 
 template<class T, class KeyExtractor>
-void radix_sort(T* array, int size, KeyExtractor key) {
+void radix_sort(T* array, const int size, KeyExtractor key) {
     radix_sort(array, 0, size, 24, key);
 }
 
