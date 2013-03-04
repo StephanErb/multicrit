@@ -325,7 +325,7 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_for(candidate_range(&pq, 2*(DCACHE_LINESIZE / sizeof(NodeLabel))),
+			tbb::parallel_for(candidate_range(&pq, 64),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
