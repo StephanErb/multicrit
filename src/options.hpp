@@ -58,7 +58,7 @@
 /**
  * Enable the following flag to time individual substeps of the ParetoSearch algorithms
  */ 
-//#define GATHER_SUBCOMPNENT_TIMING
+#define GATHER_SUBCOMPNENT_TIMING
 //#define GATHER_SUB_SUBCOMPNENT_TIMING
 
 
