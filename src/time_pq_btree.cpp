@@ -21,8 +21,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <valgrind/callgrind.h>
-
 #ifdef USE_GRAPH_LABEL
 	struct Label {
 		unsigned int x;
@@ -110,9 +108,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 
-		CALLGRIND_START_INSTRUMENTATION;
 		tree.apply_updates(updates);
-		CALLGRIND_STOP_INSTRUMENTATION;
 
 		tbb::tick_count stop = tbb::tick_count::now();
 		timings[i] = (stop-start).seconds() * 1000.0 * 1000.0;
