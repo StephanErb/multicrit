@@ -29,6 +29,11 @@ struct Label {
 		oss << (first_weight ) << ":" << (second_weight) ;
 		return oss.str();
 	}
+
+	friend std::ostream& operator<<(std::ostream& os, const Label& data) {
+		os << " (" << data.first_weight << "," << data.second_weight << ")";
+		return os;
+	}
 };
 
 struct NodeLabel : public Label {
