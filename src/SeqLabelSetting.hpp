@@ -28,7 +28,7 @@ private:
 
 	BinaryHeap heap;
 	std::vector<LabelSet<Label> > labels;
-	graph_slot graph;
+	const graph_slot& graph;
 	LabelSettingStatistics stats;
 
 	static Label createNewLabel(const Label& current_label, const Edge& edge) {
@@ -130,7 +130,7 @@ private:
 
 	BinaryHeap heap;
 	std::vector<SharedHeapLabelSet<Label, BinaryHeap> > labels;
-	graph_slot graph;
+	const graph_slot& graph;
 	LabelSettingStatistics stats;
 
 	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
