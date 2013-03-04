@@ -93,6 +93,9 @@ template <typename _Key,
     #endif
         typename _Alloc = std::allocator<_Key>>
 class btree {
+private:
+    btree(const btree &){}         // do not copy
+    void operator=(const btree&){} // do not copy
 public:
     /// The key type of the B+ tree. This is stored  in inner nodes and leaves
     typedef _Key                        key_type;
