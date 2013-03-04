@@ -14,6 +14,9 @@
 #include <algorithm>
 #include "Label.hpp"
 
+#define RADIX_SORT
+#include "radix_sort.hpp"
+
 #ifdef GATHER_SUBCOMPNENT_TIMING
 #include "tbb/tick_count.h"
 #endif
@@ -29,6 +32,7 @@ private:
 
 	typedef typename LabelVec::iterator label_iter;
 	typedef typename LabelVec::const_iterator const_label_iter;
+	typedef typename std::vector<NodeLabel>::iterator nodelabel_iter;
 
 	struct LabelSetStruct {
 		#ifdef BUCKET_SORT
@@ -260,21 +264,28 @@ public:
 						candidates.push_back(NodeLabel(edge.target, createNewLabel(min, edge)));
 					}
  				}
-				std::sort(candidates.begin(), candidates.end(), groupCandidates);
+ 				#ifdef RADIX_SORT
+ 					radix_sort(candidates.data(), candidates.size(), [](const NodeLabel& x) { return x.node; });
+				#else 
+ 					std::sort(candidates.begin(), candidates.end(), groupCandidates);
+ 				#endif
 				#ifdef GATHER_SUBCOMPNENT_TIMING
 					stop = tbb::tick_count::now();
 					timings[CANDIDATE_SORT] += (stop-start).seconds();
 					start = stop;
 				#endif
 
-				auto cand_iter = candidates.cbegin();
-				while (cand_iter != candidates.cend()) {
+				auto cand_iter = candidates.begin();
+				while (cand_iter != candidates.end()) {
 					// find all labels belonging to the same target node
-					auto range_start = cand_iter;
+					nodelabel_iter range_start = cand_iter;
 					while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
 						++cand_iter;
 					}
 					auto& ls = labels[range_start->node];
+	 				#ifdef RADIX_SORT
+						std::sort(range_start, cand_iter, groupLabels);
+					#endif
 					updateLabelSet(range_start->node, ls.labels, range_start, cand_iter, updates);
 				}
 				#ifdef GATHER_SUBCOMPNENT_TIMING
