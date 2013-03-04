@@ -185,7 +185,6 @@ public:
 	}
 
 	void run(const NodeID node) {
-		std::vector<NodeLabel> globalMinima;
 		std::vector<Operation<NodeLabel> > updates;
 		std::vector<NodeID> affected_nodes;
 		pq.init(NodeLabel(node, Label(0,0)));
@@ -198,21 +197,23 @@ public:
 		while (!pq.empty()) {
 			stats.report(ITERATION, pq.size());
 
-			pq.findParetoMinima(globalMinima);
-			stats.report(MINIMA_COUNT, globalMinima.size());
+			pq.findParetoMinima(updates);
+			const size_t minima_count = updates.size();
+			stats.report(MINIMA_COUNT, minima_count);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[FIND_PARETO_MIN] += (stop-start).seconds();
 				start = stop;
 			#endif
 
-			for (pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				FORALL_EDGES(graph, i->node, eid) {
+			for (const auto& op : updates) {
+				const NodeLabel& min = op.data;
+				FORALL_EDGES(graph, min.node, eid) {
 					const Edge& edge = graph.getEdge(eid);
 					if (candidates[edge.target].empty()) {
 						affected_nodes.push_back(edge.target);
 					}
-					candidates[edge.target].push_back(createNewLabel(*i, edge));
+					candidates[edge.target].push_back(createNewLabel(min, edge));
 				}
 			}
 			#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -235,13 +236,8 @@ public:
 			#endif
 
 			// Sort sequence for batch update
-			std::sort(updates.begin(), updates.end(), groupByWeight);
-			// Schedule optima for deletion
-			size_t size = updates.size();
-			for (const_pareto_iter i = globalMinima.begin(); i != globalMinima.end(); ++i) {
-				updates.push_back({Operation<NodeLabel>::DELETE, *i});
-			}
-			std::inplace_merge(updates.begin(), updates.begin()+size, updates.end(), groupByWeight);
+			std::sort(updates.begin()+minima_count, updates.end(), groupByWeight);
+			std::inplace_merge(updates.begin(), updates.begin()+minima_count, updates.end(), groupByWeight);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT] += (stop-start).seconds();
@@ -255,7 +251,6 @@ public:
 				start = stop;
 			#endif
 
-			globalMinima.clear();
 			updates.clear();
 			affected_nodes.clear();
 		}		

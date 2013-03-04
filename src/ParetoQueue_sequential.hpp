@@ -65,7 +65,7 @@ public:
 		labels.insert(++labels.begin(), data);
 	}
 
-	void findParetoMinima(std::vector<NodeLabel>& minima) const {
+	void findParetoMinima(std::vector<Operation<NodeLabel>>& minima) const {
 		const_iterator iter = ++labels.begin(); // ignore the sentinal
 		const_iterator end = --labels.end();  // ignore the sentinal
 
@@ -74,7 +74,7 @@ public:
 			if (iter->second_weight < min->second_weight ||
 					(iter->first_weight == min->first_weight && iter->second_weight == min->second_weight)) {
 				min = iter;
-				minima.push_back(*iter);
+				minima.push_back({Operation<NodeLabel>::DELETE, *iter});
 			}
 			++iter;
 		}
