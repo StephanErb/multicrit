@@ -323,8 +323,7 @@ protected:
     tbb::task_list root_tasks;
 
     struct PaddedAtomic : public tbb::atomic<leaf_node*> {
-        // Not used. Missing cache locality seems worse than false sharing!
-        //char pad[DCACHE_LINESIZE - sizeof(tbb::atomic<leaf_node*>) % DCACHE_LINESIZE];
+        char pad[DCACHE_LINESIZE - sizeof(tbb::atomic<leaf_node*>) % DCACHE_LINESIZE];
     };
     typedef typename _Alloc::template rebind<PaddedAtomic>::other leaf_listalloc_type;
     typedef std::vector<PaddedAtomic, leaf_listalloc_type> leaf_list;
