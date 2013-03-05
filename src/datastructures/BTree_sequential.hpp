@@ -54,7 +54,7 @@
 
 // Width of nodes given as number of cache-lines
 #ifndef INNER_NODE_WIDTH
-#define INNER_NODE_WIDTH 8
+#define INNER_NODE_WIDTH 16
 #endif
 #ifndef LEAF_NODE_WIDTH
 #define LEAF_NODE_WIDTH 128
@@ -75,7 +75,9 @@ private:
         _Key        slotkey;
         size_t      weight;
         void*       childid;
-        _MinKey     minimum; 
+    #ifdef COMPUTE_PARETO_MIN
+        _MinKey     minimum;
+    #endif
     };
 public:
     /// If true, the tree will self verify it's invariants after each insert()
