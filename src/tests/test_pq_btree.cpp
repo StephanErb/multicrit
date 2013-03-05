@@ -10,8 +10,8 @@
 
 struct btree_test_set_traits {
     static const bool   selfverify = true;
-    static const int    leafparameter_k = 8;
-    static const int    branchingparameter_b = 8;
+    static const unsigned int    leafparameter_k = 8;
+    static const unsigned int    branchingparameter_b = 8;
 };
 
 void assertTrue(bool cond, std::string msg) {

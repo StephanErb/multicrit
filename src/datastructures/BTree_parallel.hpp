@@ -100,14 +100,9 @@ public:
     static const bool   selfverify = false;
 
     /// Configure nodes to have a fixed size of X cache lines. 
-    static const int    leafparameter_k = BTREE_MAX( 4, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
+    static const unsigned int    leafparameter_k = BTREE_MAX( 4, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
+    static const unsigned int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
 };
-
-// Number of leaves that need to be written before we try perform it in parallel
-#ifndef REWRITE_THRESHOLD
-#define REWRITE_THRESHOLD 8
-#endif
 
 /** 
  * Basic class implementing a base B+ tree data structure in memory.
@@ -851,7 +846,7 @@ private:
                 tree->clear_recursive(source_node);
                 return NULL; 
             } else if (source_node->isleafnode()) {
-                if (resultTreeIsSmall()) {
+                if (upd.upd_end - upd.upd_begin < traits::leafparameter_k) {
                     write_updated_leaf_to_new_tree(/*start index*/0, rank, upd.upd_begin, upd.upd_end);
                 } else {
                     const leaf_node* const leaf = (leaf_node*)(source_node);
@@ -908,10 +903,6 @@ private:
         }
 
     private:
-
-        inline bool resultTreeIsSmall() const {
-            return tree->weightdelta[upd.upd_end] - tree->weightdelta[upd.upd_begin] < designated_leafsize * REWRITE_THRESHOLD;
-        }
 
         inline int find_index_of_lower_key(const leaf_node* const leaf, const key_type& key) const {
             int lo = 0;
