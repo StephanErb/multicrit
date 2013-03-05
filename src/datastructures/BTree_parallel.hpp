@@ -104,11 +104,6 @@ public:
     static const int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
 };
 
-// Number of leaves that need to be written before we try perform it in parallel
-#ifndef REWRITE_THRESHOLD
-#define REWRITE_THRESHOLD 8
-#endif
-
 /** 
  * Basic class implementing a base B+ tree data structure in memory.
  */
@@ -851,25 +846,22 @@ private:
                 tree->clear_recursive(source_node);
                 return NULL; 
             } else if (source_node->isleafnode()) {
-                if (resultTreeIsSmall()) {
-                    write_updated_leaf_to_new_tree(/*start index*/0, rank, upd.upd_begin, upd.upd_end);
-                } else {
-                    const leaf_node* const leaf = (leaf_node*)(source_node);
+                const leaf_node* const leaf = (leaf_node*)(source_node);
 
-                    tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, traits::leafparameter_k),
-                        [&, this](const cache_aligned_blocked_range<size_type>& r) {
-                            
-                            if (r.begin() == upd.upd_begin) {
-                                this->write_updated_leaf_to_new_tree(/*start index*/0, rank, r.begin(), r.end());
-                            } else {
-                                const signed long delta = tree->weightdelta[r.begin()] - tree->weightdelta[upd.upd_begin];
-                                const width_type key_index = this->find_index_of_lower_key(leaf, tree->updates[r.begin()].data);
-                                const size_type corrected_rank = rank + key_index + delta;
-                                this->write_updated_leaf_to_new_tree(key_index, corrected_rank, r.begin(), r.end());
-                            }
+                tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, traits::leafparameter_k),
+                    [&, this](const cache_aligned_blocked_range<size_type>& r) {
+                        
+                        if (r.begin() == upd.upd_begin) {
+                            this->write_updated_leaf_to_new_tree(/*start index*/0, rank, r.begin(), r.end());
+                        } else {
+                            const signed long delta = tree->weightdelta[r.begin()] - tree->weightdelta[upd.upd_begin];
+                            const width_type key_index = this->find_index_of_lower_key(leaf, tree->updates[r.begin()].data);
+                            const size_type corrected_rank = rank + key_index + delta;
+                            this->write_updated_leaf_to_new_tree(key_index, corrected_rank, r.begin(), r.end());
                         }
-                    );
-                }
+                    }
+                );
+                
                 tree->free_node(source_node);
                 return NULL;
             } else {
@@ -908,10 +900,6 @@ private:
         }
 
     private:
-
-        inline bool resultTreeIsSmall() const {
-            return tree->weightdelta[upd.upd_end] - tree->weightdelta[upd.upd_begin] < designated_leafsize * REWRITE_THRESHOLD;
-        }
 
         inline int find_index_of_lower_key(const leaf_node* const leaf, const key_type& key) const {
             int lo = 0;
