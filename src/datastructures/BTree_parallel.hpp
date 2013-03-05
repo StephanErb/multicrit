@@ -472,7 +472,8 @@ public:
 
     template<typename T>
     void apply_updates(const T& _updates) {
-        apply_updates(_updates.data(), _updates.size(), tbb::auto_partitioner());
+        auto ap = tbb::auto_partitioner();
+        apply_updates(_updates.data(), _updates.size(), ap);
     }
 
     template<typename T, typename Partitioner>
