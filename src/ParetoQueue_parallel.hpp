@@ -142,9 +142,9 @@ public:
 		base_type::apply_updates(&op, 1);
 	}
 
-	template<typename T>
-	void applyUpdates(const T* updates, const size_t update_count) {
-		base_type::apply_updates(updates, update_count);
+	template<typename T, typename Partitioner>
+	void applyUpdates(const T* updates, const size_t update_count, Partitioner& partitioner) {
+		base_type::apply_updates(updates, update_count, partitioner);
 	}
 
 	bool empty() {

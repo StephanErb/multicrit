@@ -397,15 +397,15 @@ public:
 				start = stop;
 			#endif
 
-			tbb::auto_partitioner unused_ap;
-			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, unused_ap, 500);
+			tbb::affinity_partitioner ap2;
+			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, ap2, 500);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_UPDATES] += (stop-start).seconds();
 				start = stop;
 			#endif
 
-			pq.applyUpdates(pq.updates.data(), pq.update_counter);
+			pq.applyUpdates(pq.updates.data(), pq.update_counter, ap2);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[PQ_UPDATE] += (stop-start).seconds();

@@ -475,9 +475,9 @@ public:
         apply_updates(_updates.data(), _updates.size());
     }
 
-    template<typename T>
-    void apply_updates(const T* _updates, const size_t update_count) {
-        const size_type new_size = setOperationsAndComputeWeightDelta(_updates, update_count);
+    template<typename T, typename Partitioner>
+    void apply_updates(const T* _updates, const size_t update_count, Partitioner& partitioner=tbb::auto_partitioner()) {
+        const size_type new_size = setOperationsAndComputeWeightDelta(_updates, update_count, partitioner);
         stats.itemcount = new_size;
         
         if (new_size == 0) {
@@ -661,8 +661,8 @@ private:
         TOut get_sum() const { return sum; }
     };
     
-    template<typename T>
-    inline size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count) {
+    template<typename T, typename Partitioner>
+    inline size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count, Partitioner& partitioner) {
         updates = _updates;
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
@@ -672,9 +672,14 @@ private:
         const signed char all_ops_identical = size() == 0; 
 
         PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates, all_ops_identical);
-        tbb::parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, traits::leafparameter_k), body);
+        parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, traits::leafparameter_k), body, partitioner);
 
         return size() + body.get_sum();
+    }
+
+    template<typename Range, typename Body, typename Partitioner>
+    void parallel_scan( const Range& range, Body& body, Partitioner& partitioner ) {
+        tbb::internal::start_scan<Range,Body,tbb::simple_partitioner>::run(range,body, partitioner);
     }
 
     class TreeRootCreationTask : public tbb::task {
