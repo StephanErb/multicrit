@@ -104,11 +104,13 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		
 		Tree tree;
 		if (n > 0) bulkConstruct(tree, n);
+		assert(tree.size() == n);
 
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 
 		tree.apply_updates(updates);
+		assert(tree.size() == n+k);
 
 		tbb::tick_count stop = tbb::tick_count::now();
 		timings[i] = (stop-start).seconds() * 1000.0 * 1000.0;

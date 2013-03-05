@@ -668,6 +668,7 @@ private:
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
+        weightdelta.reserve(update_count);
         weightdelta[0] = 0;
         // If the tree is empty, then the updates can only contain insertions.
         const signed char all_ops_identical = size() == 0; 
