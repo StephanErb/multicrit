@@ -66,7 +66,7 @@ static void readGraphFromFile(Graph& graph, std::ifstream& in) {
 		unsigned int start, end, first_weight, second_weight;
 		in_stream >> start >> end >> first_weight >> second_weight;
 
-		edges.push_back(std::make_pair(NodeID(start), Edge(NodeID(end), Label(first_weight, second_weight))));
+		edges.push_back(std::make_pair(NodeID(start), Edge(NodeID(end), Edge::edge_data(first_weight, second_weight))));
 	}
 	GraphGenerator<Graph> generator;
 	generator.buildGraphFromEdges(graph, edges);
