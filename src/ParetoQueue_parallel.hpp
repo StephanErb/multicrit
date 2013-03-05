@@ -27,7 +27,7 @@
 #endif
 
 #ifndef BATCH_SIZE
-#define BATCH_SIZE 256
+#define BATCH_SIZE 512
 #endif
 
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
