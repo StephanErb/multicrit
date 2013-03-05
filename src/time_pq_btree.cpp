@@ -167,7 +167,7 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(100, ratio, skew, iterations * 100000, p);
+		timeBulkInsertion(100, ratio, skew, iterations *  10000, p);
 		timeBulkInsertion(1000, ratio, skew, iterations * 10000, p);
 		timeBulkInsertion(10000, ratio, skew, iterations * 1000, p);
 		timeBulkInsertion(100000, ratio, skew, iterations * 100, p);
