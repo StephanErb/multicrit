@@ -40,7 +40,7 @@ permitted provided that the following conditions are met:
 #define MIN_BUCKET_SIZE 16
 
 template<class T, class KeyExtractor>
-inline void insertion_sort(T* array, const int offset, const int end, const KeyExtractor& key) {
+inline void insertion_sort(T* array, const int offset, const int end, const KeyExtractor key) {
     int x, y;
     T temp;
     for (x=offset; x<end; ++x) {
@@ -54,7 +54,7 @@ inline void insertion_sort(T* array, const int offset, const int end, const KeyE
 
 
 template<class T, class KeyExtractor>
-inline void radix_sort(T* array, const int offset, const int end, const int shift, const KeyExtractor& key) {
+inline void radix_sort(T* array, const int offset, const int end, const int shift, const KeyExtractor key) {
     int x, y, tmp;
     T value, temp;
     unsigned int last[256] = { 0 }, pointer[256];
@@ -98,12 +98,12 @@ inline void radix_sort(T* array, const int offset, const int end, const int shif
 
 
 template<class T, class KeyExtractor>
-void radix_sort(T* array, const int size, KeyExtractor& key) {
+void radix_sort(T* array, const int size, KeyExtractor key) {
     radix_sort(array, 0, size, 24, key);
 }
 
 template<class RandomAccessIterator, class KeyExtractor>
-void radix_sort(RandomAccessIterator begin, const int size, KeyExtractor& key) {
+void radix_sort(RandomAccessIterator begin, const int size, KeyExtractor key) {
     radix_sort(begin, 0, size, 24, key);
 }
 

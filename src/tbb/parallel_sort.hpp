@@ -65,7 +65,7 @@ public:
     RandomAccessIterator begin;
     size_t size;
 
-    quick_sort_range( RandomAccessIterator begin_, size_t size_, const Compare &comp_, const size_t grainsize_) :
+    quick_sort_range( RandomAccessIterator begin_, size_t size_, const Compare comp_, const size_t grainsize_) :
         grainsize(grainsize_), comp(comp_), begin(begin_), size(size_) {}
 
     bool empty() const {return size==0;}
@@ -129,7 +129,7 @@ struct radix_sort_body {
     The compare object must define a bool operator() function.
     @ingroup algorithms **/
 template<typename RandomAccessIterator, typename Compare, typename Partitioner>
-void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare& comp, Partitioner& partitioner, const size_t grainsize) { 
+void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare comp, Partitioner& partitioner, const size_t grainsize) { 
     const int min_parallel_size = 500; 
     if( end > begin ) {
         if (end - begin < min_parallel_size) { 
@@ -143,7 +143,7 @@ void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const C
 
 
 template<typename T, typename KeyExtractor, typename Partitioner>
-void parallel_radix_sort(T* data , size_t size, const KeyExtractor& key, Partitioner& partitioner, const size_t grainsize) { 
+void parallel_radix_sort(T* data , size_t size, const KeyExtractor key, Partitioner& partitioner, const size_t grainsize) { 
     const unsigned int min_parallel_size = 500; 
     if( size > 0 ) {
         if (size < min_parallel_size) { 
