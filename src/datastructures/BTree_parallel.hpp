@@ -472,11 +472,11 @@ public:
 
     template<typename T>
     void apply_updates(const T& _updates) {
-        apply_updates(_updates.data(), _updates.size());
+        apply_updates(_updates.data(), _updates.size(), tbb::auto_partitioner());
     }
 
     template<typename T, typename Partitioner>
-    void apply_updates(const T* _updates, const size_t update_count, Partitioner& partitioner=tbb::auto_partitioner()) {
+    void apply_updates(const T* _updates, const size_t update_count, Partitioner& partitioner) {
         const size_type new_size = setOperationsAndComputeWeightDelta(_updates, update_count, partitioner);
         stats.itemcount = new_size;
         
@@ -679,7 +679,7 @@ private:
 
     template<typename Range, typename Body, typename Partitioner>
     void parallel_scan( const Range& range, Body& body, Partitioner& partitioner ) {
-        tbb::internal::start_scan<Range,Body,tbb::simple_partitioner>::run(range,body, partitioner);
+        tbb::internal::start_scan<Range,Body,Partitioner>::run(range,body, partitioner);
     }
 
     class TreeRootCreationTask : public tbb::task {

@@ -139,7 +139,8 @@ public:
 
 	void init(const NodeLabel& data) {
 		Operation<NodeLabel> op = {Operation<NodeLabel>::INSERT, data};
-		base_type::apply_updates(&op, 1);
+		auto ap = tbb::auto_partitioner();
+		base_type::apply_updates(&op, 1, ap);
 	}
 
 	template<typename T, typename Partitioner>
