@@ -106,7 +106,7 @@ public:
 
 // Number of leaves that need to be written before we try perform it in parallel
 #ifndef REWRITE_THRESHOLD
-#define REWRITE_THRESHOLD 16
+#define REWRITE_THRESHOLD 8
 #endif
 
 /** 
