@@ -2,7 +2,7 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=10
+iter_count=1
 # also, see ratio below to configure original tree size: r = n/k
 
 make -B time_pq_btree.par
@@ -12,7 +12,7 @@ make -B time_pq_btree
 # Bulk Construction
 ratio=0
 skew=1
-for p in 1 2 4 8
+for p in 1 2 4
 do
 	out_file="../timings/btree/insert_p_$p""_r$ratio""_s$skew"
 	echo "Writing to parallel computation to $out_file"
@@ -27,7 +27,7 @@ echo "Writing to sequential computation to $out_file"
 # Bulk Insertion
 ratio=10 # tree is 10 times larger than the elements we try to insert
 skew=1
-for p in 1 2 4 8
+for p in 1 2 4
 do
 	out_file="../timings/btree/insert_p_$p""_r$ratio""_s$skew"
 	echo "Writing to parallel computation to $out_file"
@@ -42,7 +42,7 @@ echo "Writing to sequential computation to $out_file"
 # Skewed Bulk Insertion
 ratio=10 # tree is 10 times larger than the elements we try to insert
 skew=0.1
-for p in 1 2 4 8
+for p in 1 2 4
 do
 	out_file="../timings/btree/insert_p_$p""_r$ratio""_s$skew"
 	echo "Writing to parallel computation to $out_file"
@@ -57,7 +57,7 @@ echo "Writing to sequential computation to $out_file"
 # Bulk Insertion
 ratio=100 # tree is 100 times larger than the elements we try to insert
 skew=1
-for p in 1 2 4 8
+for p in 1 2 4
 do
 	out_file="../timings/btree/insert_p_$p""_r$ratio""_s$skew"
 	echo "Writing to parallel computation to $out_file"
@@ -72,7 +72,7 @@ echo "Writing to sequential computation to $out_file"
 # Skewed Bulk Insertion
 ratio=100 # tree is 10 times larger than the elements we try to insert
 skew=0.1
-for p in 1 2 4 8
+for p in 1 2 4
 do
 	out_file="../timings/btree/insert_p_$p""_r$ratio""_s$skew"
 	echo "Writing to parallel computation to $out_file"

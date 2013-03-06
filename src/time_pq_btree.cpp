@@ -174,7 +174,7 @@ int main(int argc, char ** args) {
 		timeBulkInsertion(10000, ratio, skew, iterations * 1000, p);
 		timeBulkInsertion(100000, ratio, skew, iterations * 100, p);
 		timeBulkInsertion(1000000, ratio, skew, iterations * 10, p);
-		if (ratio < 40) timeBulkInsertion(10000000, ratio, skew, iterations, p);
+		if (ratio < 40) timeBulkInsertion(10000000, ratio, skew, iterations * 3, p);
 	}
 	return 0;
 } 
