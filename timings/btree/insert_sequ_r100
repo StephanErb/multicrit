@@ -1,6 +1,0 @@
-# Bulk Insertion
-14.1773 0 16 100 127 6 100 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-129.566 0 31 1000 127 6 100 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-1451.12 0.175781 31 10000 127 6 100 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-15794.9 0.511719 155 100000 127 6 100 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-157935 7.47266 1546 1000000 127 6 100 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p

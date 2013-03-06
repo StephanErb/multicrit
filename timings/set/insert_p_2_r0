@@ -1,7 +1,0 @@
-# Bulk Construction
-7.11235 0 2 100 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-32.3612 0 4 1000 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-296.032 0 4 10000 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-3462.35 4.63281 7 100000 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-35459.5 51.4844 58 1000000 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-452980 456.961 572 10000000 0 1 2 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
