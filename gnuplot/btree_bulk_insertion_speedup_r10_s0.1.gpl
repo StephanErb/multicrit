@@ -5,10 +5,10 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color
 
 # the name of the output file
-set output "btree_bulk_construction.ps"
+set output "btree_bulk_insertion_speedup_r10_s0.1.ps"
 
 # the title above the diagram
-set title "Btree Bulk Construction"
+set title "Skewed Speedup of Btree Bulk Insertion from range 0.1 * MAX\\_INT (into tree of size n = 10 * k)"
 
 # justify the legends to the left;
 # that 'left Left' is no typo, but leaving 'Left' out does not change much
@@ -19,7 +19,7 @@ set key samplen 1
 # the text along the vertical axis
 # (the numeric values are the results of trial and error experiments)
 set lmargin 6
-set label "Runtime [ns] per inserted element" at screen 0.015,0.5 center  rotate
+set label "Speedup" at screen 0.015,0.5 center  rotate
 
 # the text along the horizontal axis
 # (the numeric values are the results of trial and error experiments)
@@ -40,11 +40,10 @@ set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
 set format x "10^{%L}"
 
 # finally the plot command
-plot [:][0:30] '../timings/set/insert_p_4_r0_s1' using 4:($1*1000/$4) title ' mcstl::set (p=4)' with linespoints pt 9 linetype 9,\
-			'../timings/btree/insert_p_1_r0_s1' using 4:($1*1000/$4) title ' btree (parallel, p=1)' with linespoints pt 2 linetype 2,\
-			'../timings/btree/insert_sequ_r0_s1' using 4:($1*1000/$4) title ' btree (sequential)' with linespoints pt 7 linetype 7,\
-		    '../timings/btree/insert_p_2_r0_s1' using 4:($1*1000/$4) title ' btree (parallel, p=2)' with linespoints pt 3 linetype 3,\
-		    '../timings/btree/insert_p_4_r0_s1' using 4:($1*1000/$4) title ' btree (parallel, p=4)' with linespoints pt 4 linetype 4,\
-		    '../timings/btree/insert_p_8_r0_s1' using 4:($1*1000/$4) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8
+plot [:][0:6]\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_8_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_4_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=4)' with linespoints pt 4 linetype 4,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_2_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=2)' with linespoints pt 3 linetype 3,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_1_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=1)' with linespoints pt 2 linetype 2
 
-
+		    
