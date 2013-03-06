@@ -54,7 +54,7 @@ void testParetoMinInLeaf() {
 	updates.push_back({Operation<Label>::INSERT, Label(20, 20)});
 	updates.push_back({Operation<Label>::INSERT, Label(30, 10)});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.size() == 3, "Insert into empty tree");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
 
@@ -68,7 +68,7 @@ void testParetoMinInLeaf() {
 	updates.push_back({Operation<Label>::INSERT, Label(40, 10)}); // dominated
 	updates.push_back({Operation<Label>::INSERT, Label(50, 5)}); // non-dominated
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.size() == 7, "");
 
 	minima.clear();
@@ -86,7 +86,7 @@ void testParetoMinInInternalNode() {
 			updates.push_back({Operation<Label>::INSERT, Label(i*10, i*10)});
 		}
 	}
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Initial Leafcount");
 	assertTrue(btree.size() == 70, "Tree size");
@@ -100,7 +100,7 @@ void testParetoMinInInternalNode() {
 	for (int i=0; i<100; ++i) {
 		updates.push_back({Operation<Label>::INSERT, Label(1, 0)});
 	}
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.size() == 170, "Tree size");
 
 	minima.clear();

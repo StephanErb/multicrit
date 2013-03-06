@@ -29,7 +29,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::INSERT, 20});
 	updates.push_back({Operation<int>::INSERT, 30});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_ONLY);
 	assertTrue(btree.size() == 3, "Insert into empty tree");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
 
@@ -40,7 +40,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::INSERT, 25});
 	updates.push_back({Operation<int>::INSERT, 35});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_ONLY);
 	assertTrue(btree.size() == 8, "Insert into spaces");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
 
@@ -49,7 +49,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::DELETE, 20});
 	updates.push_back({Operation<int>::DELETE, 30});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, DELETES_ONLY);
 	assertTrue(btree.size() == 5, "Delete original elements");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
 
@@ -60,7 +60,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	updates.push_back({Operation<int>::DELETE, 25});
 	updates.push_back({Operation<int>::DELETE, 35});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, DELETES_ONLY);
 	assertTrue(btree.size() == 0, "Empty");
 	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 }
@@ -79,7 +79,7 @@ void testSplitLeafInto2() {
 	updates.push_back({Operation<int>::INSERT, 70});
 	updates.push_back({Operation<int>::INSERT, 80});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
 	assertTrue(btree.size() == 8, "Tree size");
@@ -87,7 +87,7 @@ void testSplitLeafInto2() {
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 5});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 1, "9 elements need 2 leaves");
 	assertTrue(btree.get_stats().leaves == 2, "Leave count after overflow");
 	assertTrue(btree.get_stats().innernodes == 1, "Innernode count");
@@ -108,7 +108,7 @@ void testSplitLeafInto3() {
 	updates.push_back({Operation<int>::INSERT, 70});
 	updates.push_back({Operation<int>::INSERT, 80});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 	assertTrue(btree.get_stats().leaves == 1, "Leafcount");
     assertTrue(btree.size() == 8, "Tree size");
@@ -120,7 +120,7 @@ void testSplitLeafInto3() {
 	updates.push_back({Operation<int>::INSERT, 4});
 	updates.push_back({Operation<int>::INSERT, 5});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 1, "13 elements need 3 leaves");
 	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
 	assertTrue(btree.size() == 13, "Tree size");
@@ -137,7 +137,7 @@ void testSplitLeafInto3() {
 	updates.push_back({Operation<int>::INSERT, 72});
 	updates.push_back({Operation<int>::INSERT, 81});
 
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 1, "All elements still fit into 3 leaves");
 	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
 	assertTrue(btree.get_stats().avgfill_leaves() == 0.75, "Should have 6 elements per leaf");
@@ -155,7 +155,7 @@ void testSplitDeepRebalancingInsert() {
 			updates.push_back({Operation<int>::INSERT, i*10});
 		}
 	}
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Initial Leafcount");
 	assertTrue(btree.size() == 70, "Tree size");
@@ -166,7 +166,7 @@ void testSplitDeepRebalancingInsert() {
 	updates.push_back({Operation<int>::DELETE, 40});
 	updates.push_back({Operation<int>::DELETE, 40});
 	updates.push_back({Operation<int>::DELETE, 40});
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 13, "Leafcount after leaf underflow");
@@ -178,7 +178,7 @@ void testSplitDeepRebalancingInsert() {
  	updates.push_back({Operation<int>::INSERT, 40});
 	updates.push_back({Operation<int>::INSERT, 40});
 	updates.push_back({Operation<int>::INSERT, 40});
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Leafcount after leaf overflow");
 	assertTrue(btree.size() == 70, "Tree size");
@@ -193,7 +193,7 @@ void testSplitDeepRebalancingInsert() {
 	updates.push_back({Operation<int>::DELETE, 30});
 	updates.push_back({Operation<int>::DELETE, 30});
 	updates.push_back({Operation<int>::DELETE, 30});
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 2, "In an optimal tree we need 2 inner node layers");
 	assertTrue(btree.get_stats().leaves == 14, "Leafcount after leaf overflow & underflow");
 	assertTrue(btree.size() == 70, "Tree size");
@@ -203,7 +203,7 @@ void testSplitDeepRebalancingInsert() {
 	for (int i=0; i<45; ++i) {
 		updates.push_back({Operation<int>::INSERT, 95});
 	}
-	btree.apply_updates(updates);
+	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.get_stats().innernodes == 1 + 3, "Innernode count after heavy leaf overflow");
 	assertTrue(btree.size() == 115, "Tree size");
 }

@@ -60,6 +60,8 @@
 #define LEAF_NODE_WIDTH 128
 #endif
 
+enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};
+
 template<typename data_type>
 struct Operation {
     enum OpType {INSERT=1, DELETE=-1};
@@ -284,12 +286,14 @@ protected:
 
     // Currently running updates
     const Operation<key_type>* updates;
+    OperationBatchType batch_type;
     
     // Leaves created during the current reconstruction effort
     std::vector<leaf_node*> leaves;
 
     // Weight delta of currently running updates
-    typedef std::vector<signed long> weightdelta_list;
+    typedef signed long weightdelta_type; 
+    typedef std::vector<weightdelta_type> weightdelta_list;
     weightdelta_list weightdelta;
 
     struct UpdateDescriptor {
@@ -447,8 +451,8 @@ public:
 
 public:
 
-    void apply_updates(const update_list& _updates) {
-        size_type new_size = setOperationsAndComputeWeightDelta(_updates);
+    void apply_updates(const update_list& _updates, const OperationBatchType _batch_type) {
+        size_type new_size = setOperationsAndComputeWeightDelta(_updates, _batch_type);
         stats.itemcount = new_size;
         
         if (new_size == 0) {
@@ -557,15 +561,14 @@ protected:
 
 private:
 
-    inline size_type setOperationsAndComputeWeightDelta(const update_list& _updates) {
+    inline size_type setOperationsAndComputeWeightDelta(const update_list& _updates, const OperationBatchType _batch_type) {
         updates = _updates.data();
+        batch_type = _batch_type;
 
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
         // computes the weight delta realized by the updates in range [begin, end)
 
-        if (size() == 0) {
-            return _updates.size(); // Shortcut, we know this is a bulk insertion and don't need any weights
-        } else {
+        if (_batch_type == INSERTS_AND_DELETES) {
             long val = 0; // exclusive prefix sum
             weightdelta[0] = val;
             for (size_type i = 0; i < _updates.size();) {
@@ -573,6 +576,17 @@ private:
 				weightdelta[++i] = val;
             }
             return size() + weightdelta[_updates.size()];
+        } else {
+            // We can use the shortcut based on the 
+            return size() + _updates.size() * batch_type;
+        }
+    }
+
+    inline weightdelta_type getWeightDelta(const size_type upd_begin, const size_type upd_end) const {
+        if (batch_type == INSERTS_AND_DELETES) {
+            return weightdelta[upd_end]-weightdelta[upd_begin];
+        } else {
+            return (upd_end - upd_begin) * batch_type;
         }
     }
 
@@ -745,7 +759,7 @@ private:
             const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) const {
         subtree_updates[i].upd_begin = subupd_begin;
         subtree_updates[i].upd_end = subupd_end;
-        subtree_updates[i].weight = weight + weightdelta[subupd_end] - weightdelta[subupd_begin];
+        subtree_updates[i].weight = weight + getWeightDelta(subupd_begin, subupd_end);
         subtree_updates[i].rebalancing_needed =  subtree_updates[i].weight < minweight || subtree_updates[i].weight > maxweight;
         return subtree_updates[i].rebalancing_needed;
     }

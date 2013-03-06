@@ -180,7 +180,7 @@ public:
 	void init(const NodeLabel& data) {
 		std::vector<Operation<NodeLabel>> upds;
 		upds.push_back({Operation<NodeLabel>::INSERT, data});
-		labels.apply_updates(upds);
+		labels.apply_updates(upds, INSERTS_ONLY);
 	}
 
 	void findParetoMinima(std::vector<Operation<NodeLabel>>& minima) const {
@@ -188,7 +188,7 @@ public:
 	}
 
 	void applyUpdates(const std::vector<Operation<NodeLabel>>& updates) {
-		labels.apply_updates(updates);
+		labels.apply_updates(updates, INSERTS_AND_DELETES);
 	}
 
 	bool empty() {

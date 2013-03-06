@@ -140,12 +140,12 @@ public:
 	void init(const NodeLabel& data) {
 		Operation<NodeLabel> op = {Operation<NodeLabel>::INSERT, data};
 		auto ap = tbb::auto_partitioner();
-		base_type::apply_updates(&op, 1, ap);
+		base_type::apply_updates(&op, 1, INSERTS_ONLY, ap);
 	}
 
 	template<typename T, typename Partitioner>
 	void applyUpdates(const T* updates, const size_t update_count, Partitioner& partitioner) {
-		base_type::apply_updates(updates, update_count, partitioner);
+		base_type::apply_updates(updates, update_count, INSERTS_AND_DELETES, partitioner);
 	}
 
 	bool empty() {

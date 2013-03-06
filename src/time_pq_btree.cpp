@@ -72,7 +72,7 @@ void bulkConstruct(Tree& tree, size_t n) {
 			#endif
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
-		tree.apply_updates(updates);
+		tree.apply_updates(updates, INSERTS_ONLY);
 		#ifndef NDEBUG
 			tree.verify();
 		#endif
@@ -109,7 +109,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 
-		tree.apply_updates(updates);
+		tree.apply_updates(updates, INSERTS_ONLY);
 		assert(tree.size() == n+k);
 
 		tbb::tick_count stop = tbb::tick_count::now();

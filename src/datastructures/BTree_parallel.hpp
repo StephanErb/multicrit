@@ -72,6 +72,7 @@
 #define LEAF_NODE_WIDTH 128
 #endif
 
+enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};
 
 template<typename data_type>
 struct Operation {
@@ -301,10 +302,13 @@ protected:
 
     // Currently running updates
     const Operation<key_type>* updates;
+    // Classifies the set of runninng updates
+    OperationBatchType batch_type;
 
     // Weight delta of currently running updates
-    typedef typename _Alloc::template rebind<signed long>::other weightdelta_listalloc_type;
-    typedef std::vector<signed long, weightdelta_listalloc_type> weightdelta_list;
+    typedef signed long weightdelta_type;
+    typedef typename _Alloc::template rebind<weightdelta_type>::other weightdelta_listalloc_type;
+    typedef std::vector<weightdelta_type, weightdelta_listalloc_type> weightdelta_list;
     weightdelta_list weightdelta;
 
     struct UpdateDescriptor {
@@ -465,14 +469,14 @@ public:
 public:
 
     template<typename T>
-    void apply_updates(const T& _updates) {
+    void apply_updates(const T& _updates, const OperationBatchType _batch_type) {
         auto ap = tbb::auto_partitioner();
-        apply_updates(_updates.data(), _updates.size(), ap);
+        apply_updates(_updates.data(), _updates.size(), _batch_type, ap);
     }
 
     template<typename T, typename Partitioner>
-    void apply_updates(const T* _updates, const size_t update_count, Partitioner& partitioner) {
-        const size_type new_size = setOperationsAndComputeWeightDelta(_updates, update_count, partitioner);
+    void apply_updates(const T* _updates, const size_t update_count, const OperationBatchType _batch_type, Partitioner& partitioner) {
+        const size_type new_size = setOperationsAndComputeWeightDelta(_updates, update_count, _batch_type, partitioner);
         stats.itemcount = new_size;
         
         if (new_size == 0) {
@@ -616,39 +620,29 @@ private:
         TOut sum;
         TOut* const out;
         const TIn* const in;
-        const signed char all_ops_identical;
     public:
-        inline PrefixSum(TOut* _out, const TIn* _in, const signed char _all_ops_identical)
-            : sum(0), out(_out), in(_in), all_ops_identical(_all_ops_identical) {}
+        inline PrefixSum(TOut* _out, const TIn* _in)
+            : sum(0), out(_out), in(_in) {}
 
         inline PrefixSum(const PrefixSum& b, tbb::split)
-            : sum(0), out(b.out), in(b.in), all_ops_identical(b.all_ops_identical) {}
+            : sum(0), out(b.out), in(b.in) {}
 
         template<typename Tag>
         void operator() (const cache_aligned_blocked_range<size_type>& r, Tag) {
-
-            if (!all_ops_identical) {
-                // Mixed insertions and deletions. Need to perform full prefix sum.
+            // Mixed insertions and deletions. Need to perform full prefix sum.
+            if (Tag::is_final_scan()) {
                 TOut temp = sum;
-                if (Tag::is_final_scan()) {
-                    for(size_type i=r.begin(); i<r.end(); ++i) {
-                        temp += in[i].type;
-                        out[i] = temp;
-                    }
-                } else {
-                    for(size_type i=r.begin(); i<r.end(); ++i) {
-                        temp += in[i].type;
-                    }
+                for(size_type i=r.begin(); i<r.end(); ++i) {
+                    temp += in[i].type;
+                    out[i] = temp;
                 }
                 sum = temp;                
             } else {
-                // All operations are either deletes or all are inserts
-                if (Tag::is_final_scan()) {
-                    for(size_type i=r.begin(); i<r.end(); ++i) {
-                        out[i] = (i+1) * all_ops_identical;
-                    }
+                TOut temp = sum;
+                for(size_type i=r.begin(); i<r.end(); ++i) {
+                    temp += in[i].type;
                 }
-                sum += all_ops_identical * (r.end() - r.begin());  
+                sum = temp;                
             }
         }
         void reverse_join(const PrefixSum& a) {sum = a.sum + sum;}
@@ -657,20 +651,33 @@ private:
     };
     
     template<typename T, typename Partitioner>
-    inline size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count, Partitioner& partitioner) {
+    inline size_type setOperationsAndComputeWeightDelta(const T* _updates, const size_t update_count, const OperationBatchType _batch_type, Partitioner& partitioner) {
         updates = _updates;
+        batch_type = _batch_type;
 
-        // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
-        // computes the weight delta realized by the updates in range [begin, end)
-        weightdelta.reserve(update_count);
-        weightdelta[0] = 0;
-        // If the tree is empty, then the updates can only contain insertions.
-        const signed char all_ops_identical = size() == 0; 
+        if (_batch_type == INSERTS_AND_DELETES) {
+            // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
+            // computes the weight delta realized by the updates in range [begin, end)
+            weightdelta.reserve(update_count);
+            weightdelta[0] = 0;
 
-        PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates, all_ops_identical);
-        parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, traits::leafparameter_k), body, partitioner);
+            PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates);
+            parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, traits::leafparameter_k), body, partitioner);
 
-        return size() + body.get_sum();
+            return size() + body.get_sum(); 
+        } else {
+            // We can use the shortcut based on the 
+            return size() + update_count * batch_type;
+        }
+
+    }
+
+    inline weightdelta_type getWeightDelta(const size_type upd_begin, const size_type upd_end) const {
+        if (batch_type == INSERTS_AND_DELETES) {
+            return weightdelta[upd_end]-weightdelta[upd_begin];
+        } else {
+            return (upd_end - upd_begin) * batch_type;
+        }
     }
 
     template<typename Range, typename Body, typename Partitioner>
@@ -846,7 +853,7 @@ private:
                 tree->clear_recursive(source_node);
                 return NULL; 
             } else if (source_node->isleafnode()) {
-                if (upd.upd_end - upd.upd_begin < traits::leafparameter_k) {
+                if (tree->getWeightDelta(upd.upd_begin, upd.upd_end) < traits::leafparameter_k) {
                     write_updated_leaf_to_new_tree(/*start index*/0, rank, upd.upd_begin, upd.upd_end);
                 } else {
                     const leaf_node* const leaf = (leaf_node*)(source_node);
@@ -857,7 +864,7 @@ private:
                             if (r.begin() == upd.upd_begin) {
                                 this->write_updated_leaf_to_new_tree(/*start index*/0, rank, r.begin(), r.end());
                             } else {
-                                const signed long delta = tree->weightdelta[r.begin()] - tree->weightdelta[upd.upd_begin];
+                                const signed long delta = tree->getWeightDelta(upd.upd_begin, r.begin());
                                 const width_type key_index = this->find_index_of_lower_key(leaf, tree->updates[r.begin()].data);
                                 const size_type corrected_rank = rank + key_index + delta;
                                 this->write_updated_leaf_to_new_tree(key_index, corrected_rank, r.begin(), r.end());
@@ -1202,7 +1209,7 @@ private:
             const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) const {
         subtree_updates[i].upd_begin = subupd_begin;
         subtree_updates[i].upd_end = subupd_end;
-        subtree_updates[i].weight = weight + weightdelta[subupd_end] - weightdelta[subupd_begin];
+        subtree_updates[i].weight = weight + getWeightDelta(subupd_begin, subupd_end);
         subtree_updates[i].rebalancing_needed =  subtree_updates[i].weight < minweight || subtree_updates[i].weight > maxweight;
         return subtree_updates[i].rebalancing_needed;
     }
