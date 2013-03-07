@@ -40,10 +40,10 @@ set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
 set format x "10^{%L}"
 
 # finally the plot command
-plot [:][0:80] '../timings/set/insert_p_4_r10_s1' using 4:($1*1000/$4) title ' mcstl::set (p=4)' with linespoints pt 9 linetype 9,\
-			'../timings/btree/insert_p_1_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=1)' with linespoints pt 2 linetype 2,\
-			'../timings/btree/insert_sequ_r10_s1' using 4:($1*1000/$4) title ' btree (sequential)' with linespoints pt 7 linetype 7,\
-		    '../timings/btree/insert_p_2_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=2)' with linespoints pt 3 linetype 3,\
-		    '../timings/btree/insert_p_4_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=4)' with linespoints pt 4 linetype 4,\
-		    '../timings/btree/insert_p_8_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8
+plot [:][0:70] '../timings/set/insert_p_4_r10_s1' using 4:($1*1000/$4) title ' mcstl::set (p=4)' with linespoints pt 9 linetype 9\
+			,'../timings/btree/insert_p_1_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=1)' with linespoints pt 2 linetype 2\
+			,'../timings/btree/insert_sequ_r10_s1' using 4:($1*1000/$4) title ' btree (sequential)' with linespoints pt 7 linetype 7\
+		    ,'../timings/btree/insert_p_2_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=2)' with linespoints pt 3 linetype 3\
+		    ,'../timings/btree/insert_p_4_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=4)' with linespoints pt 4 linetype 4\
+		    #,'../timings/btree/insert_p_8_r10_s1' using 4:($1*1000/$4) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8
 		    
