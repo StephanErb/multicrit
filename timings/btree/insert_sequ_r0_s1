@@ -1,0 +1,7 @@
+# Bulk Construction
+1.22203 0.00390625 1 100 4095 21 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+2.94753 0.00390625 1 1000 4095 21 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+36.686 0.00390625 1 10000 4095 21 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+257.049 0.00390625 3 100000 4095 21 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+3106.33 0.00390625 15 1000000 4095 21 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+41090.5 57.0508 139 10000000 4095 21 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
