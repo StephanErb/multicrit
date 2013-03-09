@@ -840,7 +840,7 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result->slotuse = out;
+                        result->slotuse = designated_leafsize;
                         result = leaves[++leaf_number];
                         out = 0;
                     }
@@ -852,7 +852,7 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result->slotuse = out;
+                        result->slotuse = designated_leafsize;
                         result = leaves[++leaf_number];
                         out = 0;
                     }
@@ -860,7 +860,7 @@ private:
                 result->slotkey[out++] = updates[i].data;
 
                 if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                    result->slotuse = out;
+                    result->slotuse = designated_leafsize;
                     result = leaves[++leaf_number];
                     out = 0;
                 }
@@ -871,7 +871,7 @@ private:
             result->slotkey[out++] = leaf->slotkey[in++];
 
             if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
-                result->slotuse = out;
+                result->slotuse = designated_leafsize;
                 result = leaves[++leaf_number];
                 out = 0;
             }

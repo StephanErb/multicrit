@@ -853,14 +853,14 @@ private:
                 tree->clear_recursive(source_node);
                 return NULL; 
             } else if (source_node->isleafnode()) {
-                if (tree->getWeightDelta(upd.upd_begin, upd.upd_end) < traits::leafparameter_k) {
+                if (upd.upd_end - upd.upd_begin < traits::leafparameter_k) {
                     write_updated_leaf_to_new_tree(/*start index*/0, rank, upd.upd_begin, upd.upd_end);
                 } else {
                     const leaf_node* const leaf = (leaf_node*)(source_node);
 
                     tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, traits::leafparameter_k),
                         [&, this](const cache_aligned_blocked_range<size_type>& r) {
-                            
+
                             if (r.begin() == upd.upd_begin) {
                                 this->write_updated_leaf_to_new_tree(/*start index*/0, rank, r.begin(), r.end());
                             } else {
@@ -928,7 +928,7 @@ private:
         }
 
         // in is the existing key where to start reading in the source_node
-        void write_updated_leaf_to_new_tree(width_type in, const size_type& rank, const size_type& upd_begin, const size_type& upd_end) {
+        void write_updated_leaf_to_new_tree(width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end) {
             BTREE_PRINT("Rewriting updated leaf " << source_node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")" << std::endl);
 
             size_type leaf_number = rank / designated_leafsize;
@@ -939,17 +939,19 @@ private:
                 leaf_number = leaves.size()-1; 
                 offset_in_leaf = rank - leaf_number*designated_leafsize;
             }
-            width_type out = offset_in_leaf; // position where to write
+            width_type out = offset_in_leaf;
 
             leaf_node* result = getOrCreateLeaf(leaf_number);
             const leaf_node* const leaf = (leaf_node*)(source_node);
             const width_type in_slotuse = leaf->slotuse;
 
             for (size_type i = upd_begin; i != upd_end; ++i) {
-                switch (tree->updates[i].type) {
+                const Operation<key_type>& op = tree->updates[i];
+
+                switch (op.type) {
                 case Operation<key_type>::DELETE:
                     // We know the element is in here, so no bounds checks
-                    while (tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
+                    while (tree->key_less(leaf->slotkey[in], op.data)) {
                         BTREE_ASSERT(in < in_slotuse);
                         result->slotkey[out++] = leaf->slotkey[in++];
 
@@ -961,7 +963,7 @@ private:
                     ++in; // delete the element by jumping over it
                     break;
                 case Operation<key_type>::INSERT:
-                    while(in < in_slotuse && tree->key_less(leaf->slotkey[in], tree->updates[i].data)) {
+                    while(in < in_slotuse && tree->key_less(leaf->slotkey[in], op.data)) {
                         result->slotkey[out++] = leaf->slotkey[in++];
 
                         if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
@@ -969,7 +971,7 @@ private:
                             out = 0;
                         }
                     }
-                    result->slotkey[out++] = tree->updates[i].data;
+                    result->slotkey[out++] = op.data;
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
                         result = getOrCreateLeaf(++leaf_number);
@@ -978,15 +980,14 @@ private:
                     break;
                 }
             } 
-            if (upd_end == upd.upd_end) {
-                // Reached the total end of the update range. Have to write the remaining elements
-                while (in < in_slotuse) {
-                    result->slotkey[out++] = leaf->slotkey[in++];
+            // Reached the end of the update range. Have to write the remaining elements
+            size_type next_update = upd_end + 1;
+            while (in < in_slotuse && (upd_end == upd.upd_end || tree->key_less(leaf->slotkey[in], tree->updates[next_update].data))) {
+                result->slotkey[out++] = leaf->slotkey[in++];
 
-                    if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < in_slotuse) {
-                        result = getOrCreateLeaf(++leaf_number);
-                        out = 0;
-                    }
+                if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < in_slotuse) {
+                    result = getOrCreateLeaf(++leaf_number);
+                    out = 0;
                 }
             }
             BTREE_PRINT("   as range [" << rank << ", " << ((leaf_number-(rank/designated_leafsize))*designated_leafsize)
@@ -997,13 +998,15 @@ private:
             return leaf_count+1 < leaves.size();
         }
 
-        leaf_node* getOrCreateLeaf(size_type leaf_number) {
+        leaf_node* getOrCreateLeaf(const size_type leaf_number) {
             if (leaves[leaf_number] == NULL) {
-
                 leaf_node* tmp = tree->allocate_leaf();
-                if (leaves[leaf_number].compare_and_swap(tmp, NULL) != NULL)
+                if (leaves[leaf_number].compare_and_swap(tmp, NULL) == NULL) {
+                    return tmp;
+                } else {
                     // Another thread installed the value, so throw away mine.
                     tree->free_node(tmp);
+                }
             }
             return leaves[leaf_number];
         }
