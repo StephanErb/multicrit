@@ -57,13 +57,13 @@ static void time(const Graph& graph, std::string nodecount, std::string degree, 
 		<< getPeakMemorySize()/1024 << " " << p << "  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p" << std::endl;
 }
 
-
 static void translate_to_biweight_graph_with_hopcount(TempGraph& temp_graph, Graph& graph) {
 	std::vector< std::pair<NodeID, Edge > > edges;
 	FORALL_NODES(temp_graph, node) {
 		FORALL_EDGES(temp_graph, node, eid) {
 			const TempEdge& temp_edge = temp_graph.getEdge(eid);
-			edges.push_back({node, Edge(temp_edge.target, Edge::edge_data(temp_edge.weight, /*hopcount*/ 1))});
+			const unsigned int pot_weight = ((double) temp_edge.weight * temp_edge.weight) / 10000; // w² normalized to range 0-10000
+			edges.push_back({node, Edge(temp_edge.target, Edge::edge_data(pot_weight, /*hopcount*/ 1))});
 		}
 	}
 	GraphGenerator<Graph> generator;

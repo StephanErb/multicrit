@@ -28,8 +28,8 @@
 /**
  * Configure the linear combination used to select the best label
  */ 
-#define PRIORITY_SUM
-//#define PRIORITY_LEX
+//#define PRIORITY_SUM
+#define PRIORITY_LEX
 //#define PRIORITY_MAX
 
 /**
@@ -48,7 +48,7 @@
 /**
  * Keep this defined to gather runtime stats during label setting
  */
-//#define GATHER_STATS
+#define GATHER_STATS
 
 /**
  * Enable the following flag to gather how label sets and the pareto queue are modified
