@@ -32,7 +32,7 @@ static void time(const Graph& graph, std::string nodecount, std::string degree, 
 	std::fill_n(label_count, iterations, 0);
 	std::fill_n(memory, iterations, 0);
 
-	boost::uniform_int<> dist(0, graph.numberOfNodes());
+	boost::uniform_int<> dist(0, graph.numberOfNodes()-1);
 
 	for (int i = 0; i < iterations; ++i) {
 		LabelSettingAlgorithm algo(graph, p);
