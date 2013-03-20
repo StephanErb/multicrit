@@ -41,7 +41,7 @@ touch $out_file
 rm $out_file # clear
 for num_cachelines in 4 8 12 16 20 24 28 32
 do
-	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$num_cachelines -DLEAF_NODE_WIDTH=$default_leaf_node_width" time_pq_btree.par
+	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$num_cachelines -DLEAF_NODE_WIDTH=$default_leaf_node_width" time_pq_btree
 	echo -n "$num_cachelines " >> $out_file
 	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 10000 >> $out_file
 done
@@ -52,7 +52,7 @@ touch $out_file
 rm $out_file # clear
 for num_cachelines in 4 8 16 32 64 128 256 512 1024
 do
-	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$default_inner_node_width -DLEAF_NODE_WIDTH=$num_cachelines" time_pq_btree.par
+	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$default_inner_node_width -DLEAF_NODE_WIDTH=$num_cachelines" time_pq_btree
 	echo -n "$num_cachelines " >> $out_file
 	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 10000 >> $out_file
 done
