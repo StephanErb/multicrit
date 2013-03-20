@@ -1,0 +1,42 @@
+set encoding iso_8859_1
+
+set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
+set size 0.5,0.5
+
+# Legend
+set key top right Right
+set key samplen 2
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+# define grid
+set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
+set grid back ls 12
+
+set style line 1 linecolor rgbcolor "black" linewidth 2 pointsize 1 pt 7 lt 1 # black (sequ)
+set style line 2 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 4 lt 1 # gray (competitor) 
+set style line 3 linecolor rgbcolor "#E62B17" linewidth 2 pointsize 1 pt 7 lt 2 # red
+set style line 4 linecolor rgbcolor "#1E90FF" linewidth 2 pointsize 1.2 pt 11 lt 3 # blue
+set style line 5 linecolor rgbcolor "#11AD34" linewidth 2 pointsize 1 pt 5 lt 4 # green 
+set style line 6 linecolor rgbcolor "orange" linewidth 2 pointsize 1.2 pt 9 lt 11 # orange 
+set style line 7 linecolor rgbcolor "#C71585" linewidth 2 pointsize 1 pt 6 lt 4 # pink
+
+#set format x "10^{%L}"
+set logscale x 2
+
+set title "Insertion of s=25000 elements into tree of size n=10 * s"
+set xlabel "Branching parameter k"
+set ylabel "Runtime [ns] per element" offset 1
+set output "btree_parameter_k.ps"
+
+
+plot '../timings/btree/insert_nodewidth_label_inner_p_1' using 1:($2*1000/$5) title ' btree (label, p1)' w lp ls 4,\
+			'../timings/btree/insert_nodewidth_label_inner_sequ' using 1:($2*1000/$5) title ' btree (label, seq)' w lp ls 5,\
+			'../timings/btree/insert_nodewidth_label_inner_p_8' using 1:($2*1000/$5) title ' btree (label, p8)' w lp ls 7,\
+	  '../timings/btree/insert_nodewidth_int_inner_p_1' using 1:($2*1000/$5) title ' btree (int, p1)' w lp ls 3,\
+			'../timings/btree/insert_nodewidth_int_inner_sequ' using 1:($2*1000/$5) title ' btree (int, seq)' w lp ls 1,\
+			'../timings/btree/insert_nodewidth_int_inner_p_8' using 1:($2*1000/$5) title ' btree (int, p8)' w lp ls 6
