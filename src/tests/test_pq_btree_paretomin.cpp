@@ -58,7 +58,7 @@ void testParetoMinInLeaf() {
 	assertTrue(btree.size() == 3, "Insert into empty tree");
 	assertTrue(btree.get_stats().leaves == 1, "Leave count");
 
-	std::vector<Label> minima;
+	std::vector<Operation<Label>> minima;
 	btree.find_pareto_minima(Label(0, 1000000), minima);
 	assertTrue(minima.size() == 3, "Three, as there are no dominated");
 
@@ -91,7 +91,7 @@ void testParetoMinInInternalNode() {
 	assertTrue(btree.get_stats().leaves == 14, "Initial Leafcount");
 	assertTrue(btree.size() == 70, "Tree size");
 
-	std::vector<Label> minima;
+	std::vector<Operation<Label>> minima;
 	btree.find_pareto_minima(Label(0, 1000000), minima);
 	assertTrue(minima.size() == 5, "Report all elements of the first (smallest leaf)");
 
