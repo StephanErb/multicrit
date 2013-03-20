@@ -9,11 +9,11 @@
 #include "options.hpp"
 
 // Width of nodes given as number of cache-lines
-#ifndef INNER_NODE_WIDTH
-#define INNER_NODE_WIDTH 12
+#ifndef BRANCHING_PARAMETER_B
+#define BRANCHING_PARAMETER_B 8
 #endif
-#ifndef LEAF_NODE_WIDTH
-#define LEAF_NODE_WIDTH 256
+#ifndef LEAF_PARAMETER_K
+#define LEAF_PARAMETER_K 1024
 #endif
 
 #ifdef PARALLEL_BUILD

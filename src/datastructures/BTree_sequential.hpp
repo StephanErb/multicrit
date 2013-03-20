@@ -52,12 +52,11 @@
 /// The maximum of a and b. Used in some compile-time formulas.
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
 
-// Width of nodes given as number of cache-lines
-#ifndef INNER_NODE_WIDTH
-#define INNER_NODE_WIDTH 16
+#ifndef BRANCHING_PARAMETER_B
+#define BRANCHING_PARAMETER_B 8
 #endif
-#ifndef LEAF_NODE_WIDTH
-#define LEAF_NODE_WIDTH 128
+#ifndef LEAF_PARAMETER_K
+#define LEAF_PARAMETER_K 1024
 #endif
 
 enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};
@@ -72,23 +71,14 @@ struct Operation {
 
 template <typename _Key, typename _MinKey>
 struct btree_default_traits {
-private:
-    struct slot {
-        _Key        slotkey;
-        size_t      weight;
-        void*       childid;
-    #ifdef COMPUTE_PARETO_MIN
-        _MinKey     minimum;
-    #endif
-    };
 public:
     /// If true, the tree will self verify it's invariants after each insert()
     /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
     static const bool   selfverify = false;
 
     /// Configure nodes to have a fixed size of X cache lines. 
-    static const int    leafparameter_k = BTREE_MAX( 8, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
-    static const int    branchingparameter_b = BTREE_MAX( 8, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
+    static const unsigned int leafparameter_k = BTREE_MAX( 8, LEAF_PARAMETER_K );
+    static const unsigned int branchingparameter_b = BTREE_MAX( 8, BRANCHING_PARAMETER_B );
 };
 
 /** 

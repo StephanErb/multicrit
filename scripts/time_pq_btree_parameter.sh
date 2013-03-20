@@ -4,82 +4,152 @@ cd ../src/
 # Difficult road instance ops: Size of 1 Million. Insert of size about 10000. So ratio is 10
 
 # Test configuration. Change these
-iter_count=5000
+iter_count=1000
 skew=1
 ratio=10 # r = n/k
 
-default_inner_node_width=20
-default_leaf_node_width=196
-
-# Best Paralle Node Size
-out_file="../timings/btree/insert_p_nodewidth_int_inner"
+#################################################################
+# BRANCHING PARAMETER (INT)
+#################################################################
+out_file="../timings/btree/insert_nodewidth_int_inner_p_1"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
-for num_cachelines in 2 4 8 12 16 20 24 28 32 48 64 128
+for b in 8 12 16 20 24 28 32 48 64
 do
-	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$num_cachelines -DLEAF_NODE_WIDTH=$default_leaf_node_width" time_pq_btree.par
-	echo -n "$num_cachelines " >> $out_file
-	./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 10000 >> $out_file
+	make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b" time_pq_btree.par
+	echo -n "$b " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 25000 >> $out_file
 done
 
-out_file="../timings/btree/insert_p_nodewidth_int_leaf"
+out_file="../timings/btree/insert_nodewidth_int_inner_p_8"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
-for num_cachelines in 2 4 8 16 32 48 64 192 128 256 512 1024
+for b in 8 12 16 20 24 28 32 48 64
 do
-	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$default_inner_node_width -DLEAF_NODE_WIDTH=$num_cachelines" time_pq_btree.par
-	echo -n "$num_cachelines " >> $out_file
-	./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 10000 >> $out_file
+	make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b" time_pq_btree.par
+	echo -n "$b " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 25000 >> $out_file
 done
 
-# Best Sequential Node Size
-out_file="../timings/btree/insert_sequ_nodewidth_int_inner"
+out_file="../timings/btree/insert_nodewidth_int_inner_sequ"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
-for num_cachelines in 2 4 8 12 16 20 24 28 32 48 64 128
+for b in 8 12 16 20 24 28 32 48 64
 do
-	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$num_cachelines -DLEAF_NODE_WIDTH=$default_leaf_node_width" time_pq_btree
-	echo -n "$num_cachelines " >> $out_file
-	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 10000 >> $out_file
+	make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b" time_pq_btree
+	echo -n "$b " >> $out_file
+	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 25000 >> $out_file
 done
 
-out_file="../timings/btree/insert_sequ_nodewidth_int_leaf"
+#################################################################
+# BRANCHING PARAMETER (LABEL)
+#################################################################
+out_file="../timings/btree/insert_nodewidth_label_inner_p_1"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
-for num_cachelines in 2 4 8 16 32 48 64 192 128 256 512 1024
+for b in 8 12 16 20 24 28 32 48 64
 do
-	make -B CPPFLAGS="-DINNER_NODE_WIDTH=$default_inner_node_width -DLEAF_NODE_WIDTH=$num_cachelines" time_pq_btree
-	echo -n "$num_cachelines " >> $out_file
-	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 10000 >> $out_file
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par
+	echo -n "$b " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 25000 >> $out_file
+done
+
+out_file="../timings/btree/insert_nodewidth_label_inner_p_8"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for b in 8 12 16 20 24 28 32 48 64
+do
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par
+	echo -n "$b " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 25000 >> $out_file
+done
+
+out_file="../timings/btree/insert_nodewidth_label_inner_sequ"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for b in 8 12 16 20 24 28 32 48 64
+do
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DBRANCHING_PARAMETER_B=$b" time_pq_btree
+	echo -n "$b " >> $out_file
+	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 25000 >> $out_file
 done
 
 
-## Now for Labels (x,y,node) instead of just plain ints
+#################################################################
+# LEAF PARAMETER (INT)
+#################################################################
+out_file="../timings/btree/insert_nodewidth_int_leaf_p_1"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for k in 128 256 512 1024 2048 4096 8192
+do
+	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k" time_pq_btree.par
+	echo -n "$k " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 25000 >> $out_file
+done
 
-# Best Paralle Node Size
-#out_file="../timings/btree/insert_p_nodewidth_label"
-#echo "Writing node size computation to $out_file"
-#touch $out_file
-#rm $out_file # clear
-#for num_cachelines in 1 2 3 4 5 6 7 8 9 10 11 12 14 16 18 20 32 64 128 256 512 1024
-#do
-#	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DINNER_NODE_WIDTH=$num_cachelines -DLEAF_NODE_WIDTH=$num_cachelines" time_pq_btree.par
-#	echo -n "$num_cachelines " >> $out_file
-#	./bin/time_pq_btree.par -c $iter_count -p 4 -r $ratio -s $skew -k 10000 >> $out_file
-#done
+out_file="../timings/btree/insert_nodewidth_int_leaf_p_8"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for k in 128 256 512 1024 2048 4096 8192
+do
+	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k" time_pq_btree.par
+	echo -n "$k " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 25000 >> $out_file
+done
 
-# Best Sequential Node Size
-#out_file="../timings/btree/insert_sequ_nodewidth_label"
-#echo "Writing node size computation to $out_file"
-#touch $out_file
-#rm $out_file # clear
-#for num_cachelines in 1 2 3 4 5 6 7 8 9 10 11 12 14 16 18 20 32 64 128 256 512 1024
-#do
-#	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DINNER_NODE_WIDTH=$num_cachelines -DLEAF_NODE_WIDTH=$num_cachelines" time_pq_btree
-#	echo -n "$num_cachelines " >> $out_file
-#	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 10000 >> $out_file
-#done
+out_file="../timings/btree/insert_nodewidth_int_leaf_sequ"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for k in 128 256 512 1024 2048 4096 8192
+do
+	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k" time_pq_btree
+	echo -n "$k " >> $out_file
+	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 25000 >> $out_file
+done
+
+
+#################################################################
+# LEAF PARAMETER (LABEL)
+#################################################################
+out_file="../timings/btree/insert_nodewidth_label_leaf_p_1"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for k in 128 256 512 1024 2048 4096 8192
+do
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -LEAF_PARAMETER_K=$k" time_pq_btree.par
+	echo -n "$k " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 25000 >> $out_file
+done
+
+out_file="../timings/btree/insert_nodewidth_label_leaf_p_8"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for k in 128 256 512 1024 2048 4096 8192
+do
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -LEAF_PARAMETER_K=$k" time_pq_btree.par
+	echo -n "$k " >> $out_file
+	./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 25000 >> $out_file
+done
+
+out_file="../timings/btree/insert_nodewidth_label_leaf_sequ"
+echo "Writing node size computation to $out_file"
+touch $out_file
+rm $out_file # clear
+for k in 128 256 512 1024 2048 4096 8192
+do
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -LEAF_PARAMETER_K=$k" time_pq_btree
+	echo -n "$k " >> $out_file
+	./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k 25000 >> $out_file
+done
