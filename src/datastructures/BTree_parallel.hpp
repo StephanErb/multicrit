@@ -101,8 +101,8 @@ public:
     static const bool   selfverify = false;
 
     /// Configure nodes to have a fixed size of X cache lines. 
-    static const unsigned int    leafparameter_k = BTREE_MAX( 4, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
-    static const unsigned int    branchingparameter_b = BTREE_MAX( 4, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
+    static const unsigned int    leafparameter_k = BTREE_MAX( 8, (LEAF_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / (sizeof(_Key)) );
+    static const unsigned int    branchingparameter_b = BTREE_MAX( 8, ((INNER_NODE_WIDTH * DCACHE_LINESIZE - 2*sizeof(unsigned short)) / sizeof(slot))/4 );
 };
 
 /** 
@@ -1266,9 +1266,9 @@ private:
 
     static inline level_type num_optimal_levels(const size_type n) {
         if (n <= designated_leafsize) {
-            return 1;
+            return 0;
         } else {
-            return ceil( log(2 * ((double) n)/traits::leafparameter_k) / log(traits::branchingparameter_b) );
+            return ceil( log((8.0*n)/(5.0*traits::leafparameter_k)) / log(traits::branchingparameter_b) );
         }
     }
 
