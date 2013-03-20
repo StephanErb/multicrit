@@ -33,6 +33,7 @@ set xlabel "Branching parameter b"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_parameter_b.ps"
 
+set yrange [0:80]
 
 plot '../timings/btree/insert_nodewidth_label_inner_p_1' using 1:($2*1000/$5) title ' btree (label, p1)' w lp ls 4,\
 			'../timings/btree/insert_nodewidth_label_inner_sequ' using 1:($2*1000/$5) title ' btree (label, seq)' w lp ls 5,\
