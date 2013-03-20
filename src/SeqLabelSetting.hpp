@@ -171,6 +171,20 @@ public:
 	}
 	
 	void printStatistics() {
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			std::cout << "# LabelSet Modifications: insertion position, dominance position" << std::endl;
+			std::vector<unsigned long> set_insertions(101);
+			std::vector<unsigned long> set_dominations(101);
+			for (auto& ls : labels) {
+				for (size_t i=0; i < 101; ++i) {
+					set_insertions[i] += ls.set_insertions[i];
+					set_dominations[i]  += ls.set_dominations[i];
+				}
+			}
+			for (size_t i=0; i < 101; ++i) {
+				std::cout << i << " " << set_insertions[i] << " " << set_dominations[i] << std::endl;
+			}
+		#endif
 		std::cout << stats.toString() << std::endl;
 	}
 

@@ -483,7 +483,16 @@ protected:
 	typename B::Set labels;
 
 public:
-	SharedHeapLabelSet() {
+	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+		std::vector<unsigned long> set_insertions;
+		std::vector<unsigned long> set_dominations;
+	#endif
+
+	SharedHeapLabelSet()
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+		   : set_insertions(101), set_dominations(101)
+		#endif
+	 {
 		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
@@ -497,6 +506,11 @@ public:
 	bool add(const NodeID& node, const label_type& label, heap_type_slot& heap) {
 		typename B::iterator iter;
 		if (B::isDominated(labels, label, iter)) {
+			#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+				const double size = labels.size()-2; // without both sentinals
+				const double position = iter - (labels.begin() + 1); // without leading sentinal 
+				if (size > 0) set_dominations[(int) (100.0 * position / size)]++;
+			#endif
 			return false;
 		}
 		label_type_extended new_label(label);
@@ -518,6 +532,11 @@ public:
 		}
 		labels.insert(new_label);
 #else
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			const double size = labels.size()-2; // without both sentinals
+			const double position = iter - (labels.begin() + 1); // without leading sentinal 
+			if (size > 0) set_insertions[(int) (100.0 * position / size)]++;
+		#endif
 		if (iter == first_nondominated) {
 			// delete range is empty, so just insert
 			new_label.handle = heap.push(B::computePriority(new_label), Data(node, new_label));

@@ -52,7 +52,8 @@ private:
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-		std::vector<unsigned long> set_changes;
+		std::vector<unsigned long> set_insertions;
+		std::vector<unsigned long> set_dominations;
 	#endif
 
 	struct GroupNodeLabelsByNodeComp {
@@ -150,6 +151,11 @@ private:
 			if (isDominated(labelset_iter, labelset.end(), new_label, iter)) {
 				stats.report(LABEL_DOMINATED);
 				min = iter->second_weight; 
+				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+					const double size = labelset.size()-2; // without both sentinals
+					const double position = iter - (labelset.begin() + 1); // without leading sentinal 
+					if (size > 0) set_dominations[(int) (100.0 * position / size)]++;
+				#endif	
 				continue;
 			}
 			min = new_label.second_weight;
@@ -157,22 +163,19 @@ private:
 			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
 
 			label_iter first_nondominated = y_predecessor(iter, new_label);
+
+			#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+				const double size = labelset.size()-2; // without both sentinals
+				const double position = iter - (labelset.begin() + 1); // without leading sentinal 
+				if (size > 0) set_insertions[(int) (100.0 * position / size)]++;
+			#endif	
+
 			if (iter == first_nondominated) {
-
-				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-					set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
-				#endif
-
 				// delete range is empty, so just insert
 				labelset_iter = labelset.insert(first_nondominated, new_label);
 			} else {
 				// schedule deletion of dominated labels
 				for (label_iter i = iter; i != first_nondominated; ++i) {
-
-					#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-						if (i != iter) set_changes[(int)(100*((first_nondominated - labelset.begin())/(double)labelset.size()) + 0.5)]++;
-					#endif
-
 					updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, *i)});
 				}
 				// replace first dominated label and remove the rest
@@ -187,7 +190,8 @@ public:
 		labels(graph_.numberOfNodes()), 
 		graph(graph_)
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-			,set_changes(101)
+			,set_insertions(101)
+			,set_dominations(101)
 		#endif
 	{
 		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
@@ -319,9 +323,9 @@ public:
 	
 	void printStatistics() {
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-			std::cout << "# LabelSet Modifications" << std::endl;
+			std::cout << "# LabelSet Modifications: insertion/deletion, dominance position" << std::endl;
 			for (size_t i=0; i < 101; ++i) {
-				std::cout << i << " " << set_changes[i] << std::endl;
+				std::cout << i << " " << set_insertions[i] << " " << set_dominations[i] << std::endl;
 			}
 		#endif
 		std::cout << stats.toString(labels) << std::endl;
