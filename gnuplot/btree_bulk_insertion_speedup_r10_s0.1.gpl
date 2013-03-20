@@ -40,10 +40,12 @@ set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
 set format x "10^{%L}"
 
 # finally the plot command
-plot [:][0:6]\
+plot [:][0:16]\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_16_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=16)' with linespoints pt 8 linetype 10,\
+  '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_8_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8,\
  '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_4_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=4)' with linespoints pt 4 linetype 4,\
  '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_2_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=2)' with linespoints pt 3 linetype 3,\
  '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_1_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=1)' with linespoints pt 2 linetype 2
- #'< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_8_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8,\
+
 
 		    

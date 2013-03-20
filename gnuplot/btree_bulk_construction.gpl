@@ -1,7 +1,7 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
-set size 0.49,0.49
+set size 0.5,0.5
 
 # Legend
 set key top right Right
@@ -37,9 +37,10 @@ set xrange [:100000000]
 set yrange [:20]
 set ytics 5
 
-plot '../timings/set/insert_p_4_r0_s1' using 4:($1*1000/$4) title ' mcstl (p4)' w lp ls 2,\
+plot '../timings/set/insert_p_16_r0_s1' using 4:($1*1000/$4) title ' mcstl (p16)' w lp ls 2,\
 			'../timings/btree/insert_p_1_r0_s1' using 4:($1*1000/$4) title ' btree (p1)' w lp ls 3,\
 			'../timings/btree/insert_sequ_r0_s1' using 4:($1*1000/$4) title ' btree (seq)' w lp ls 1,\
 		    '../timings/btree/insert_p_2_r0_s1' using 4:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
-		    '../timings/btree/insert_p_4_r0_s1' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5
-		    # '../timings/btree/insert_p_8_r0_s1' using 4:($1*1000/$4) title ' btree (p8)' with linespoints pt 8 linetype 8
+		    '../timings/btree/insert_p_4_r0_s1' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
+			'../timings/btree/insert_p_8_r0_s1' using 4:($1*1000/$4) title ' btree (p8)' w lp ls 6,\
+			'../timings/btree/insert_p_16_r0_s1' using 4:($1*1000/$4) title ' btree (p16)' w lp ls 7
