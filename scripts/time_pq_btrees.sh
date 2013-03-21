@@ -18,7 +18,7 @@ done
 
 out_file="../timings/btree/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree -c $iter_count -r $ratio -s $skew > $out_file
+taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew > $out_file
 
 
 # For all insertions use
@@ -37,7 +37,7 @@ done
 
 out_file="../timings/btree/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
+taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
 
 
 # Skewed Bulk Insertion
@@ -52,7 +52,7 @@ done
 
 out_file="../timings/btree/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
+taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
 
 
 # Bulk Insertion
@@ -67,7 +67,7 @@ done
 
 out_file="../timings/btree/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
+taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
 
 
 # Skewed Bulk Insertion
@@ -82,4 +82,4 @@ done
 
 out_file="../timings/btree/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
-./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
+taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew  > $out_file
