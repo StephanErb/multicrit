@@ -15,10 +15,19 @@ touch $out_file
 rm $out_file # clear
 for r in 0 10 100 1000 10000
 do
+	row=()
+	sum=0.0
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par
-		./bin/time_pq_btree.par -c $iter_count -p 1 -r $r -s $skew -k $numelements -h >> $out_file
+		current=$(./bin/time_pq_btree.par -c $iter_count -p 1 -r $r -s $skew -k $numelements -h)
+		row+=($current)
+		sum=$(echo $sum + $current | bc)
+	done
+	echo "$r -> row average $sum"
+	for i in "${row[@]}"
+	do
+		echo "scale=4; $i / $sum" | bc | tr "\n" " " >> $out_file 
 		echo -n " " >> $out_file
 	done
 	echo "" >> $out_file
