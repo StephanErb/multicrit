@@ -5,8 +5,8 @@ cd ../src/
 iter_count=1
 # also, see ratio below to configure original tree size: r = n/k
 
-make -B time_pq_mcstl_set
-make -B time_pq_set
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_mcstl_set
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_set
 
 # Bulk Construction
 ratio=0

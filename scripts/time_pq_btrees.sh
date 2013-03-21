@@ -5,8 +5,8 @@ cd ../src/
 iter_count=1
 # also, see ratio below to configure original tree size: r = n/k
 
-make -B time_pq_btree.par
-make -B time_pq_btree
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_btree.par
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_btree
 
 
 # Bulk Construction
