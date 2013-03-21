@@ -34,7 +34,7 @@
 	};
 
 	struct Comparator {
-		bool operator() (const Label& i, const Label& j) const {
+		inline bool operator() (const Label& i, const Label& j) const {
 			if (i.x == j.x) {
 				if (i.y == j.y) {
 					return i.node < j.node;
@@ -169,12 +169,14 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(100, ratio, skew, iterations *  10000, p);
-		timeBulkInsertion(1000, ratio, skew, iterations * 10000, p);
-		timeBulkInsertion(10000, ratio, skew, iterations * 1000, p);
-		timeBulkInsertion(100000, ratio, skew, iterations * 100, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations * 10, p);
-		if (ratio < 40) timeBulkInsertion(10000000, ratio, skew, iterations * 3, p);
+		timeBulkInsertion(100, ratio, skew, iterations *     3000, p);
+		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p);
+		timeBulkInsertion(10000, ratio, skew, iterations *    300, p);
+		timeBulkInsertion(100000, ratio, skew, iterations *    30, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations *   30, p);
+		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p);
+		if (ratio < 50) 
+		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p);
 	}
 	return 0;
 } 

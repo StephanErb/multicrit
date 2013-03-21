@@ -23,9 +23,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <valgrind/callgrind.h>
-
-
 #ifdef USE_GRAPH_LABEL
 	struct Label {
 		unsigned int x;
@@ -39,7 +36,7 @@
 	};
 
 	struct Comparator {
-		bool operator() (const Label& i, const Label& j) const {
+		inline bool operator() (const Label& i, const Label& j) const {
 			if (i.x == j.x) {
 				if (i.y == j.y) {
 					return i.node < j.node;
@@ -112,9 +109,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 
-		CALLGRIND_START_INSTRUMENTATION;
 		tree.apply_updates(updates);
-		CALLGRIND_STOP_INSTRUMENTATION;
 
 		tbb::tick_count stop = tbb::tick_count::now();
 		timings[i] = (stop-start).seconds() * 1000.0 * 1000.0;
@@ -173,12 +168,14 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(100, ratio, skew, iterations *  1000, p);
-		timeBulkInsertion(1000, ratio, skew, iterations * 1000, p);
-		timeBulkInsertion(10000, ratio, skew, iterations * 100, p);
-		timeBulkInsertion(100000, ratio, skew, iterations * 10, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations * 3, p);
-		if (ratio < 40) timeBulkInsertion(10000000, ratio, skew, iterations * 3, p);
+		timeBulkInsertion(100, ratio, skew, iterations *     3000, p);
+		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p);
+		timeBulkInsertion(10000, ratio, skew, iterations *    300, p);
+		timeBulkInsertion(100000, ratio, skew, iterations *    30, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations *   30, p);
+		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p);
+		if (ratio < 50) 
+		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p);
 	}
 	return 0;
 } 
