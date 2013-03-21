@@ -28,13 +28,13 @@ set style line 7 linecolor rgbcolor "#C71585" linewidth 2 pointsize 1 pt 6 lt 4 
 set format x "10^{%L}"
 set logscale x 10
 
-set title "Btree Bulk Construction"
+set title "Bulk Construction Time"
 set xlabel "Inserted elements (s)"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_construction.ps"
 
-set xrange [:100000000]
-set yrange [:20]
+set xrange [:]
+set yrange [:15]
 set ytics 5
 
 plot '../timings/set/insert_p_16_r0_s1' using 4:($1*1000/$4) title ' mcstl (p16)' w lp ls 2,\

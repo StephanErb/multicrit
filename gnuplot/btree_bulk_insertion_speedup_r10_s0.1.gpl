@@ -1,51 +1,45 @@
-# we want to use umlauts
 set encoding iso_8859_1
 
-# the enhanced option allows format to typeset exponents without problems
-set terminal postscript eps enhanced color
+set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
+set size 0.5,0.5
 
-# the name of the output file
+# Legend
+set key top left Left
+set key samplen 2
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+# define grid
+set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
+set grid back ls 12
+
+set style line 1 linecolor rgbcolor "black" linewidth 2 pointsize 1 pt 7 lt 1 # black (sequ)
+set style line 2 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 4 lt 1 # gray (competitor) 
+set style line 3 linecolor rgbcolor "#E62B17" linewidth 2 pointsize 1 pt 7 lt 2 # red
+set style line 4 linecolor rgbcolor "#1E90FF" linewidth 2 pointsize 1.2 pt 11 lt 3 # blue
+set style line 5 linecolor rgbcolor "#11AD34" linewidth 2 pointsize 1 pt 5 lt 4 # green 
+set style line 6 linecolor rgbcolor "orange" linewidth 2 pointsize 1.2 pt 9 lt 11 # orange 
+set style line 7 linecolor rgbcolor "#C71585" linewidth 2 pointsize 1 pt 6 lt 4 # pink
+
+set format x "10^{%L}"
+set logscale x 10
+
+set title "Skewed Bulk Insertion Speedup (range 0.1*MAX\\_INT, n=10*s)"
+set xlabel "Inserted elements (s)"
+set ylabel "Speedup" offset 1
 set output "btree_bulk_insertion_speedup_r10_s0.1.ps"
 
-# the title above the diagram
-set title "Skewed Speedup of Btree Bulk Insertion from range 0.1 * MAX\\_INT (into tree of size n = 10 * k)"
+set xrange [:]
+set yrange [:16]
 
-# justify the legends to the left;
-# that 'left Left' is no typo, but leaving 'Left' out does not change much
-set key top left Left
-set key box linestyle -1
-set key samplen 1
-
-# the text along the vertical axis
-# (the numeric values are the results of trial and error experiments)
-set lmargin 6
-set label "Speedup" at screen 0.015,0.5 center  rotate
-
-# the text along the horizontal axis
-# (the numeric values are the results of trial and error experiments)
-set bmargin 4
-set label "Inserted elements (k)" at screen 0.5,0.03 center
-
-# we are using logarithmic scales
-set logscale x 10
-#set logscale y 10
-
-# Grid lines
-set grid ytics lc rgb "#bbbbbb" lw 1 lt 0
-set grid xtics lc rgb "#bbbbbb" lw 1 lt 0
-
-# the tics along the horizontal axis and the labels for them
-#set xtics rotate 
-#set xtics  1,1
-set format x "10^{%L}"
-
-# finally the plot command
-plot [:][0:16]\
- '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_16_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=16)' with linespoints pt 8 linetype 10,\
-  '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_8_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=8)' with linespoints pt 8 linetype 8,\
- '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_4_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=4)' with linespoints pt 4 linetype 4,\
- '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_2_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=2)' with linespoints pt 3 linetype 3,\
- '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_1_r10_s0.1' using 1:($2/$25) title ' btree (parallel, p=1)' with linespoints pt 2 linetype 2
-
-
+plot\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_16_r10_s0.1' using 1:($2/$25) title ' btree (p16)' with lp ls 7,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_8_r10_s0.1' using 1:($2/$25) title ' btree (p8)' with lp ls 6,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_4_r10_s0.1' using 1:($2/$25) title ' btree (p4)' with lp ls 5,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_2_r10_s0.1' using 1:($2/$25) title ' btree (p2)' with lp ls 4,\
+ '< join -j 4 ../timings/btree/insert_sequ_r10_s0.1 ../timings/btree/insert_p_1_r10_s0.1' using 1:($2/$25) title ' btree (p1)' with lp ls 3
 		    
