@@ -860,7 +860,7 @@ private:
                 } else {
                     const leaf_node* const leaf = (leaf_node*)(source_node);
 
-                    tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, traits::leafparameter_k),
+                    tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, 2*traits::leafparameter_k),
                         [&, this](const cache_aligned_blocked_range<size_type>& r) {
 
                             if (r.begin() == upd.upd_begin) {
