@@ -1,15 +1,12 @@
 #!/bin/bash
 cd ../src/
 
-# Test configuration. Change these
-iter_count=1
-# also, see ratio below to configure original tree size: r = n/k
-
 make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_btree.par
 make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_btree
 
 
 # Bulk Construction
+iter_count=10
 ratio=0
 skew=1
 for p in 1 2 4 8 16
@@ -22,6 +19,10 @@ done
 out_file="../timings/btree/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew > $out_file
+
+
+# For all insertions use
+iter_count=1
 
 
 # Bulk Insertion
