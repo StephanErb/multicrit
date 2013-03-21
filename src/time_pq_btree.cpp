@@ -81,7 +81,7 @@ void bulkConstruct(Tree& tree, size_t n) {
 		#endif
 }
 
-void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p) {
+void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p, bool heatmap) {
 	std::vector<double> timings(iterations);
 	std::vector<double> memory(iterations);
 
@@ -120,9 +120,13 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 			tree.verify();
 		#endif
 	}
-	std::cout << pruned_average(timings.data(), iterations, 0.25) << " " << pruned_average(memory.data(), iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
-		<< " " << k << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
-		<< " # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p" << std::endl;
+	if (heatmap) {
+		std::cout << pruned_average(timings.data(), iterations, 0.25);
+	} else {
+		std::cout << pruned_average(timings.data(), iterations, 0.25) << " " << pruned_average(memory.data(), iterations, 0.25)/1024 << " "  << getPeakMemorySize()/1024
+			<< " " << k << " " << btree<Label, Comparator>::traits::leafparameter_k << " " << btree<Label, Comparator>::traits::branchingparameter_b << " " << ratio << " " << skew << " " << p
+			<< " # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p" << std::endl;
+	}
 }
 
 
@@ -132,9 +136,10 @@ int main(int argc, char ** args) {
 	double skew = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
 	size_t k = 0;
+	bool heatmap = false;
 
 	int c;
-	while( (c = getopt( argc, args, "c:r:s:p:k:") ) != -1  ){
+	while( (c = getopt( argc, args, "c:r:s:p:k:h") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
@@ -151,6 +156,9 @@ int main(int argc, char ** args) {
 		case 'k':
 			k = atoi(optarg);
 			break;
+		case 'h':
+			heatmap = true;
+			break;
 		case '?':
             std::cout << "Unrecognized option: " <<  optopt << std::endl;
 		}
@@ -162,21 +170,21 @@ int main(int argc, char ** args) {
 #endif
 
 	if (k != 0) {
-		timeBulkInsertion(k, ratio, skew, iterations, p);
+		timeBulkInsertion(k, ratio, skew, iterations, p, heatmap);
 	} else {
 		if (ratio > 0.0) {
 			std::cout << "# Bulk Insertion" << std::endl;
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(100, ratio, skew, iterations *     3000, p);
-		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p);
-		timeBulkInsertion(10000, ratio, skew, iterations *    300, p);
-		timeBulkInsertion(100000, ratio, skew, iterations *    30, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations *   30, p);
-		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p);
+		timeBulkInsertion(100, ratio, skew, iterations *     3000, p, heatmap);
+		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p, heatmap);
+		timeBulkInsertion(10000, ratio, skew, iterations *    300, p, heatmap);
+		timeBulkInsertion(100000, ratio, skew, iterations *    30, p, heatmap);
+		timeBulkInsertion(1000000, ratio, skew, iterations *   30, p, heatmap);
+		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p, heatmap);
 		if (ratio < 50) 
-		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p);
+		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p, heatmap);
 	}
 	return 0;
 } 
