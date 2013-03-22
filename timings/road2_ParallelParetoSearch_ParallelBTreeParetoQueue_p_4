@@ -1,6 +1,0 @@
-# ParallelParetoSearch_ParallelBTreeParetoQueue
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
-1 NY1 258.763 1089 4127.37 4127 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 328.853 1469 4833.52 4833 4  # time in [s], target node label count, memory [mb], peak memory [mb], p

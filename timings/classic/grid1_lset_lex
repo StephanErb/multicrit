@@ -1,0 +1,35 @@
+# Instances of [Raith, Ehrgott 2009]
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+1 G1 0.00825313 35.25 2.11426 2 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+2 G2 0.0272456 88.9167 3.32487 3 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+3 G3 0.119763 112.333 7.55371 8 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+4 G4 0.0537227 50.3333 4.84375 8 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+5 G5 1.18727 286.083 33.7028 37 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+6 G6 0.179235 52.1667 8.94531 37 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+7 G7 1.38603 188.333 36.3343 38 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+8 G8 0.815766 123.333 23.9824 38 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+9 G9 2.98244 273.75 65.766 70 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+10 G10 1.2662 124 31.5469 70 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+11 G11 3.33837 205.167 74.0954 76 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+12 G12 0.0246295 50.8333 3.4694 76 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+13 G13 0.456445 115.667 16.8382 76 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+14 G14 7.03873 279.667 134.726 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+15 G15 0.00352191 4.75 2.6569 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+16 G16 0.00480626 7.83333 2.77148 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+17 G17 0.00746663 8.75 2.90137 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+18 G18 0.0152048 17.3333 3.29004 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+19 G19 0.0237933 22.3333 3.80371 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+20 G20 0.0335094 31.75 4.22786 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+21 G21 0.0480073 48.25 5.02409 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+22 G22 0.0593588 58.0833 5.58691 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+23 G23 0.0771548 69.3333 6.60612 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+24 G24 0.0906021 78.3333 7.19173 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+25 G25 0.109437 95 7.56966 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+26 G26 0.133973 109.917 8.25521 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+27 G27 0.172226 135.667 9.80078 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+28 G28 0.242037 185.083 12.4782 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+29 G29 0.346478 260.333 15.9033 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+30 G30 0.602659 412.5 24.459 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+31 G31 1.26162 815.917 45.2559 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+32 G32 2.14022 1376.25 74.5391 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+33 G33 1.90553 1574.83 79.4268 141 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
