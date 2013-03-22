@@ -27,10 +27,16 @@
 
 /**
  * Configure the linear combination used to select the best label
- */ 
-//#define PRIORITY_SUM
-#define PRIORITY_LEX
-//#define PRIORITY_MAX
+ */
+#ifndef PRIORITY_LEX
+#ifndef PRIORITY_SUM
+#ifndef PRIORITY_MAX
+  //#define PRIORITY_SUM
+  #define PRIORITY_LEX
+  //#define PRIORITY_MAX
+#endif
+#endif
+#endif
 
 /**
  * If defined, use std::set to store labels, otherwise use an std::vector
@@ -41,9 +47,10 @@
 /**
  * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector
  */
-#define PARETO_QUEUE VectorParetoQueue
-//#define PARETO_QUEUE BTreeParetoQueue
-
+#ifndef PARETO_QUEUE
+  #define PARETO_QUEUE VectorParetoQueue
+  //#define PARETO_QUEUE BTreeParetoQueue
+#endif
 
 /**
  * Keep this defined to gather runtime stats during label setting
