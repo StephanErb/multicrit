@@ -86,16 +86,21 @@ int main(int argc, char ** args) {
 	//		for each correlation is 8.6, 96.2, 274.7, 435.6 and 772.3 in order of decreasing value of ρ.
 
 	std::cout << "# " << currentConfig() << std::endl;
-	timeGrid(1, 20, 20, verbose, iterations, q, p);
-	timeGrid(2, 40, 40, verbose, iterations, q, p);
-	timeGrid(3, 60, 60, verbose, iterations, q, p);
-	timeGrid(4, 80, 80, verbose, iterations, q, p);
-	timeGrid(5, 100, 100, verbose, iterations, q, p);
-	timeGrid(6, 120, 120, verbose, iterations, q, p);
-	timeGrid(7, 140, 140, verbose, iterations, q, p);
-	timeGrid(8, 160, 160, verbose, iterations, q, p);
-	timeGrid(9, 180, 180, verbose, iterations, q, p);
+	timeGrid(1,   20, 20, verbose, iterations, q, p);
+	timeGrid(2,   40, 40, verbose, iterations, q, p);
+	timeGrid(3,   60, 60, verbose, iterations, q, p);
+	timeGrid(4,   80, 80, verbose, iterations, q, p);
+	timeGrid(5,  100, 100, verbose, iterations, q, p);
+	timeGrid(6,  120, 120, verbose, iterations, q, p);
+	timeGrid(7,  140, 140, verbose, iterations, q, p);
+	timeGrid(8,  160, 160, verbose, iterations, q, p);
+	timeGrid(9,  180, 180, verbose, iterations, q, p);
 	timeGrid(10, 200, 200, verbose, iterations, q, p);
+	timeGrid(11, 220, 220, verbose, iterations, q, p);
+	timeGrid(12, 240, 240, verbose, iterations, q, p);
+	timeGrid(13, 260, 260, verbose, iterations, q, p);
+	timeGrid(14, 280, 280, verbose, iterations, q, p);
+	timeGrid(15, 300, 300, verbose, iterations, q, p);
 
 	return 0;
 }
