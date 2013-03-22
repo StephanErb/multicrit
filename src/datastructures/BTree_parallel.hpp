@@ -1255,7 +1255,8 @@ private:
 
     static inline level_type num_optimal_levels(const size_type n) {
         if (n <= designated_leafsize) {
-            return 0;
+            return 1; // hack to prevent division by zero when the root node runs empty
+                      // Instead of a single leaf we will now get an inner node pointing to the single leaf
         } else {
             return ceil( log((8.0*n)/(5.0*traits::leafparameter_k)) / log(traits::branchingparameter_b) );
         }
