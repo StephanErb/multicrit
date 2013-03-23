@@ -95,6 +95,17 @@ protected:
 	}
 
 	static inline bool isDominated(Set& labels, const label_type& new_label, iterator& iter) {
+		// Short cut domination check with the last element
+		iter = labels.begin() + labels.size()-2; // element before the closing sentinal
+		if (iter->first_weight < new_label.first_weight) {
+			if (iter->second_weight <= new_label.second_weight) {
+				return true; // new label is dominated
+			} else {
+				++iter;
+				return false;
+			}
+		}
+		// Exact check via binary search
 		iter = x_predecessor(labels, new_label);
 
 		if (iter->second_weight <= new_label.second_weight) {
