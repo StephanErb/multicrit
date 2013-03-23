@@ -2,9 +2,9 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=100
+iter_count=10
 skew=1
-numelements=10000
+numelements=25000
 
 #################################################################
 # BRANCHING PARAMETER (LABEL)
@@ -19,7 +19,7 @@ do
 	sum=0.0
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
-		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree
+		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
 		current=$(taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $r -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
@@ -43,7 +43,7 @@ do
 	sum=0.0
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
-		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par
+		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
 		current=$(taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -r $r -p 1 -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
@@ -69,9 +69,9 @@ for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
 do
 	row=()
 	sum=0.0
-	for k in {64..2048..64}
+	for k in `seq 64 64 2048`
 	do
-		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree
+		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
 		current=$(taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $r -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
@@ -93,9 +93,9 @@ for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
 do
 	row=()
 	sum=0.0
-	for k in {64..2048..64}
+	for k in `seq 64 64 2048`
 	do
-		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par
+		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
 		current=$(taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -r $r -p 1 -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
