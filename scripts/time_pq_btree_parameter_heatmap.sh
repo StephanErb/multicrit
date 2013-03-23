@@ -2,7 +2,7 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=10
+iter_count=3
 skew=1
 numelements=25000
 
