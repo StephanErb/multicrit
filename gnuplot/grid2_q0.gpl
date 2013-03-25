@@ -2,7 +2,7 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.7,0.6
+set size 0.7,0.50
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
@@ -28,21 +28,20 @@ set style line 5 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
 set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 
-set format x "10^{%L}"
+set format x "%g^{2}"
 set logscale y 10
 
-set title "Labeling Algorithms on Grids (0) of [Machuca 2012]"
+set title "Square Grids - uncorrelated (0)"
 set xlabel "Grid Instance"
 set ylabel "Runtime [s]" offset 1
 set output "grid2_q0.ps"
 
-set xrange [:]
+set xrange [50:]
 set yrange [:]
-set xtics rotate
 
-plot '../timings/grid2_lset_lex_q0' using 1:3:xticlabels(2) title ' LSet (lex)' ls 4,\
- 	 '../timings/grid2_paretosearch_sequ_q0' using 1:3:xticlabels(2) title ' ParetoSearch (seq)' ls 7,\
-	 '../timings/grid2_paretosearch_p8_q0' using 1:3:xticlabels(2) title ' ParetoSearch (p8)' ls 6
+plot '../timings/grid2_lset_lex_q0' using 2:4 title ' LSet (lex)' ls 4,\
+ 	 '../timings/grid2_paretosearch_sequ_q0' using 2:4 title ' ParetoSearch (seq)' ls 7,\
+	 '../timings/grid2_paretosearch_p8_q0' using 2:4 title ' ParetoSearch (p8)' ls 6
 
 
 
