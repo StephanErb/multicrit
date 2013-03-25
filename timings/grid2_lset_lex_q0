@@ -1,2 +1,17 @@
 # Class 1 Grid Instances of [Machuca 2012]
 # SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+1 20x20 0.000935506 38.4167 0 1.62207 1 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+2 40x40 0.0128499 99.5 0 3.3252 3 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+3 60x60 0.0532439 143.583 0 7.49251 8 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+4 80x80 0.157266 210.583 0 16.5885 18 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+5 100x100 0.35722 276.25 0 31.0387 33 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+6 120x120 0.721217 341.833 0 55.8385 65 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+7 140x140 1.28628 396.917 0 90.3324 96 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+8 160x160 2.13137 464.25 0 133.641 141 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+9 180x180 3.30264 546.417 0 189.008 198 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+10 200x200 4.80041 581.083 0 255.741 265 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+11 220x220 7.16862 663.75 0 354.993 375 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+12 240x240 10.0463 714.583 0 452.711 493 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+13 260x260 14.1605 771.417 0 588.188 607 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+14 280x280 18.8017 830.75 0 717.178 755 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+15 300x300 24.8963 896.583 0 879.358 902 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
