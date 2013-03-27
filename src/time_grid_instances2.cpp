@@ -101,7 +101,11 @@ int main(int argc, char ** args) {
 	timeGrid(13, 260, 260, verbose, iterations, q, p);
 	timeGrid(14, 280, 280, verbose, iterations, q, p);
 	timeGrid(15, 300, 300, verbose, iterations, q, p);
-
+	timeGrid(15, 320, 320, verbose, iterations, q, p);
+	timeGrid(15, 340, 340, verbose, iterations, q, p);
+	timeGrid(15, 360, 360, verbose, iterations, q, p);
+	timeGrid(15, 380, 380, verbose, iterations, q, p);
+	timeGrid(15, 400, 400, verbose, iterations, q, p);
 	return 0;
 }
 
