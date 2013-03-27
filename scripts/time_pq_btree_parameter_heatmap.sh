@@ -2,9 +2,9 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=3
+iter_count=1000
 skew=1
-numelements=25000
+numelements=10000
 
 #################################################################
 # BRANCHING PARAMETER (LABEL)
@@ -15,6 +15,15 @@ touch $out_file
 rm $out_file # clear
 for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
 do
+	if [ $r -gt 300 ]
+	then
+		iter_count=100
+	fi
+	if [ $r -gt 999 ]
+	then
+		iter_count=10
+	fi
+
 	row=()
 	sum=0.0
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
@@ -39,6 +48,15 @@ touch $out_file
 rm $out_file # clear
 for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
 do
+	if [ $r -gt 300 ]
+	then
+		iter_count=100
+	fi
+	if [ $r -gt 999 ]
+	then
+		iter_count=10
+	fi
+
 	row=()
 	sum=0.0
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
@@ -67,6 +85,15 @@ touch $out_file
 rm $out_file # clear
 for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
 do
+	if [ $r -gt 300 ]
+	then
+		iter_count=100
+	fi
+	if [ $r -gt 999 ]
+	then
+		iter_count=10
+	fi
+
 	row=()
 	sum=0.0
 	for k in `seq 64 64 2048`
@@ -91,6 +118,15 @@ touch $out_file
 rm $out_file # clear
 for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
 do
+	if [ $r -gt 300 ]
+	then
+		iter_count=100
+	fi
+	if [ $r -gt 999 ]
+	then
+		iter_count=10
+	fi
+	
 	row=()
 	sum=0.0
 	for k in `seq 64 64 2048`

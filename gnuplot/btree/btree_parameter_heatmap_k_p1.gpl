@@ -1,0 +1,44 @@
+set encoding iso_8859_1
+set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
+set size 0.6,0.6
+
+set title "Insertion of s=10000 elements (tree size n=r*s; p1) "
+set ylabel "Tree size ratio r"
+set xlabel "Leaf parameter k"
+set output "btree_parameter_heatmap_k_p1.ps"
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+unset key
+set tic scale 0
+
+set palette gray
+#set palette rgbformulae 22,13,10
+#set palette negative
+
+set cbrange [:]
+unset cbtics
+
+set xtics ("2^3" 0, "2^4" 1, "2^5" 2, "2^6" 3, "2^7" 4, "2^8" 5, "2^9" 6, "2^{10}" 7, "2^{11}" 8, "2^{12}" 9, "2^{13}" 10, "2^{14}" 11)
+set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
+
+
+#set xrange [:]
+#set yrange [0:]
+
+#set logscale x 10
+#set logscale y 2
+#set format y "2^{%L}"
+
+#set view map
+
+plot '../../timings/btree/insert_nodewidth_label_leaf_p_1_heatmap' matrix with image
+
+
+
+
+
