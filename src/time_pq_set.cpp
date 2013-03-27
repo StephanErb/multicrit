@@ -39,7 +39,7 @@
 		{};
 	};
 
-	struct Comparator {
+	struct Comparator : public std::binary_function<Label,Label,bool> {
 		inline bool operator() (const Label& i, const Label& j) const {
 			if (i.x == j.x) {
 				if (i.y == j.y) {
