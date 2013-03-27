@@ -33,6 +33,10 @@
 			os << "{" << label.x << ", " << label.y  << ", " << label.node << "}";
 			return os;
 		}
+
+		Label(unsigned int _x=0, unsigned int _y=0, unsigned int _node=0)
+			: x(_x), y(_y), node(_node)
+		{};
 	};
 
 	struct Comparator {
@@ -75,7 +79,7 @@ void bulkConstruct(Tree& tree, size_t n) {
 		updates.reserve(n);
 		for (size_t j=0; j < n; ++j) {
 			#ifdef USE_GRAPH_LABEL
-				updates.push_back({dist(gen), dist(gen), dist(gen)});
+				updates.push_back(Label(dist(gen), dist(gen), dist(gen)));
 			#else
 				updates.push_back(dist(gen));
 			#endif
@@ -104,7 +108,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		updates.reserve(k);
 		for (size_t j=0; j < k; ++j) {
 			#ifdef USE_GRAPH_LABEL
-				updates.push_back({skewed_dist(gen), skewed_dist(gen), skewed_dist(gen)});
+				updates.push_back(Label(skewed_dist(gen), skewed_dist(gen), skewed_dist(gen)));
 			#else
 				updates.push_back(skewed_dist(gen));
 			#endif
