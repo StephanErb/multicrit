@@ -58,7 +58,7 @@
 Comparator cmp;
 
 struct RedBlackTree : public std::set<Label, Comparator> {
-	RedBlackTree(size_t n) {if (0) n++;};
+	RedBlackTree(size_t n) : std::set<Label, Comparator>(cmp) {if (0) n++;};
 
 	void apply_updates(const std::vector<Label>& updates) {
 		// For benchmarik purposes, we only support inserts
