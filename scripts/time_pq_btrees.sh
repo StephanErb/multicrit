@@ -2,7 +2,7 @@
 cd ../src/
 
 # Bulk Construction
-iter_count=100
+iter_count=10
 ratio=0
 skew=1
 for p in 1 2 4 8 16
@@ -18,7 +18,7 @@ taskset -c 0 ./bin/time_pq_btree_label -c $iter_count -r $ratio -s $skew > $out_
 
 
 # For all insertions use
-iter_count=10
+iter_count=1
 
 
 # Bulk Insertion

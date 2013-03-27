@@ -9,7 +9,7 @@ make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_set  > /dev/null
 iter_count=10
 ratio=0
 skew=1
-for p in 4 8 16
+for p in 8 16
 do
 	out_file="../timings/set/insert_p_$p""_r$ratio""_s$skew"
 	echo "Writing to parallel computation to $out_file"
@@ -35,7 +35,7 @@ do
 	taskset -c 0-$((p-1)) ./bin/time_pq_mcstl_set -c $iter_count -p $p -r $ratio -s $skew > $out_file
 done
 
-out_file="../timings/set/insert_sequ_r$ratio"
+out_file="../timings/set/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
 taskset -c 0 ./bin/time_pq_set -c $iter_count -r $ratio -s $skew > $out_file
 
@@ -49,7 +49,7 @@ do
 	taskset -c 0-$((p-1)) ./bin/time_pq_mcstl_set -c $iter_count -p $p -r $ratio -s $skew > $out_file
 done
 
-out_file="../timings/set/insert_sequ_r$ratio"
+out_file="../timings/set/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
 taskset -c 0 ./bin/time_pq_set -c $iter_count -r $ratio -s $skew > $out_file
 
