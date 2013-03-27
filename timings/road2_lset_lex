@@ -1,0 +1,24 @@
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+1 NY1 449.519 1089 7014.26 7014 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 446.212 1469 6988.54 7014 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 1034.07 16 13522.4 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+4 NY4 715.829 5121 11190.1 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+5 NY5 501.573 2451 7676.33 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+6 NY6 486.879 1502 7544.43 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+7 NY7 640.942 274 10093.5 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+8 NY8 1016.56 7397 13357.8 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+9 NY9 483.651 919 7483.57 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+10 NY10 530.316 774 7908.97 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+11 NY11 463.968 631 7292.54 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+12 NY12 473.445 1571 7128.06 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+13 NY13 517.785 3046 7894.02 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+14 NY14 865.307 2871 11876.4 13522 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+15 NY15 1137.79 1 15230.3 15230 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+16 NY16 470.522 2034 7313.94 15230 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+17 NY17 441.193 1724 6852.71 15230 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+18 NY18 1002.43 1276 14751.6 15230 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+19 NY19 676.467 4224 10673.5 15230 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+20 NY20 758.831 3262 10799 15230 0  # time in [s], target node label count, memory [mb], peak memory [mb], p

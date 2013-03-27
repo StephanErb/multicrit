@@ -34,8 +34,8 @@ set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_construction.ps"
 
 set xrange [:]
-set yrange [:15]
-set ytics 5
+set yrange [0:]
+#set ytics 5
 
 plot '../../timings/set/insert_p_8_r0_s1' using 4:($1*1000/$4) title ' mcstl (p8)' w lp ls 2,\
 			'../../timings/btree/insert_p_1_r0_s1' using 4:($1*1000/$4) title ' btree (p1)' w lp ls 3,\

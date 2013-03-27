@@ -1,0 +1,36 @@
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: ../instances/DC1
+# Nodes 9559 Edges 39377
+1 DC1 0.0252234 2 5.45638 5 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+2 DC2 0.0311351 6 6.26237 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+3 DC3 0.0380932 3 7.03906 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+4 DC4 0.0260148 2 5.68698 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+5 DC5 0.0215783 1 5.24089 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+6 DC6 0.0153903 7 4.71875 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+7 DC7 0.0299615 2 6.21263 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+8 DC8 0.0137969 1 4.6224 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+9 DC9 0.0503924 6 7.9819 8 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: ../instances/RI1
+# Nodes 53658 Edges 192084
+10 RI1 0.11056 3 18.7259 18 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+11 RI2 0.251658 15 29.8844 29 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+12 RI3 0.0789932 2 15.9724 29 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+13 RI4 0.168609 17 22.0518 29 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+14 RI5 0.283598 16 30.2857 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+15 RI6 0.250367 3 27.6191 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+16 RI7 0.261838 3 29.8887 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+17 RI8 0.203805 4 26.0195 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+18 RI9 0.35119 22 36.8326 37 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: ../instances/NJ1
+# Nodes 330386 Edges 1202458
+19 NJ1 1.0776 2 109.68 109 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+20 NJ2 1.84509 6 148.886 149 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+21 NJ3 1.55209 21 133.193 149 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+22 NJ4 1.53348 5 137.79 149 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+23 NJ5 0.927752 7 101.191 149 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+24 NJ6 4.41312 12 261.551 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+25 NJ7 0.964917 6 104.976 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+26 NJ8 0.885749 13 100.939 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+27 NJ9 2.41168 24 176.215 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
