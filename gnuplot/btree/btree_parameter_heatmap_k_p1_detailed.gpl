@@ -36,7 +36,7 @@ set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
 
 #set view map
 
-plot '../../timings/btree/insert_nodewidth_label_leaf_p1_heatmap_detailed' matrix with image
+plot '../../timings/btree/insert_nodewidth_label_leaf_p_1_heatmap_detailed' matrix with image
 
 
 
