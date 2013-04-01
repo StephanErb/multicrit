@@ -23,7 +23,7 @@
 #define _SEQUENTIAL_BTREE_H_
 
 #include "BTree_base.hpp"
-
+#include "tbb/scalable_allocator.h"
 
 
 /** 
@@ -38,7 +38,7 @@ template <typename _Key,
           typename _Compare = std::less<_Key>,
           typename _Traits = btree_default_traits<_Key, utility::NullData>,
     #endif
-        typename _Alloc = std::allocator<_Key>>
+        typename _Alloc = tbb::scalable_allocator<_Key>>
 class btree : 
     #ifdef COMPUTE_PARETO_MIN
         public btree_base<_Key, _MinKey, _Compare, _Traits, _Alloc>

@@ -32,7 +32,7 @@ DEFAULT_OPS = -Wall -Wextra $(CPPFLAGS)
 # Sequential
 CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 
 CXXFLAGSDBG = -O3 -mtune=native -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 # -fno-inline -fno-default-inline -fno-builtin
-CXXLIBS= -lrt -ltbb
+CXXLIBS= -lrt -ltbb -ltbbmalloc
 
 # Parallel
 CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
