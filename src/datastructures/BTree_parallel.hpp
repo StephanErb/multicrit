@@ -299,7 +299,7 @@ private:
             weightdelta[0] = 0;
 
             PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates);
-            parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, traits::leafparameter_k), body, partitioner);
+            parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, PAR_CUTOFF_UPDATE_COUNT), body, partitioner);
 
             return size() + body.get_sum(); 
         } else {
@@ -496,7 +496,7 @@ private:
             } else if (source_node->isleafnode()) {
                 const leaf_node* const leaf = (leaf_node*)(source_node);
 
-                tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, 2*traits::leafparameter_k),
+                tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, PAR_CUTOFF_UPDATE_COUNT),
                     [&, this](const cache_aligned_blocked_range<size_type>& r) {
 
                         if (r.begin() == upd.upd_begin) {
