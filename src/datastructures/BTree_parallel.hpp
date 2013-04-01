@@ -32,12 +32,12 @@
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/scalable_allocator.h"
+#include "tbb/tbb_thread.h"
 
 #include "../tbb/cache_aligned_blocked_range.hpp"
 
 
 #define TREE_CREATION_PAR_CUTOFF_LEVEL 2
-#define PAR_CUTOFF_UPDATE_COUNT 1024
 
 
 /** 
@@ -144,6 +144,8 @@ protected:
 
     UpdateDescriptor root_subtree_updates[innerslotmax];
     tbb::task_list root_tasks;
+
+    size_type min_problem_size;
 
 public:
     // *** Constructors and Destructor
@@ -292,6 +294,10 @@ private:
         updates = _updates;
         batch_type = _batch_type;
 
+        // Adaptive cut-off; Taken from the MCSTL implementation
+        const size_type p = tbb::tbb_thread::hardware_concurrency();
+        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), (double)traits::leafparameter_k);
+
         if (_batch_type == INSERTS_AND_DELETES) {
             // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
             // computes the weight delta realized by the updates in range [begin, end)
@@ -299,7 +305,7 @@ private:
             weightdelta[0] = 0;
 
             PrefixSum<Operation<key_type>, signed long> body(weightdelta.data()+1, _updates);
-            parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, PAR_CUTOFF_UPDATE_COUNT), body, partitioner);
+            parallel_scan(cache_aligned_blocked_range<size_type>(0, update_count, min_problem_size), body, partitioner);
 
             return size() + body.get_sum(); 
         } else {
@@ -490,13 +496,13 @@ private:
                 BTREE_PRINT("Deleting subtree " << source_node << std::endl);
                 tree->clear_recursive(source_node);
                 return NULL; 
-            } else if (upd.upd_end - upd.upd_begin < PAR_CUTOFF_UPDATE_COUNT) {
+            } else if (upd.upd_end - upd.upd_begin < tree->min_problem_size) {
                 tree->rewrite(source_node, rank, upd, leaves);
                 return NULL;
             } else if (source_node->isleafnode()) {
                 const leaf_node* const leaf = (leaf_node*)(source_node);
 
-                tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, PAR_CUTOFF_UPDATE_COUNT),
+                tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, tree->min_problem_size),
                     [&, this](const cache_aligned_blocked_range<size_type>& r) {
 
                         if (r.begin() == upd.upd_begin) {
@@ -582,7 +588,7 @@ private:
             BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << slot.childid   << " on level " << slot.childid->level << std::endl);
             BTREE_ASSERT(upd_begin != upd_end);
 
-            if (upd_end - upd_begin < PAR_CUTOFF_UPDATE_COUNT || slot.childid->isleafnode()) {
+            if (upd_end - upd_begin < tree->min_problem_size || slot.childid->isleafnode()) {
                 tree->update(slot, upd_begin, upd_end);
                 return NULL;
             } else {

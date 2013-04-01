@@ -1033,6 +1033,7 @@ protected:
 
     // Currently running updates
     const Operation<key_type>* updates;
+
     // Classifies the set of runninng updates
     OperationBatchType batch_type;
 
