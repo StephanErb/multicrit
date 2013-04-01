@@ -184,7 +184,7 @@ int main(int argc, char ** args) {
 		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p);
 		timeBulkInsertion(10000, ratio, skew, iterations *    300, p);
 		timeBulkInsertion(100000, ratio, skew, iterations *    30, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations *   30, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations *   10, p);
 		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p);
 		if (ratio < 50) 
 		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p);
