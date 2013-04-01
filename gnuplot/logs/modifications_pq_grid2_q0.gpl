@@ -31,4 +31,4 @@ set output "modifications_pq_grid2_q0.ps"
 set xrange [0:]
 set yrange [0:]
 
-plot "../../logs/grid2_q0_paretosearch_pq" using ($2/1000) t "Insertions" lc rgb '#11AD34', '' using ($3/1000) t "Deletions" lc rgb '#E62B17'
+plot "../../logs/grid2_q0_paretosearch_pq" using ($2/1000) t "Insertions" lc rgb '#4F94CD', '' using ($3/1000) t "Deletions" lc rgb '#b1cdd7'

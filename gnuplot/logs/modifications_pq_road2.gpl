@@ -31,5 +31,5 @@ set output "modifications_pq_road2.ps"
 set xrange [0:]
 set yrange [0:12]
 
-plot "../../logs/road2_NY_paretosearch_pq" using ($2/1000000) t "Insertions" lc rgb '#11AD34', '' using ($3/1000000) t "Deletions" lc rgb '#E62B17'
+plot "../../logs/road2_NY_paretosearch_pq" using ($2/1000000) t "Insertions" lc rgb '#4F94CD', '' using ($3/1000000) t "Deletions" lc rgb '#b1cdd7'
 

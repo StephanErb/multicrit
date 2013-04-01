@@ -6,7 +6,7 @@ set size 0.4,0.4
 set style histogram rowstacked
 set style data histograms
 set style fill solid 0.8 solid noborder
-set boxwidth 0.8
+set boxwidth 1.1
 
 set key top left Left
 set key samplen 1
@@ -31,4 +31,4 @@ set output "modifications_paretosearch_labelset_grid2_q-08.ps"
 set xrange [0:]
 set yrange [0:]
 
-plot "../../logs/grid2_q-08_paretosearch_labelset" using ($2/1000000) t "Insertions" lc rgb '#11AD34', '' using ($3/1000000) t "Dominations" lc rgb '#E62B17'
+plot "../../logs/grid2_q-08_paretosearch_labelset" using ($2/1000000) t "Insertions" lc rgb '#4F94CD', '' using ($3/1000000) t "Dominations" lc rgb '#b1cdd7'
