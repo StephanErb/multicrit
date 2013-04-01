@@ -22,77 +22,19 @@
 #ifndef _PARALLEL_BTREE_H_
 #define _PARALLEL_BTREE_H_
 
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <cstddef>
-#include <assert.h>
-#include <array>
-#include <unistd.h>
-#include <cmath>
-#include <string.h>
-#include "../utility/datastructure/NullData.hpp"
-#include "../options.hpp"
-
-#include "../tbb/cache_aligned_blocked_range.hpp"
+#include "BTree_base.hpp"
 
 #include "tbb/parallel_scan.h"
 #include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"
 #include "tbb/partitioner.h"
-#include "tbb/atomic.h"
 #include "tbb/task.h"
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/scalable_allocator.h"
 
+#include "../tbb/cache_aligned_blocked_range.hpp"
 
-// *** Debugging Macros
-#ifdef BTREE_DEBUG
-#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
-#else
-#define BTREE_PRINT(x)          do { } while(0)
-#endif
-
-#ifndef NDEBUG
-#define BTREE_ASSERT(x)         do { assert(x); } while(0)
-#else
-#define BTREE_ASSERT(x)         do { } while(0)
-#endif
-
-/// The maximum of a and b. Used in some compile-time formulas.
-#define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
-
-#ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 8
-#endif
-#ifndef LEAF_PARAMETER_K
-#define LEAF_PARAMETER_K 1024
-#endif
-
-enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};
-
-template<typename data_type>
-struct Operation {
-    enum OpType {INSERT=1, DELETE=-1};
-    OpType type;
-    data_type data;
-    Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-    Operation() {}
-
-};
-
-template <typename _Key, typename _MinKey>
-struct btree_default_traits {
-    /// If true, the tree will self verify it's invariants after each insert()
-    /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
-    static const bool   selfverify = false;
-
-    /// Configure nodes to have a fixed size of X cache lines. 
-    static const unsigned int leafparameter_k = BTREE_MAX( 8, LEAF_PARAMETER_K );
-    static const unsigned int branchingparameter_b = BTREE_MAX( 8, BRANCHING_PARAMETER_B );
-};
 
 /** 
  * Basic class implementing a base B+ tree data structure in memory.
@@ -107,205 +49,89 @@ template <typename _Key,
           typename _Traits = btree_default_traits<_Key, utility::NullData>,
     #endif
         typename _Alloc = tbb::cache_aligned_allocator<_Key>>
-class btree {
+class btree : 
+    #ifdef COMPUTE_PARETO_MIN
+        public btree_base<_Key, _MinKey, _Compare, _Traits, _Alloc>
+    #else
+        public btree_base<_Key, _Compare, _Traits, _Alloc>
+    #endif
+
+ {
     friend class TreeCreationTask;
     friend class TreeRewriteTask;
     friend class TreeUpdateTask;
+
 private:
-    btree(const btree &){}         // do not copy
-    void operator=(const btree&){} // do not copy
-public:
-    /// The key type of the B+ tree. This is stored  in inner nodes and leaves
-    typedef _Key                        key_type;
-    
-    /// Key comparison function object
-    typedef _Compare                    key_compare;
-    
-    /// Traits object used to define more parameters of the B+ tree
-    typedef _Traits                     traits;
-
-    // Key data required to find pareto minima (subset of key_type)
-#ifdef COMPUTE_PARETO_MIN
-    typedef _MinKey                     min_key_type;
-#else 
-    typedef utility::NullData           min_key_type;
-#endif
-
-    /// STL allocator for tree nodes
-    typedef _Alloc                      allocator_type;
-
-    typedef size_t                      size_type;
-    typedef unsigned short              level_type;
-    typedef unsigned short              width_type;
-
-public:
-    // *** Static Constant Options and Values of the B+ Tree
-
-    /// The number of key/data slots in each leaf
-    static const width_type         leafslotmax =  traits::leafparameter_k;
-    static const width_type         leafslotmin =  traits::leafparameter_k / 4;
-
-    // The number of keys per leaf in a perfectly re-balanced tree
-    static const width_type         designated_leafsize = (leafslotmax + leafslotmin) / 2;
-
-    /// The number of key slots in each inner node,
-    static const width_type         innerslotmax =  traits::branchingparameter_b * 4;
-    static const width_type         innerslotmin =  traits::branchingparameter_b / 4;
-
-protected:
-    // *** Node Classes for In-Memory Nodes
-
-    struct node {
-        /// Level in the b-tree, if level == 0 -> leaf node
-        level_type level;
-
-        width_type slotuse;
-
-        /// Delayed initialisation of constructed node
-        inline void initialize(const level_type l) {
-            level = l;
-            slotuse = 0;
-        }
-
-        inline bool isleafnode() const {
-            return (level == 0);
-        }
-
-    };
-
-    struct inner_node_data {
-        /// Heighest key in the subtree with the same slot index
-        key_type        slotkey;
-        /// Weight (total number of keys) of the subtree 
-        size_type       weight;
-        /// Pointers to children
-        node*           childid;
     #ifdef COMPUTE_PARETO_MIN
-        /// Heighest key in the subtree with the same slot index
-        min_key_type    minimum; 
-    #endif
-    };
+        typedef btree_base<_Key, _MinKey, _Compare, _Traits, _Alloc> base;
+    #else
+        typedef btree_base<_Key, _Compare, _Traits, _Alloc> base;
+    #endif   
 
-    struct inner_node : public node {
-        /// Define an related allocator for the inner_node structs.
-        typedef typename _Alloc::template rebind<inner_node>::other alloc_type;
+    typedef typename base::key_type         key_type;
+    typedef typename base::key_compare      key_compare;
+    typedef typename base::min_key_type     min_key_type;
+    typedef typename base::allocator_type   allocator_type;
+    typedef typename base::size_type        size_type;
+    typedef typename base::level_type       level_type;
+    typedef typename base::width_type       width_type;
+    typedef typename base::node             node;
+    typedef typename base::leaf_node        leaf_node;
+    typedef typename base::inner_node       inner_node;
+    typedef typename base::inner_node_data  inner_node_data;
+    typedef typename base::tree_stats       tree_stats;
+    typedef typename base::UpdateDescriptor UpdateDescriptor;
 
-        inner_node_data slot[innerslotmax];
-
-        /// Set variables to initial values
-        inline void initialize(const level_type l) {
-            node::initialize(l);
-        }
-    };
-
-    struct leaf_node : public node {
-        /// Define an related allocator for the leaf_node structs.
-        typedef typename _Alloc::template rebind<leaf_node>::other alloc_type;
-
-        /// Keys of children or data pointers
-        key_type        slotkey[leafslotmax];
-
-        /// Set variables to initial values
-        inline void initialize() {
-            node::initialize(0);
-        }
-    };
-
-    static size_type minweight(const level_type level) {
-        return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k / 4;
-    }
-
-    static size_type maxweight(const level_type level) {
-        return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k;
-    }
-
-    static inline size_type ipow(int base, int exp) {
-        size_type result = 1;
-        while (exp > 0) {
-            if (exp & 1) {
-              result *= base;
-            }
-            exp >>= 1;
-            base *= base;
-        }
-        return result;
-    }
-
-    static const size_type innernodebytesize = sizeof(inner_node);
-    static const size_type leafnodebytesize  = sizeof(leaf_node);
 
 public:
+    typedef typename base::traits           traits;
 
-    /** A small struct containing basic statistics about the B+ tree. It can be
-     * fetched using get_stats(). */
-    struct tree_stats {
-        /// Number of items in the B+ tree
-        size_type                    itemcount;
+    using base::leafslotmax;
+    using base::leafslotmin;
+    using base::designated_leafsize;
+    using base::innerslotmax;
+    using base::innerslotmin;
+    using base::minweight;
+    using base::maxweight;
 
-        /// Number of leaves in the B+ tree
-        tbb::atomic<size_type>       leaves;
+    using base::size;
+    using base::clear;
+    using base::verify;
 
-        /// Number of inner nodes in the B+ tree
-        tbb::atomic<size_type>       innernodes;
+private:
+    using base::root;
+    using base::stats;
+    using base::allocator;
+    using base::weightdelta;
+    using base::batch_type;
+    using base::updates;
 
-        /// Return the total number of nodes
-        inline size_type nodes() const {
-            return innernodes + leaves;
-        }
-
-        /// Return the average fill of leaves
-        inline double avgfill_leaves() const {
-            return static_cast<double>(itemcount) / (leaves * leafslotmax);
-        }
-
-        inline tree_stats()
-            : itemcount(0), leaves(), innernodes()
-        { }
-
-#ifdef NDEBUG
-        static const bool gather_stats = false;
-#else 
-        static const bool gather_stats = true;
-#endif
-    };
+    using base::key_less;
+    using base::key_lessequal;
+    using base::key_greaterequal;
+    using base::key_equal;
+    using base::allocate_leaf;
+    using base::allocate_inner;
+    using base::allocate_leaf_without_count;
+    using base::leaf_node_allocator;
+    using base::inner_node_allocator;
+    using base::free_node;
+    using base::clear_recursive;
+    using base::num_optimal_levels;
+    using base::find_lower;
+    using base::hasUpdates;
+    using base::scheduleSubTreeUpdate;
+    using base::set_min_element;
+    using base::num_subtrees;
+    using base::designated_subtreesize;
+    using base::update_router;
 
 protected:
     // *** Tree Object Data Members
 
-    /// Pointer to the B+ tree's root node, either leaf or inner node
-    node*       root;
-
     /// Pointer to spare leaf used for merging.
     typedef tbb::enumerable_thread_specific<leaf_node*, tbb::cache_aligned_allocator<leaf_node*>, tbb::ets_key_per_instance> SpareLeafPerThread; 
     SpareLeafPerThread spare_leaves;
-
-    /// Other small statistics about the B+ tree
-    tree_stats  stats;
-
-    /// Key comparison object. More comparison functions are generated from
-    /// this < relation.
-    key_compare key_less;
-
-    /// Memory allocator.
-    allocator_type allocator;
-
-    // Currently running updates
-    const Operation<key_type>* updates;
-    // Classifies the set of runninng updates
-    OperationBatchType batch_type;
-
-    // Weight delta of currently running updates
-    typedef signed long weightdelta_type;
-    typedef typename _Alloc::template rebind<weightdelta_type>::other weightdelta_listalloc_type;
-    typedef std::vector<weightdelta_type, weightdelta_listalloc_type> weightdelta_list;
-    weightdelta_list weightdelta;
-
-    struct UpdateDescriptor {
-        bool rebalancing_needed;
-        size_type weight;
-        size_type upd_begin;
-        size_type upd_end;
-    };
 
     UpdateDescriptor root_subtree_updates[innerslotmax];
     tbb::task_list root_tasks;
@@ -323,7 +149,7 @@ public:
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
     explicit inline btree(const allocator_type &alloc=allocator_type())
-        : root(NULL), allocator(alloc)
+        : base(alloc)
     {
         weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
     }
@@ -336,120 +162,9 @@ public:
         }
     }
 
-private:
-    // *** Convenient Key Comparison Functions Generated From key_less
-
-    /// True if a <= b
-    inline bool key_lessequal(const key_type &a, const key_type &b) const {
-        return !key_less(b, a);
-    }
-
-    /// True if a >= b
-    inline bool key_greaterequal(const key_type &a, const key_type &b) const {
-        return !key_less(a, b);
-    }
-
-    /// True if a == b. This requires the < relation to be a total order,
-    /// otherwise the B+ tree cannot be sorted.
-    inline bool key_equal(const key_type &a, const key_type &b) const {
-        return !key_less(a, b) && !key_less(b, a);
-    }
-
-private:
-    // *** Node Object Allocation and Deallocation Functions
-
-    inline typename leaf_node::alloc_type leaf_node_allocator() {
-        return typename leaf_node::alloc_type(allocator);
-    }
-
-    inline typename inner_node::alloc_type inner_node_allocator() {
-        return typename inner_node::alloc_type(allocator);
-    }
-
-    inline leaf_node* allocate_leaf() {
-        leaf_node *n = new (leaf_node_allocator().allocate(1)) leaf_node();
-        n->initialize();
-        if (stats.gather_stats) stats.leaves.fetch_and_increment();
-        return n;
-    }
-
-    inline leaf_node* allocate_leaf_without_count() {
-        leaf_node *n = new (leaf_node_allocator().allocate(1)) leaf_node();
-        n->initialize();
-        return n;
-    }
-
-    inline inner_node* allocate_inner(level_type level) {
-        inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
-        n->initialize(level);
-        if (stats.gather_stats) stats.innernodes.fetch_and_increment();
-        return n;
-    }
-
-    inline void free_node(node *n) {
-        if (n->isleafnode()) {
-            leaf_node *ln = static_cast<leaf_node*>(n);
-            typename leaf_node::alloc_type a(leaf_node_allocator());
-            a.destroy(ln);
-            a.deallocate(ln, 1);
-            if (stats.gather_stats) stats.leaves.fetch_and_decrement();
-        } else {
-            inner_node *in = static_cast<inner_node*>(n);
-            typename inner_node::alloc_type a(inner_node_allocator());
-            a.destroy(in);
-            a.deallocate(in, 1);
-            if (stats.gather_stats) stats.innernodes.fetch_and_decrement();
-        }
-    }
 
 public:
-    // *** Fast Destruction of the B+ Tree
 
-    inline void clear() {
-        if (root) {
-            clear_recursive(root);
-            root = NULL;
-        }
-        BTREE_ASSERT(stats.innernodes == 0);
-        BTREE_ASSERT(stats.leaves == 0);
-    }
-
-private:
-    /// Recursively free up nodes
-    void clear_recursive(node* n) {
-        if (!n->isleafnode()) {
-            inner_node *innernode = static_cast<inner_node*>(n);
-
-            for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                clear_recursive(innernode->slot[slot].childid);
-            }
-        }
-        free_node(n);
-    }
-
-public:
-    // *** Access Functions to the Item Count
-
-    inline size_type size() const {
-        return stats.itemcount;
-    }
-
-    inline bool empty() const {
-        return (size() == size_type(0));
-    }
-
-    inline level_type height() const {
-        if (root == NULL) {
-            return 0; 
-        } else {
-            return root->level;
-        }
-    }
-
-    /// Return a const reference to the current statistics.
-    inline const struct tree_stats& get_stats() const {
-        return stats;
-    }
 
     static std::string name() {
         return "Parallel BTree";
@@ -544,63 +259,6 @@ public:
         find_pareto_minima(root, prefix_minima, minima);
     }
 
-protected:
-
-#ifdef COMPUTE_PARETO_MIN
-
-    template<typename sequence_type>
-    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
-        if (node->isleafnode()) {
-            const leaf_node* const leaf = (leaf_node*) node;
-            const width_type slotuse = leaf->slotuse;
-
-            const min_key_type* min = &prefix_minima;
-            for (width_type i = 0; i<slotuse; ++i) {
-                if (leaf->slotkey[i].second_weight < min->second_weight ||
-                        (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
-                    minima.push_back({Operation<key_type>::DELETE, leaf->slotkey[i]});
-                    min = &leaf->slotkey[i];
-                }
-            }
-        } else {
-            const inner_node* const inner = (inner_node*) node;
-            const width_type slotuse = inner->slotuse;
-
-            const min_key_type* min = &prefix_minima;
-            for (width_type i = 0; i<slotuse; ++i) {
-                if (inner->slot[i].minimum.second_weight < min->second_weight ||
-                        (inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-                    find_pareto_minima(inner->slot[i].childid, *min, minima);
-                    min = &inner->slot[i].minimum;
-                }
-            }
-        }
-    }
-
-    static inline void set_min_element(inner_node_data& slot, const leaf_node* const node) {
-        slot.minimum = *std::min_element(node->slotkey, node->slotkey+node->slotuse,
-            [](const min_key_type& i, const min_key_type& j) { return i.second_weight < j.second_weight; });
-    }
-
-    static inline void set_min_element(inner_node_data& slot, const min_key_type& local) {
-        slot.minimum = local;
-    }
-
-    static inline void set_min_element(inner_node_data& slot, const inner_node* const node) {
-        slot.minimum = std::min_element(node->slot, node->slot+node->slotuse,
-            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })->minimum;
-    }
-#else 
-    void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
-        std::cout << "Pareto Min Feature disabled" << std::endl;
-    }
-    static inline void set_min_element(inner_node_data&, const leaf_node* const) {
-    }
-    static inline void set_min_element(inner_node_data&, const min_key_type&) {
-    }
-#endif
-
-
 private:
 
     template<typename TIn, typename TOut>
@@ -658,14 +316,6 @@ private:
             return size() + update_count * batch_type;
         }
 
-    }
-
-    inline weightdelta_type getWeightDelta(const size_type upd_begin, const size_type upd_end) const {
-        if (batch_type == INSERTS_AND_DELETES) {
-            return weightdelta[upd_end]-weightdelta[upd_begin];
-        } else {
-            return (upd_end - upd_begin) * batch_type;
-        }
     }
 
     template<typename Range, typename Body, typename Partitioner>
@@ -1200,193 +850,6 @@ private:
 
     };
 
-    static inline bool hasUpdates(const UpdateDescriptor& update) {
-        return update.upd_begin != update.upd_end;
-    }
-
-    inline bool scheduleSubTreeUpdate(const width_type i, const size_type& weight, const size_type minweight,
-            const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) const {
-        subtree_updates[i].upd_begin = subupd_begin;
-        subtree_updates[i].upd_end = subupd_end;
-        subtree_updates[i].weight = weight + getWeightDelta(subupd_begin, subupd_end);
-        subtree_updates[i].rebalancing_needed =  subtree_updates[i].weight < minweight || subtree_updates[i].weight > maxweight;
-        return subtree_updates[i].rebalancing_needed;
-    }
-
-    inline int find_lower(int lo, int hi, const key_type& key) const {
-        while (lo < hi) {
-            int mid = (lo + hi) >> 1;
-
-            if (key_less(key, updates[mid].data)) {
-                hi = mid;
-            } else {
-                lo = mid + 1;
-            }
-        }
-        return hi;
-    }
-
-    static inline size_type designated_subtreesize(const level_type level) {
-        size_type num_to_round = (maxweight(level-1) + minweight(level-1)) / 2;
-
-        size_type remaining = num_to_round % designated_leafsize;
-        if (remaining == 0) {
-            return num_to_round;  
-        } else {
-            const size_type diff_in_single_tree_case = remaining;
-            const size_type diff_in_extra_tree_case = designated_leafsize-remaining;
-
-            return num_to_round - remaining + designated_leafsize * (diff_in_single_tree_case >= diff_in_extra_tree_case);
-        }
-    }
-
-    static inline size_type num_subtrees(const size_type n, const size_type subtreesize) {
-        size_type num_subtrees = n / subtreesize;
-        // Squeeze remaining elements into last subtree or place in own subtree? 
-        // Choose what is closer to our designated subtree size
-        size_type remaining = n % subtreesize;
-        const size_type diff_in_single_tree_case = remaining;
-        const size_type diff_in_extra_tree_case = subtreesize-remaining;
-
-        num_subtrees += diff_in_single_tree_case >= diff_in_extra_tree_case;
-        num_subtrees += n > 0 && num_subtrees == 0; // but have at least enough space to hold all elements
-        return num_subtrees;
-    }
-
-    static inline level_type num_optimal_levels(const size_type n) {
-        if (n <= designated_leafsize) {
-            return 1; // hack to prevent division by zero when the root node runs empty
-                      // Instead of a single leaf we will now get an inner node pointing to the single leaf
-        } else {
-            return ceil( log((8.0*n)/(5.0*traits::leafparameter_k)) / log(traits::branchingparameter_b) );
-        }
-    }
-
-    inline void update_router(key_type& router, const key_type& new_router) const {
-        if (!key_equal(router, new_router)) {
-            router = new_router;
-        }
-    }
-
-    /// Recursively descend down the tree and print out nodes.
-    static void print_node(const node* node, level_type depth=0, bool recursive=false) {
-        for(level_type i = 0; i < depth; i++) std::cout  << "  ";
-        std::cout << "node " << node << " level " << node->level << " slotuse " << node->slotuse << std::endl;
-
-        if (node->isleafnode()) {
-            const leaf_node *leafnode = static_cast<const leaf_node*>(node);
-            for(level_type i = 0; i < depth; i++) std::cout  << "  ";
-
-            for (width_type slot = 0; slot < leafnode->slotuse; ++slot) {
-                std::cout << leafnode->slotkey[slot] << "  "; // << "(data: " << leafnode->slotdata[slot] << ") ";
-            }
-            std::cout  << std::endl;
-        } else {
-            const inner_node *innernode = static_cast<const inner_node*>(node);
-            for(level_type i = 0; i < depth; i++) std::cout  << "  ";
-
-            for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                std::cout  << "(" << innernode->slot[slot].childid << ": " << innernode->slot[slot].weight << ") " << innernode->slot[slot].slotkey << " ";
-            }
-            std::cout << std::endl;
-
-            if (recursive) {
-                for (width_type slot = 0; slot < innernode->slotuse; ++slot) {
-                    print_node(innernode->slot[slot].childid, depth + 1, recursive);
-                }
-            }
-        }
-    }
-
-
-public:
-    // *** Verification of B+ Tree Invariants
-
-    /// Run a thorough verification of all B+ tree invariants. The program
-    /// aborts via assert() if something is wrong.
-    void verify() const {
-        key_type minkey, maxkey;
-        tree_stats vstats;
-
-        #ifdef NDEBUG
-            std::cout << "WARNING: Trying to verify, but all assertions have been disabled" << std::endl;
-        #endif
-
-        if (root) {
-            verify_node(root, &minkey, &maxkey, vstats);
-            assert( vstats.itemcount == stats.itemcount );
-            assert( vstats.leaves == stats.leaves );
-            assert( vstats.innernodes == stats.innernodes );
-        }
-    }
-
-private:
-
-    /// Recursively descend down the tree and verify each node
-    void verify_node(const node* n, key_type* minkey, key_type* maxkey, tree_stats &vstats) const {
-        BTREE_PRINT("verifynode " << n << std::endl);
-
-        if (n->isleafnode()) {
-            const leaf_node *leaf = static_cast<const leaf_node*>(n);
-
-            for(width_type slot = 0; slot < leaf->slotuse - 1; ++slot) {
-                assert(key_lessequal(leaf->slotkey[slot], leaf->slotkey[slot + 1]));
-            }
-            if ((leaf != root && !(leaf->slotuse >= minweight(leaf->level))) || !( leaf->slotuse <= maxweight(leaf->level))) {
-                std::cout << leaf->slotuse << " min " << minweight(0) << " max " <<maxweight(0) << std::endl;
-                print_node(leaf);
-            }
-            assert( leaf == root || leaf->slotuse >= minweight(leaf->level) );
-            assert( leaf->slotuse <= maxweight(leaf->level) );
-
-            *minkey = leaf->slotkey[0];
-            *maxkey = leaf->slotkey[leaf->slotuse - 1];
-
-            vstats.leaves++;
-            vstats.itemcount += leaf->slotuse;
-        }
-        else { 
-            const inner_node *inner = static_cast<const inner_node*>(n);
-            vstats.innernodes++;
-
-            for(width_type slot = 0; slot < inner->slotuse-1; ++slot) {
-                if (!key_lessequal(inner->slot[slot].slotkey, inner->slot[slot + 1].slotkey)) {
-                    print_node(inner, 0, true);
-                }
-                assert(key_lessequal(inner->slot[slot].slotkey, inner->slot[slot + 1].slotkey));
-            }
-
-            for(width_type slot = 0; slot < inner->slotuse; ++slot) {
-                const node *subnode = inner->slot[slot].childid;
-                key_type subminkey = key_type();
-                key_type submaxkey = key_type();
-
-                assert(subnode->level + 1 == inner->level);
-
-                if ((inner != root && !(inner->slot[slot].weight >= minweight(inner->level-1))) || !(inner->slot[slot].weight <= maxweight(inner->level-1))) {
-                    std::cout << inner->slot[slot].weight << " min " << minweight(inner->level-1) << " max " <<maxweight(inner->level-1) << std::endl;
-                    print_node(inner, 0, true);
-                }
-                assert( inner == root || inner->slot[slot].weight >= minweight(inner->level-1) );
-                assert( inner->slot[slot].weight <= maxweight(inner->level-1) );
-
-                size_type itemcount = vstats.itemcount;
-                verify_node(subnode, &subminkey, &submaxkey, vstats);
-
-                assert(inner->slot[slot].weight == vstats.itemcount - itemcount);
-
-                BTREE_PRINT("verify subnode " << subnode << ": " << subminkey << " - " << submaxkey << std::endl);
-
-                if (slot == 0) {
-                    *minkey = subminkey;
-                } else {
-                    assert(key_greaterequal(subminkey, inner->slot[slot-1].slotkey));
-                }
-                assert(key_equal(inner->slot[slot].slotkey, submaxkey));
-            }
-            *maxkey = inner->slot[inner->slotuse-1].slotkey;
-        }
-    }
 };
 
 
