@@ -203,8 +203,8 @@ public:
             } else {
                 // The common case (and thus partially inlined here)
                 inner_node* const inner = static_cast<inner_node*>(root);
-                const size_type min_weight = minweight(level-1);
                 const size_type max_weight = maxweight(level-1);
+                const size_type min_weight = max_weight / 4;
                 bool rebalancing_needed = false;
 
                 // Distribute operations and find out which subtrees need rebalancing
@@ -513,8 +513,6 @@ private:
                 return NULL;
             } else {
                 const inner_node* const inner = (inner_node*) source_node;
-                const size_type min_weight = minweight(inner->level-1);
-                const size_type max_weight = maxweight(inner->level-1);
                 UpdateDescriptor subtree_updates[inner->slotuse];
                 
                 // Distribute operations and find out which subtrees need rebalancing
@@ -523,10 +521,10 @@ private:
                 for (width_type i = 0; i < last; ++i) {
                     size_type subupd_end = tree->find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
 
-                    tree->scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
+                    tree->scheduleSubTreeUpdate(i, inner->slot[i].weight, 0, 0, subupd_begin, subupd_end, subtree_updates);
                     subupd_begin = subupd_end;
                 } 
-                tree->scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
+                tree->scheduleSubTreeUpdate(last, inner->slot[last].weight, 0, 0, subupd_begin, upd.upd_end, subtree_updates);
 
                 // Push updates to subtrees and rewrite them in parallel
                 tbb::task_list tasks;
@@ -589,8 +587,8 @@ private:
                 return NULL;
             } else {
                 inner_node* const inner = static_cast<inner_node*>(slot.childid);
-                const size_type min_weight = minweight(inner->level-1);
                 const size_type max_weight = maxweight(inner->level-1);
+                const size_type min_weight = max_weight / 4;
                 UpdateDescriptor subtree_updates[inner->slotuse];
 
                 bool rebalancing_needed = false;

@@ -221,10 +221,18 @@ protected:
     };
 
     static size_type minweight(const level_type level) {
-        return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k / 4;
+        return maxweight(level) / 4; // when changing: also modify direct computations!
     }
 
     static size_type maxweight(const level_type level) {
+        return weight(level);
+    }
+
+    static size_type midweight(const level_type level) {
+        return weight(level) * 0.625 /* which is 5/8*/;
+    }
+
+    static size_type weight(const level_type level) {
         return ipow(traits::branchingparameter_b, level) * traits::leafparameter_k;
     }
 
@@ -439,9 +447,9 @@ protected:
     }
 
     static inline size_type designated_subtreesize(const level_type level) {
-        size_type num_to_round = (maxweight(level-1) + minweight(level-1)) / 2;
+        const size_type num_to_round = midweight(level-1);
 
-        size_type remaining = num_to_round % designated_leafsize;
+        const size_type remaining = num_to_round % designated_leafsize;
         if (remaining == 0) {
             return num_to_round;  
         } else {
@@ -456,7 +464,7 @@ protected:
         size_type num_subtrees = n / subtreesize;
         // Squeeze remaining elements into last subtree or place in own subtree? 
         // Choose what is closer to our designated subtree size
-        size_type remaining = n % subtreesize;
+        const size_type remaining = n % subtreesize;
         const size_type diff_in_single_tree_case = remaining;
         const size_type diff_in_extra_tree_case = subtreesize-remaining;
 
@@ -690,19 +698,20 @@ protected:
             BTREE_ASSERT(new_slotuse <= innerslotmax);
 
             size_type rank = rank_begin;
-            for (width_type i = old_slotuse; i < new_slotuse; ++i) {
-                const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
-                result->slot[i].weight = weight;
-                create_subtree_from_leaves(result->slot[i], 0, false, level-1, rank, rank+weight, leaves);
-                rank += weight;
+            for (width_type i = old_slotuse; i < new_slotuse-1; ++i) {
+                result->slot[i].weight = designated_treesize;
+                create_subtree_from_leaves(result->slot[i], 0, false, level-1, rank, rank+designated_treesize, leaves);
+                rank += designated_treesize;
             }
+            result->slot[new_slotuse-1].weight = rank_end - rank;
+            create_subtree_from_leaves(result->slot[new_slotuse-1], 0, false, level-1, rank, rank_end, leaves);
+
             set_min_element(slot, result);
             update_router(slot.slotkey, result->slot[new_slotuse-1].slotkey);
 
             return subtrees;
          }
     }
-
 
     inline leaf_list& get_resized_leaves_array(size_type n) {
         BTREE_PRINT("Allocating " << num_subtrees(n, designated_leafsize) << " new  nodes for tree of size " << n << std::endl);
@@ -721,8 +730,6 @@ protected:
             write_updated_leaf_to_new_tree(source_node, 0, rank, upd.upd_begin, upd.upd_end, leaves, true);
         } else {
             inner_node* inner = static_cast<inner_node*>(source_node);
-            const size_type min_weight = minweight(inner->level-1);
-            const size_type max_weight = maxweight(inner->level-1);
             // FIXME: reuse allocation
             //UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
             UpdateDescriptor subtree_updates[inner->slotuse];
@@ -732,10 +739,10 @@ protected:
             size_type subupd_begin = upd.upd_begin;
             for (width_type i = 0; i < last; ++i) {
                 size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
-                scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
+                scheduleSubTreeUpdate(i, inner->slot[i].weight, 0, 0, subupd_begin, subupd_end, subtree_updates);
                 subupd_begin = subupd_end;
             } 
-            scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
+            scheduleSubTreeUpdate(last, inner->slot[last].weight, 0, 0, subupd_begin, upd.upd_end, subtree_updates);
 
             rewriteSubTreesInRange(inner, 0, inner->slotuse, rank, subtree_updates, leaves);
         }
@@ -750,8 +757,8 @@ protected:
 
         } else {
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
-            const size_type min_weight = minweight(inner->level-1);
             const size_type max_weight = maxweight(inner->level-1);
+            const size_type min_weight = max_weight / 4;
             // FIXME: reuse allocation
             //UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
             UpdateDescriptor subtree_updates[inner->slotuse];
@@ -851,7 +858,7 @@ protected:
         }
     }
     
-    inline void write_updated_leaf_to_new_tree(node* const node, width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves, bool is_last) {
+    inline void write_updated_leaf_to_new_tree(const node* const node, width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves, const bool is_last) {
         BTREE_PRINT("Rewriting updated leaf " << source_node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")" << std::endl);
 
         size_type leaf_number = rank / designated_leafsize;
@@ -867,7 +874,7 @@ protected:
         width_type out = offset_in_leaf; // position where to write
 
         leaf_node* result = getOrCreateLeaf(leaf_number, leaves);
-        const leaf_node* leaf = (leaf_node*)(node);
+        const leaf_node* const leaf = (leaf_node*)(node);
         const width_type in_slotuse = leaf->slotuse;
 
         for (size_type i = upd_begin; i != upd_end; ++i) {
@@ -919,7 +926,7 @@ protected:
             + out << ") into " << leaves.size() << " leaves " << std::endl);
     }
 
-    inline bool hasNextLeaf(size_type leaf_count, leaf_list& leaves) const {
+    inline bool hasNextLeaf(const size_type leaf_count, const leaf_list& leaves) const {
         return leaf_count+1 < leaves.size();
     }
 
