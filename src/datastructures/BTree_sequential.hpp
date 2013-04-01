@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USAlevel
  */
 
 #ifndef _SEQUENTIAL_BTREE_H_
@@ -48,7 +48,7 @@ class btree :
 
  {
 
-private:
+protected:
     #ifdef COMPUTE_PARETO_MIN
         typedef btree_base<_Key, _MinKey, _Compare, _Traits, _Alloc> base;
     #else
@@ -68,7 +68,7 @@ private:
     typedef typename base::inner_node_data  inner_node_data;
     typedef typename base::tree_stats       tree_stats;
     typedef typename base::UpdateDescriptor UpdateDescriptor;
-
+    typedef typename base::leaf_list        leaf_list;
 
 public:
     typedef typename base::traits           traits;
@@ -92,6 +92,7 @@ private:
     using base::weightdelta;
     using base::batch_type;
     using base::updates;
+    using base::leaves;
 
     using base::key_less;
     using base::key_lessequal;
@@ -114,19 +115,9 @@ private:
     using base::update_router;
     using base::create_subtree_from_leaves;
     using base::find_pareto_minima;
-
-protected:
-    // *** Tree Object Data Members
-
-    /// Pointer to spare leaf used for merging.
-    node*       spare_leaf;
-    
-    // Leaves created during the current reconstruction effort
-    std::vector<leaf_node*> leaves;
-
-    // For each level, one array to store the updates needed to push down to the individual subtrees
-    std::vector<UpdateDescriptor*> subtree_updates_per_level;
-
+    using base::rewrite;
+    using base::update;
+    using base::get_resized_leaves_array;
 
 public:
     // *** Constructors and Destructor
@@ -136,19 +127,8 @@ public:
     explicit inline btree(const allocator_type &alloc=allocator_type())
         : base(alloc)
     {
-        spare_leaf = allocate_leaf_without_count();
         weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
     }
-
-    /// Frees up all used B+ tree memory pages
-    inline ~btree() {
-        clear();
-        free_node(spare_leaf);
-        for (auto updates : subtree_updates_per_level) {
-            delete[] updates;
-        }
-    }
-
 
 public:
     static std::string name() {
@@ -177,12 +157,9 @@ public:
         fake_slot.childid = root;
 
         if (rebuild_needed) {
-            for (level_type i = root->level; i <= level; ++i) {
-                subtree_updates_per_level.push_back(new UpdateDescriptor[innerslotmax]);
-            }
             BTREE_PRINT("Root-level rewrite session started for new level " << level << std::endl);
-            allocate_new_leaves(new_size);
-            rewrite(fake_slot, /*rank*/0, upd);
+            auto& leaves = get_resized_leaves_array(new_size);
+            rewrite(fake_slot.childid, /*rank*/0, upd, leaves);
             create_subtree_from_leaves(fake_slot, 0, false, level, 0, new_size, leaves);
         } else {
             update(fake_slot, 0, _updates.size());
@@ -226,294 +203,6 @@ private:
             // We can use the shortcut based on the 
             return size() + _updates.size() * batch_type;
         }
-    }
-
-
-    inline void allocate_new_leaves(size_type n) {
-        BTREE_PRINT("Allocating " << num_subtrees(n, designated_leafsize) << " new  nodes for tree of size " << n << std::endl);
-        size_type leaf_count = num_subtrees(n, designated_leafsize);
-        leaves.clear();
-        leaves.resize(leaf_count, NULL);
-    }
-
-    void rewrite(inner_node_data& slot, const size_type rank, const UpdateDescriptor& upd) {
-        if (slot.childid->isleafnode()) {
-            write_updated_leaf_to_new_tree(slot.childid, 0, rank, upd.upd_begin, upd.upd_end, leaves);
-        } else {
-            inner_node* inner = static_cast<inner_node*>(slot.childid);
-            const size_type min_weight = minweight(inner->level-1);
-            const size_type max_weight = maxweight(inner->level-1);
-            UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
-            
-            // Distribute operations and find out which subtrees need rebalancing
-            const width_type last = inner->slotuse-1;
-            size_type subupd_begin = upd.upd_begin;
-            for (width_type i = 0; i < last; ++i) {
-                size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
-                scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
-                subupd_begin = subupd_end;
-            } 
-            scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
-
-            size_type subtree_rank = rank;
-            for (width_type i = 0; i < inner->slotuse; ++i) {
-                rewrite(inner->slot[i], subtree_rank, subtree_updates[i]);
-                subtree_rank += subtree_updates[i].weight;
-            }
-        }
-        free_node(slot.childid);
-    }
-
-    void update(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
-        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << " on level " << _node->level << std::endl);
-
-        if (slot.childid->isleafnode()) {
-            update_leaf_in_current_tree(slot, upd_begin, upd_end);
-
-        } else {
-            inner_node* const inner = static_cast<inner_node*>(slot.childid);
-            const size_type min_weight = minweight(inner->level-1);
-            const size_type max_weight = maxweight(inner->level-1);
-            UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
-
-            bool rebalancing_needed = false;
-
-            // Distribute operations and find out which subtrees need rebalancing
-            const width_type last = inner->slotuse-1;
-            size_type subupd_begin = upd_begin;
-            for (width_type i = 0; i < last; ++i) {
-                size_type subupd_end = find_lower(subupd_begin, upd_end, inner->slot[i].slotkey);
-                rebalancing_needed |= scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
-                subupd_begin = subupd_end;
-            } 
-            rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd_end, subtree_updates);
-
-            // If no rewrite session is starting on this node, then just push down all updates
-            if (!rebalancing_needed) {
-                updateSubTreesInRange(inner, 0, inner->slotuse, subtree_updates);
-                set_min_element(slot, inner);
-                update_router(slot.slotkey, inner->slot[inner->slotuse-1].slotkey);
-            } else {
-                BTREE_PRINT("Rewrite session started for " << inner << " on level " << inner->level << std::endl);
-                // Need to perform rebalancing.
-                size_type designated_treesize = designated_subtreesize(inner->level);
-
-                inner_node* result = allocate_inner(inner->level);
-                width_type in = 0; // current slot in input tree
-                width_type out = 0;
-
-                while (in < inner->slotuse) {
-                    width_type rebalancing_range_start = in;
-                    size_type weight_of_defective_range = 0;
-                    bool openrebalancing_region = false;
-
-                    // Find non-empty consecutive run of subtrees that need rebalancing
-                    while (in < inner->slotuse && (subtree_updates[in].rebalancing_needed 
-                            || (openrebalancing_region && weight_of_defective_range != 0 && weight_of_defective_range < designated_treesize))) {
-                        openrebalancing_region = true;
-                        weight_of_defective_range += subtree_updates[in].weight;
-                        ++in;
-                    }
-                    if (openrebalancing_region) {
-                        if (weight_of_defective_range == 0) {
-                            BTREE_PRINT("Deleting entire subtree range" << std::endl);
-                            for (width_type i = rebalancing_range_start; i < in; ++i) {
-                                clear_recursive(inner->slot[i].childid);
-                            }
-                        } else {
-                            BTREE_PRINT("Rewrite session started on level " << inner->level << " of " << height() << " for subtrees [" << rebalancing_range_start << "," << in <<") of total weight " << weight_of_defective_range << std::endl);
-                            allocate_new_leaves(weight_of_defective_range);
-                            rewriteSubTreesInRange(inner, rebalancing_range_start, in, 0, subtree_updates);
-
-                            result->slotuse = out;
-                            inner_node_data fake_slot;
-                            fake_slot.childid = result;
-                            out += create_subtree_from_leaves(fake_slot, out, /*write into result node*/ true, result->level, 0, weight_of_defective_range, leaves);
-                            result = static_cast<inner_node*>(fake_slot.childid);                            
-                        }
-                    } else {
-                        BTREE_PRINT("Copying " << in << " to " << out << " " << inner->childid[in] << std::endl);
-                        result->slot[out] = inner->slot[in];
-                        result->slot[out].weight = subtree_updates[in].weight;
-                        if (hasUpdates(subtree_updates[in])) {
-                            update(result->slot[out], subtree_updates[in].upd_begin, subtree_updates[in].upd_end);
-                        }
-                        ++out;
-                        ++in;
-                    }
-                }
-                result->slotuse = out;
-                set_min_element(slot, result);
-                update_router(slot.slotkey, result->slot[out-1].slotkey);
-                free_node(slot.childid);
-                slot.childid = result;
-            }
-        }
-    }
-
-    inline void rewriteSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const size_type rank, const UpdateDescriptor* subtree_updates) {
-        size_type subtree_rank = rank;
-        for (width_type i = begin; i < end; ++i) {
-            if (subtree_updates[i].weight == 0) {
-                clear_recursive(node->slot[i].childid);
-            } else {
-                rewrite(node->slot[i], subtree_rank, subtree_updates[i]);
-            }
-            subtree_rank += subtree_updates[i].weight;
-        }
-    }
-
-    inline void updateSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const UpdateDescriptor* subtree_updates) {
-        for (width_type i = begin; i < end; ++i) {
-            if (hasUpdates(subtree_updates[i])) {
-                update(node->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end);
-            	node->slot[i].weight = subtree_updates[i].weight;
-            }
-        }
-    }
-
-    template<class leaf_list>
-    void write_updated_leaf_to_new_tree(node*& node, width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves) {
-        BTREE_PRINT("Rewriting updated leaf " << source_node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")" << std::endl);
-
-        size_type leaf_number = rank / designated_leafsize;
-        width_type offset_in_leaf = rank % designated_leafsize;
-
-        if (leaf_number >= leaves.size()) {
-            // elements are squeezed into the previous leaf
-            leaf_number = leaves.size()-1; 
-            offset_in_leaf = rank - leaf_number*designated_leafsize;
-        }
-        BTREE_PRINT(". From leaf " << leaf_number << ": " << offset_in_leaf);
-
-        width_type out = offset_in_leaf; // position where to write
-
-        leaf_node* result = getOrCreateLeaf(leaf_number, leaves);
-        const leaf_node* leaf = (leaf_node*)(node);
-
-        for (size_type i = upd_begin; i != upd_end; ++i) {
-            switch (updates[i].type) {
-            case Operation<key_type>::DELETE:
-                // We know the element is in here, so no bounds checks
-                while (key_less(leaf->slotkey[in], updates[i].data)) {
-                    BTREE_ASSERT(in < leaf->slotuse);
-                    result->slotkey[out++] = leaf->slotkey[in++];
-
-                    if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves)) {
-                        result = getOrCreateLeaf(++leaf_number, leaves);
-                        out = 0;
-                    }
-                }
-                ++in; // delete the element by jumping over it
-                break;
-            case Operation<key_type>::INSERT:
-                while(in < leaf->slotuse && key_less(leaf->slotkey[in], updates[i].data)) {
-                    result->slotkey[out++] = leaf->slotkey[in++];
-
-                    if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves)) {
-                        result = getOrCreateLeaf(++leaf_number, leaves);
-                        out = 0;
-                    }
-                }
-                result->slotkey[out++] = updates[i].data;
-
-                if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves)) {
-                    result = getOrCreateLeaf(++leaf_number, leaves);
-                    out = 0;
-                }
-                break;
-            }
-        } 
-        while (in < leaf->slotuse) {
-            result->slotkey[out++] = leaf->slotkey[in++];
-
-            if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves) && in < leaf->slotuse) {
-                result = getOrCreateLeaf(++leaf_number, leaves);
-                out = 0;
-            }
-        }
-        result->slotuse = out;
-
-        BTREE_PRINT(" to leaf " << leaf_number << ": " << out);
-        BTREE_PRINT(", writing range [" << rank << ", " << ((leaf_number-(rank/designated_leafsize))*designated_leafsize)
-            + out << ") into " << leaves.size() << " leaves " << std::endl);
-    }
-
-    template<class leaf_list>
-    inline bool hasNextLeaf(size_type leaf_count, leaf_list& leaves) const {
-        return leaf_count+1 < leaves.size();
-    }
-
-    template<class leaf_list>
-    inline leaf_node* getOrCreateLeaf(const size_type leaf_number, leaf_list& leaves) {
-        if (leaves[leaf_number] == NULL) {
-            leaves[leaf_number] = allocate_leaf();
-        }
-        return leaves[leaf_number];
-    }
-
-    void update_leaf_in_current_tree(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
-        leaf_node* result = static_cast<leaf_node*>(spare_leaf);
-        const leaf_node* leaf = static_cast<leaf_node*>(slot.childid);
-
-        width_type in = 0; // existing key to read
-        width_type out = 0; // position where to write
-        const width_type in_slotuse = leaf->slotuse;
-
-        #ifdef COMPUTE_PARETO_MIN
-            const min_key_type local_min_dummy(0, std::numeric_limits<typename min_key_type::weight_type>::max());
-            const min_key_type* local_min =&local_min_dummy;
-        #else 
-            min_key_type* local_min;
-        #endif
-
-        BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
-
-        for (size_type i = upd_begin; i != upd_end; ++i) {
-            const Operation<key_type>& op = updates[i];
-
-            switch (op.type) {
-            case Operation<key_type>::DELETE:
-                // We know the element is in here, so no bounds checks
-                while (key_less(leaf->slotkey[in], op.data)) {
-                    BTREE_ASSERT(in < in_slotuse);
-                    #ifdef COMPUTE_PARETO_MIN
-                        local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
-                    #endif 
-                    result->slotkey[out++] = leaf->slotkey[in++];
-                }
-                ++in; // delete the element by jumping over it
-                break;
-            case Operation<key_type>::INSERT:
-                while(in < in_slotuse && key_less(leaf->slotkey[in], op.data)) {
-                    #ifdef COMPUTE_PARETO_MIN
-                        local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
-                    #endif
-                    result->slotkey[out++] = leaf->slotkey[in++];
-                }
-                 #ifdef COMPUTE_PARETO_MIN
-                    local_min = op.data.second_weight < local_min->second_weight ? &op.data : local_min;
-                #endif
-                result->slotkey[out++] = op.data;
-                break;
-            }
-        }
-        assert(leaf->slotuse <= leafslotmax);
-        while (in < in_slotuse) {
-            #ifdef COMPUTE_PARETO_MIN
-                local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
-            #endif
-            result->slotkey[out++] = leaf->slotkey[in++];
-        }
-        assert(out <= leafslotmax);
-
-        set_min_element(slot, *local_min);
-        result->slotuse = out;
-        update_router(slot.slotkey, result->slotkey[out-1]); 
-        spare_leaf = slot.childid;
-        slot.childid = result;
-
-        BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);
     }
 
 };
