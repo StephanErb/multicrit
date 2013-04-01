@@ -711,7 +711,6 @@ private:
                 auto& c = *new(allocate_continuation()) NodeFinalizerContinuationTask(slot, tree);
 
                 if (!rebalancing_needed) {
-
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(subtree_updates[i])) {
