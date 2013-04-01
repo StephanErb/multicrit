@@ -129,7 +129,8 @@ private:
     using base::designated_subtreesize;
     using base::update_router;
     using base::create_subtree_from_leaves;
-
+    using base::find_pareto_minima;
+    
 protected:
     // *** Tree Object Data Members
 

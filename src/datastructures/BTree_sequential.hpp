@@ -113,6 +113,7 @@ private:
     using base::designated_subtreesize;
     using base::update_router;
     using base::create_subtree_from_leaves;
+    using base::find_pareto_minima;
 
 protected:
     // *** Tree Object Data Members
@@ -184,7 +185,7 @@ public:
             rewrite(fake_slot, /*rank*/0, upd);
             create_subtree_from_leaves(fake_slot, 0, false, level, 0, new_size, leaves);
         } else {
-            update(fake_slot, /*rank*/0, upd);
+            update(fake_slot, 0, _updates.size());
         }
         root = fake_slot.childid;
 
@@ -237,7 +238,7 @@ private:
 
     void rewrite(inner_node_data& slot, const size_type rank, const UpdateDescriptor& upd) {
         if (slot.childid->isleafnode()) {
-            write_updated_leaf_to_new_tree(slot.childid, rank, upd);
+            write_updated_leaf_to_new_tree(slot.childid, 0, rank, upd.upd_begin, upd.upd_end, leaves);
         } else {
             inner_node* inner = static_cast<inner_node*>(slot.childid);
             const size_type min_weight = minweight(inner->level-1);
@@ -263,11 +264,11 @@ private:
         free_node(slot.childid);
     }
 
-    void update(inner_node_data& slot, const size_type rank, const UpdateDescriptor& upd) {
-        BTREE_PRINT("Applying updates [" << upd.upd_begin << ", " << upd.upd_end << ") to " << _node << " on level " << _node->level << ". Rewrite = " << rewrite_subtree << std::endl);
+    void update(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
+        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << " on level " << _node->level << std::endl);
 
         if (slot.childid->isleafnode()) {
-            update_leaf_in_current_tree(slot, upd);
+            update_leaf_in_current_tree(slot, upd_begin, upd_end);
 
         } else {
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
@@ -279,17 +280,17 @@ private:
 
             // Distribute operations and find out which subtrees need rebalancing
             const width_type last = inner->slotuse-1;
-            size_type subupd_begin = upd.upd_begin;
+            size_type subupd_begin = upd_begin;
             for (width_type i = 0; i < last; ++i) {
-                size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
+                size_type subupd_end = find_lower(subupd_begin, upd_end, inner->slot[i].slotkey);
                 rebalancing_needed |= scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                 subupd_begin = subupd_end;
             } 
-            rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd.upd_end, subtree_updates);
+            rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd_end, subtree_updates);
 
             // If no rewrite session is starting on this node, then just push down all updates
             if (!rebalancing_needed) {
-                updateSubTreesInRange(inner, 0, inner->slotuse, rank, subtree_updates);
+                updateSubTreesInRange(inner, 0, inner->slotuse, subtree_updates);
                 set_min_element(slot, inner);
                 update_router(slot.slotkey, inner->slot[inner->slotuse-1].slotkey);
             } else {
@@ -335,7 +336,7 @@ private:
                         result->slot[out] = inner->slot[in];
                         result->slot[out].weight = subtree_updates[in].weight;
                         if (hasUpdates(subtree_updates[in])) {
-                            update(result->slot[out], /*unused rank*/ -1, subtree_updates[in]);
+                            update(result->slot[out], subtree_updates[in].upd_begin, subtree_updates[in].upd_end);
                         }
                         ++out;
                         ++in;
@@ -362,19 +363,18 @@ private:
         }
     }
 
-    inline void updateSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const size_type rank, const UpdateDescriptor* subtree_updates) {
-        size_type subtree_rank = rank;
+    inline void updateSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const UpdateDescriptor* subtree_updates) {
         for (width_type i = begin; i < end; ++i) {
             if (hasUpdates(subtree_updates[i])) {
-                update(node->slot[i], subtree_rank, subtree_updates[i]);
+                update(node->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end);
             	node->slot[i].weight = subtree_updates[i].weight;
             }
-            subtree_rank += subtree_updates[i].weight;
         }
     }
 
-    void write_updated_leaf_to_new_tree(node*& node, const size_type rank, const UpdateDescriptor& upd) {
-        BTREE_PRINT("Rewriting updated leaf " << node << " starting with rank " << rank << " using upd range [" << upd.upd_begin << "," << upd.upd_end << ")");
+    template<class leaf_list>
+    void write_updated_leaf_to_new_tree(node*& node, width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves) {
+        BTREE_PRINT("Rewriting updated leaf " << source_node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")" << std::endl);
 
         size_type leaf_number = rank / designated_leafsize;
         width_type offset_in_leaf = rank % designated_leafsize;
@@ -386,13 +386,12 @@ private:
         }
         BTREE_PRINT(". From leaf " << leaf_number << ": " << offset_in_leaf);
 
-        width_type in = 0; // existing key to read
         width_type out = offset_in_leaf; // position where to write
 
-        leaf_node* result = getOrCreateLeaf(leaf_number);
+        leaf_node* result = getOrCreateLeaf(leaf_number, leaves);
         const leaf_node* leaf = (leaf_node*)(node);
 
-        for (size_type i = upd.upd_begin; i != upd.upd_end; ++i) {
+        for (size_type i = upd_begin; i != upd_end; ++i) {
             switch (updates[i].type) {
             case Operation<key_type>::DELETE:
                 // We know the element is in here, so no bounds checks
@@ -400,8 +399,8 @@ private:
                     BTREE_ASSERT(in < leaf->slotuse);
                     result->slotkey[out++] = leaf->slotkey[in++];
 
-                    if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result = getOrCreateLeaf(++leaf_number);
+                    if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves)) {
+                        result = getOrCreateLeaf(++leaf_number, leaves);
                         out = 0;
                     }
                 }
@@ -411,15 +410,15 @@ private:
                 while(in < leaf->slotuse && key_less(leaf->slotkey[in], updates[i].data)) {
                     result->slotkey[out++] = leaf->slotkey[in++];
 
-                    if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result = getOrCreateLeaf(++leaf_number);
+                    if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves)) {
+                        result = getOrCreateLeaf(++leaf_number, leaves);
                         out = 0;
                     }
                 }
                 result->slotkey[out++] = updates[i].data;
 
-                if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                    result = getOrCreateLeaf(++leaf_number);
+                if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves)) {
+                    result = getOrCreateLeaf(++leaf_number, leaves);
                     out = 0;
                 }
                 break;
@@ -428,8 +427,8 @@ private:
         while (in < leaf->slotuse) {
             result->slotkey[out++] = leaf->slotkey[in++];
 
-            if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
-                result = getOrCreateLeaf(++leaf_number);
+            if (out == designated_leafsize && hasNextLeaf(leaf_number, leaves) && in < leaf->slotuse) {
+                result = getOrCreateLeaf(++leaf_number, leaves);
                 out = 0;
             }
         }
@@ -440,18 +439,20 @@ private:
             + out << ") into " << leaves.size() << " leaves " << std::endl);
     }
 
-    inline bool hasNextLeaf(size_type leaf_count) const {
+    template<class leaf_list>
+    inline bool hasNextLeaf(size_type leaf_count, leaf_list& leaves) const {
         return leaf_count+1 < leaves.size();
     }
 
-    inline leaf_node* getOrCreateLeaf(const size_type leaf_number) {
+    template<class leaf_list>
+    inline leaf_node* getOrCreateLeaf(const size_type leaf_number, leaf_list& leaves) {
         if (leaves[leaf_number] == NULL) {
             leaves[leaf_number] = allocate_leaf();
         }
         return leaves[leaf_number];
     }
 
-    void update_leaf_in_current_tree(inner_node_data& slot, const UpdateDescriptor& upd) {
+    void update_leaf_in_current_tree(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
         leaf_node* result = static_cast<leaf_node*>(spare_leaf);
         const leaf_node* leaf = static_cast<leaf_node*>(slot.childid);
 
@@ -468,7 +469,7 @@ private:
 
         BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
 
-        for (size_type i = upd.upd_begin; i != upd.upd_end; ++i) {
+        for (size_type i = upd_begin; i != upd_end; ++i) {
             const Operation<key_type>& op = updates[i];
 
             switch (op.type) {
