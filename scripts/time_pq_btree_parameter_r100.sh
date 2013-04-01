@@ -11,7 +11,7 @@ ratio=100 # r = n/k
 #################################################################
 # BRANCHING PARAMETER (INT)
 #################################################################
-out_file="../timings/btree/insert_nodewidth_int_inner_p_1_r$r"
+out_file="../timings/btree/insert_nodewidth_int_inner_p_1_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -21,7 +21,7 @@ do
 	taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_int_inner_p_8_r$r"
+out_file="../timings/btree/insert_nodewidth_int_inner_p_8_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -31,7 +31,7 @@ do
 	taskset -c 0-7 ./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_int_inner_sequ_r$r"
+out_file="../timings/btree/insert_nodewidth_int_inner_sequ_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -44,7 +44,7 @@ done
 #################################################################
 # BRANCHING PARAMETER (LABEL)
 #################################################################
-out_file="../timings/btree/insert_nodewidth_label_inner_p_1_r$r"
+out_file="../timings/btree/insert_nodewidth_label_inner_p_1_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -54,7 +54,7 @@ do
 	taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_label_inner_p_8_r$r"
+out_file="../timings/btree/insert_nodewidth_label_inner_p_8_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -64,7 +64,7 @@ do
 	taskset -c 0-7 ./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_label_inner_sequ_r$r"
+out_file="../timings/btree/insert_nodewidth_label_inner_sequ_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -78,7 +78,7 @@ done
 #################################################################
 # LEAF PARAMETER (INT)
 #################################################################
-out_file="../timings/btree/insert_nodewidth_int_leaf_p_1_r$r"
+out_file="../timings/btree/insert_nodewidth_int_leaf_p_1_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -88,7 +88,7 @@ do
 	taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_int_leaf_p_8_r$r"
+out_file="../timings/btree/insert_nodewidth_int_leaf_p_8_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -98,7 +98,7 @@ do
 	taskset -c 0-7 ./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_int_leaf_sequ_r$r"
+out_file="../timings/btree/insert_nodewidth_int_leaf_sequ_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -112,7 +112,7 @@ done
 #################################################################
 # LEAF PARAMETER (LABEL)
 #################################################################
-out_file="../timings/btree/insert_nodewidth_label_leaf_p_1_r$r"
+out_file="../timings/btree/insert_nodewidth_label_leaf_p_1_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -122,7 +122,7 @@ do
 	taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -p 1 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_r$r"
+out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -132,7 +132,7 @@ do
 	taskset -c 0-7 ./bin/time_pq_btree.par -c $iter_count -p 8 -r $ratio -s $skew -k 10000 >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_label_leaf_sequ_r$r"
+out_file="../timings/btree/insert_nodewidth_label_leaf_sequ_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
