@@ -1,11 +1,13 @@
 set encoding iso_8859_1
 
-set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
-set size 0.5,0.5
+set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
+set size 0.7,0.5
 
 # Legend
-set key top left Left
+set key outside top right Right
 set key samplen 2
+set key width -4
+set key reverse
 
 # define axis: remove border on top and right and set color to gray
 set style line 11 lc rgb '#808080' lt 1
@@ -34,7 +36,7 @@ set ylabel "Speedup" offset 1
 set output "btree_bulk_construction_speedup.ps"
 
 set xrange [:]
-set yrange [:16]
+set yrange [:10]
 
 plot\
  '< join -j 4 ../../timings/btree/insert_sequ_r0_s1 ../../timings/btree/insert_p_16_r0_s1' using 1:($2/$25) title ' btree (p16)' with lp ls 7,\

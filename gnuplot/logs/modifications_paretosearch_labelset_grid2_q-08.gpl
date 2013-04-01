@@ -1,7 +1,7 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
-set size 0.5,0.5
+set size 0.4,0.4
 
 set style histogram rowstacked
 set style data histograms
@@ -9,8 +9,9 @@ set style fill solid 0.8 solid noborder
 set boxwidth 0.8
 
 set key top left Left
+set key samplen 1
 
-set xtics ("0" 0, "0.1" 10, "0.2" 20, "0.3" 30, "0.4" 40, "0.5" 50, "0.6" 60, "0.7" 70, "0.8" 80, "0.9" 90, "1" 100)
+set xtics ("0" 0, "0.2" 20, "0.4" 40, "0.6" 60, "0.8" 80, "1" 100)
 
 # define axis: remove border on top and right and set color to gray
 set style line 11 lc rgb '#808080' lt 1
@@ -23,11 +24,11 @@ set style line 12 lc rgb '#808080' lt 0 lw 1
 set grid back ls 12
 
 set title "PaPaSearch on Grid 200x200 (q=-0.8)" 
-set xlabel "Labelset modification positions normalized to range [0,1]"
+set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
-set output "modifications_paretosearch_labelset_grid2.ps"
+set output "modifications_paretosearch_labelset_grid2_q-08.ps"
 
 set xrange [0:]
 set yrange [0:]
 
-plot "../../logs/grid2_paretosearch_labelset" using ($2/1000000) t "Insertions" lc rgb '#11AD34', '' using ($3/1000000) t "Dominations" lc rgb '#E62B17'
+plot "../../logs/grid2_q-08_paretosearch_labelset" using ($2/1000000) t "Insertions" lc rgb '#11AD34', '' using ($3/1000000) t "Dominations" lc rgb '#E62B17'

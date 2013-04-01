@@ -1,11 +1,13 @@
 set encoding iso_8859_1
 
-set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
-set size 0.5,0.5
+set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
+set size 0.7,0.5
 
 # Legend
-set key top right Right
+set key outside top right Right
 set key samplen 2
+set key width -4
+set key reverse
 
 # define axis: remove border on top and right and set color to gray
 set style line 11 lc rgb '#808080' lt 1
@@ -34,7 +36,7 @@ set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_insertion_r10_s1.ps"
 
 set xrange [:]
-set yrange [0:]
+set yrange [0:80]
 
 plot '../../timings/set/insert_p_8_r10_s1' using 4:($1*1000/$4) title ' mcstl (p8)' w lp ls 2,\
 			'../../timings/btree/insert_p_1_r10_s1' using 4:($1*1000/$4) title ' btree (p1)' w lp ls 3,\

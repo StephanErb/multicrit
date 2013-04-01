@@ -37,7 +37,7 @@ set ylabel "Runtime [s]" offset 1
 set output "grid2_q-08.ps"
 
 set xrange [50:]
-set yrange [-5:]
+set yrange [-10:]
 
 plot '../timings/grid2_lset_lex_q-0.8' using 2:4 title ' LSet (lex)' ls 4,\
  	 '../timings/grid2_paretosearch_sequ_q-0.8' using 2:4 title ' ParetoSearch (seq)' ls 7,\
