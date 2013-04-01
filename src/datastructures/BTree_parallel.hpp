@@ -36,6 +36,9 @@
 #include "../tbb/cache_aligned_blocked_range.hpp"
 
 
+#define TREE_CREATION_PAR_CUTOFF_LEVEL 1
+
+
 /** 
  * Basic class implementing a base B+ tree data structure in memory.
  */
@@ -125,6 +128,7 @@ private:
     using base::num_subtrees;
     using base::designated_subtreesize;
     using base::update_router;
+    using base::create_subtree_from_leaves;
 
 protected:
     // *** Tree Object Data Members
@@ -162,10 +166,7 @@ public:
         }
     }
 
-
 public:
-
-
     static std::string name() {
         return "Parallel BTree";
     }
@@ -414,13 +415,8 @@ private:
         { }
 
         tbb::task* execute() {
-            if (level == 0) {
-                // Just re-use the pre-alloced and filled leaf
-                leaf_node* result = leaves[rank_begin / designated_leafsize];
-                result->slotuse = rank_end - rank_begin;
-                set_min_element(slot, result);
-                tree->update_router(slot.slotkey, result->slotkey[result->slotuse-1]);
-                slot.childid = result;
+            if (level <= TREE_CREATION_PAR_CUTOFF_LEVEL) {
+                tree->create_subtree_from_leaves(slot, old_slotuse, reuse_node, level, rank_begin, rank_end, leaves);
                 return NULL;
             } else {
                 const size_type designated_treesize = designated_subtreesize(level);
@@ -458,7 +454,7 @@ private:
                         result->slot[new_slotuse-1], 0, false, level-1, rank, rank_end, leaves, tree);
                 spawn(tasks);
                 return &task;
-             }
+            }
         }
     };
 

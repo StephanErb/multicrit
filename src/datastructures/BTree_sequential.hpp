@@ -112,6 +112,7 @@ private:
     using base::num_subtrees;
     using base::designated_subtreesize;
     using base::update_router;
+    using base::create_subtree_from_leaves;
 
 protected:
     // *** Tree Object Data Members
@@ -183,7 +184,7 @@ public:
         fake_slot.childid = root;
         update(fake_slot, /*rank*/0, upd, rebuild_needed);
         if (rebuild_needed) {
-            create_subtree_from_leaves(fake_slot, false, level, 0, new_size);
+            create_subtree_from_leaves(fake_slot, 0, false, level, 0, new_size, leaves);
         }
         root = fake_slot.childid;
 
@@ -235,48 +236,6 @@ private:
         for (size_type i = 0; i < leaf_count; ++i) {
             leaves.push_back(allocate_leaf());
         }
-    }
-
-    width_type create_subtree_from_leaves(inner_node_data& slot, const bool reuse_outnode, const level_type level, size_type rank_begin, size_type rank_end) {
-        BTREE_ASSERT(rank_end - rank_begin > 0);
-        BTREE_PRINT("Creating tree on level " << level << " for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
-
-        if (level == 0) { // reached leaf level
-            leaf_node* result = leaves[rank_begin / designated_leafsize];
-            const width_type slotuse = rank_end - rank_begin;
-            BTREE_ASSERT(slotuse == result->slotuse);
-            set_min_element(slot, result);
-            update_router(slot.slotkey, result->slotkey[slotuse-1]);
-            slot.childid = result;
-            return 1;
-        } else {
-            const size_type n = rank_end - rank_begin;
-            const size_type designated_treesize = designated_subtreesize(level);
-            const width_type subtrees = num_subtrees(n, designated_treesize);
-
-            BTREE_PRINT("Creating inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
-                << designated_treesize << std::endl);
-
-            inner_node* result = reuse_outnode ? static_cast<inner_node*>(slot.childid) : allocate_inner(level);
-            const width_type old_slotuse = reuse_outnode ? result->slotuse : 0;
-            const width_type new_slotuse = subtrees+old_slotuse;
-            result->slotuse = new_slotuse;
-            slot.childid = result;
-
-            BTREE_ASSERT(new_slotuse <= innerslotmax);
-
-            size_type rank = rank_begin;
-            for (width_type i = old_slotuse; i < new_slotuse; ++i) {
-                const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
-                result->slot[i].weight = weight;
-                create_subtree_from_leaves(result->slot[i], false, level-1, rank, rank+weight);
-                rank += weight;
-            }
-            set_min_element(slot, result);
-            update_router(slot.slotkey, result->slot[new_slotuse-1].slotkey);
-
-            return subtrees;
-         }
     }
 
     void update(inner_node_data& slot, const size_type rank, const UpdateDescriptor& upd, const bool rewrite_subtree) {
@@ -349,7 +308,7 @@ private:
                             result->slotuse = out;
                             inner_node_data fake_slot;
                             fake_slot.childid = result;
-                            out += create_subtree_from_leaves(fake_slot, /*write into result node*/ true, result->level, 0, weight_of_defective_range);
+                            out += create_subtree_from_leaves(fake_slot, out, /*write into result node*/ true, result->level, 0, weight_of_defective_range, leaves);
                             result = static_cast<inner_node*>(fake_slot.childid);                            
                         }
                     } else {

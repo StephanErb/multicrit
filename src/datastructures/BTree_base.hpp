@@ -635,6 +635,53 @@ protected:
 #endif
 
 
+    template<class leaf_list>
+    width_type create_subtree_from_leaves(inner_node_data& slot, const width_type old_slotuse, const bool reuse_node, const level_type level, size_type rank_begin, size_type rank_end, const leaf_list& leaves) {
+        BTREE_ASSERT(rank_end - rank_begin > 0);
+        BTREE_PRINT("Creating tree on level " << level << " for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
+
+        if (level == 0) { // reached leaf level
+            // Just re-use the pre-alloced and filled leaf
+            leaf_node* result = leaves[rank_begin / designated_leafsize];
+            result->slotuse = rank_end - rank_begin;
+            set_min_element(slot, result);
+            update_router(slot.slotkey, result->slotkey[result->slotuse-1]);
+            slot.childid = result;
+            return 1;
+        } else {
+            const size_type designated_treesize = designated_subtreesize(level);
+            const width_type subtrees = num_subtrees(rank_end - rank_begin, designated_treesize);
+
+            BTREE_PRINT((reuse_node ? "Filling" : "Creating") << " inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
+                << designated_treesize << std::endl);
+
+            const width_type new_slotuse = subtrees+old_slotuse;
+
+            inner_node* result = NULL;
+            if (reuse_node) {
+                result = static_cast<inner_node*>(slot.childid);
+            } else {
+                result = allocate_inner(level);
+                result->slotuse = new_slotuse;
+                slot.childid = result;
+            }
+            BTREE_ASSERT(new_slotuse <= innerslotmax);
+
+            size_type rank = rank_begin;
+            for (width_type i = old_slotuse; i < new_slotuse; ++i) {
+                const size_type weight = (i != new_slotuse-1) ? designated_treesize : (rank_end - rank);
+                result->slot[i].weight = weight;
+                create_subtree_from_leaves(result->slot[i], 0, false, level-1, rank, rank+weight, leaves);
+                rank += weight;
+            }
+            set_min_element(slot, result);
+            update_router(slot.slotkey, result->slot[new_slotuse-1].slotkey);
+
+            return subtrees;
+         }
+    }
+
+
 protected:
     /// Other small statistics about the B+ tree
     tree_stats  stats;
