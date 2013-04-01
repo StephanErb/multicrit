@@ -172,6 +172,8 @@ public:
         bool rebuild_needed = (level < root->level && size() < minweight(root->level)) || size() > maxweight(root->level);
 
         UpdateDescriptor upd = {rebuild_needed, new_size, 0, _updates.size()};
+        inner_node_data fake_slot;
+        fake_slot.childid = root;
 
         if (rebuild_needed) {
             for (level_type i = root->level; i <= level; ++i) {
@@ -179,16 +181,10 @@ public:
             }
             BTREE_PRINT("Root-level rewrite session started for new level " << level << std::endl);
             allocate_new_leaves(new_size);
-        }
-        inner_node_data fake_slot;
-        fake_slot.childid = root;
-        if (rebuild_needed) {
             rewrite(fake_slot, /*rank*/0, upd);
+            create_subtree_from_leaves(fake_slot, 0, false, level, 0, new_size, leaves);
         } else {
             update(fake_slot, /*rank*/0, upd);
-        }
-        if (rebuild_needed) {
-            create_subtree_from_leaves(fake_slot, 0, false, level, 0, new_size, leaves);
         }
         root = fake_slot.childid;
 
@@ -236,10 +232,7 @@ private:
         BTREE_PRINT("Allocating " << num_subtrees(n, designated_leafsize) << " new  nodes for tree of size " << n << std::endl);
         size_type leaf_count = num_subtrees(n, designated_leafsize);
         leaves.clear();
-        leaves.reserve(leaf_count);
-        for (size_type i = 0; i < leaf_count; ++i) {
-            leaves.push_back(allocate_leaf());
-        }
+        leaves.resize(leaf_count, NULL);
     }
 
     void rewrite(inner_node_data& slot, const size_type rank, const UpdateDescriptor& upd) {
@@ -396,7 +389,7 @@ private:
         width_type in = 0; // existing key to read
         width_type out = offset_in_leaf; // position where to write
 
-        leaf_node* result = leaves[leaf_number];
+        leaf_node* result = getOrCreateLeaf(leaf_number);
         const leaf_node* leaf = (leaf_node*)(node);
 
         for (size_type i = upd.upd_begin; i != upd.upd_end; ++i) {
@@ -408,8 +401,7 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result->slotuse = designated_leafsize;
-                        result = leaves[++leaf_number];
+                        result = getOrCreateLeaf(++leaf_number);
                         out = 0;
                     }
                 }
@@ -420,16 +412,14 @@ private:
                     result->slotkey[out++] = leaf->slotkey[in++];
 
                     if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                        result->slotuse = designated_leafsize;
-                        result = leaves[++leaf_number];
+                        result = getOrCreateLeaf(++leaf_number);
                         out = 0;
                     }
                 }
                 result->slotkey[out++] = updates[i].data;
 
                 if (out == designated_leafsize && hasNextLeaf(leaf_number)) {
-                    result->slotuse = designated_leafsize;
-                    result = leaves[++leaf_number];
+                    result = getOrCreateLeaf(++leaf_number);
                     out = 0;
                 }
                 break;
@@ -439,8 +429,7 @@ private:
             result->slotkey[out++] = leaf->slotkey[in++];
 
             if (out == designated_leafsize && hasNextLeaf(leaf_number) && in < leaf->slotuse) {
-                result->slotuse = designated_leafsize;
-                result = leaves[++leaf_number];
+                result = getOrCreateLeaf(++leaf_number);
                 out = 0;
             }
         }
@@ -453,6 +442,13 @@ private:
 
     inline bool hasNextLeaf(size_type leaf_count) const {
         return leaf_count+1 < leaves.size();
+    }
+
+    inline leaf_node* getOrCreateLeaf(const size_type leaf_number) {
+        if (leaves[leaf_number] == NULL) {
+            leaves[leaf_number] = allocate_leaf();
+        }
+        return leaves[leaf_number];
     }
 
     void update_leaf_in_current_tree(inner_node_data& slot, const UpdateDescriptor& upd) {

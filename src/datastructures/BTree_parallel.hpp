@@ -646,7 +646,7 @@ private:
             return leaf_count+1 < leaves.size();
         }
 
-        leaf_node* getOrCreateLeaf(const size_type leaf_number) {
+        inline leaf_node* getOrCreateLeaf(const size_type leaf_number) {
             if (leaves[leaf_number] == NULL) {
                 leaf_node* tmp = tree->allocate_leaf();
                 if (leaves[leaf_number].compare_and_swap(tmp, NULL) == NULL) {
