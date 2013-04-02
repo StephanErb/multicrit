@@ -1,6 +1,6 @@
 # Bulk Insertion
-185.534 0 3 100 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-228.861 0 13 1000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-745.615 0 81 10000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-9627.02 7.98828 800 100000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-286029 63.6758 8026 1000000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+188.395 0 3 100 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+238.451 0 13 1000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+732.268 0 81 10000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+12262 7.98828 800 100000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+287988 63.9336 8025 1000000 100 1 16 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
