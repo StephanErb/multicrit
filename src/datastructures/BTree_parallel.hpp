@@ -86,8 +86,8 @@ protected:
     typedef typename base::tree_stats       tree_stats;
     typedef typename base::UpdateDescriptor UpdateDescriptor;
     typedef typename base::padded_leaf_list padded_leaf_list;
-    typedef typename base::SpareLeafPerThread SpareLeafPerThread;
-
+    typedef typename base::DataPerThread    DataPerThread;
+    typedef typename base::UpdateDescriptorArray UpdateDescriptorArray;
 
 public:
     typedef typename base::traits           traits;
@@ -112,6 +112,7 @@ protected:
     using base::weightdelta;
     using base::batch_type;
     using base::updates;
+    using base::tls_data;
 
     using base::key_less;
     using base::key_lessequal;
@@ -142,7 +143,6 @@ protected:
 protected:
     // *** Tree Object Data Members
 
-    UpdateDescriptor root_subtree_updates[innerslotmax];
     tbb::task_list root_tasks;
 
     size_type min_problem_size;
@@ -207,6 +207,7 @@ public:
                 inner_node* const inner = static_cast<inner_node*>(root);
                 const size_type max_weight = maxweight(level-1);
                 const size_type min_weight = max_weight / 4;
+                auto& subtree_updates = tls_data.local().subtree_updates_per_level[MAX_TREE_LEVEL-1];
                 bool rebalancing_needed = false;
 
                 // Distribute operations and find out which subtrees need rebalancing
@@ -214,17 +215,17 @@ public:
                 size_type subupd_begin = 0;
                 for (width_type i = 0; i < last; ++i) {
                     size_type subupd_end = find_lower(subupd_begin, update_count, inner->slot[i].slotkey);
-                    rebalancing_needed |= scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, root_subtree_updates);
+                    rebalancing_needed |= scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                     subupd_begin = subupd_end;
                 } 
-                rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, update_count, root_subtree_updates);
+                rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, update_count, subtree_updates);
 
                 if (!rebalancing_needed) {
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
                     for (width_type i = 0; i < inner->slotuse; ++i) {
-                        if (hasUpdates(root_subtree_updates[i])) {
-                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->slot[i], root_subtree_updates[i].upd_begin, root_subtree_updates[i].upd_end, this));
-                            inner->slot[i].weight = root_subtree_updates[i].weight;
+                        if (hasUpdates(subtree_updates[i])) {
+                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end, this));
+                            inner->slot[i].weight = subtree_updates[i].weight;
                         }
                     }
                     tbb::task::spawn_root_and_wait(root_tasks);
@@ -296,7 +297,7 @@ private:
 
         // Adaptive cut-off; Taken from the MCSTL implementation
         const size_type p = tbb::tbb_thread::hardware_concurrency();
-        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), 32.0);
+        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), 256.0);
 
         if (_batch_type == INSERTS_AND_DELETES) {
             // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
@@ -519,7 +520,7 @@ private:
                 return NULL;
             } else {
                 const inner_node* const inner = (inner_node*) source_node;
-                UpdateDescriptor subtree_updates[inner->slotuse];
+                auto& subtree_updates = tree->tls_data.local().subtree_updates_per_level[MAX_TREE_LEVEL-1];
                 
                 // Distribute operations and find out which subtrees need rebalancing
                 const width_type last = inner->slotuse-1;
@@ -595,8 +596,7 @@ private:
                 inner_node* const inner = static_cast<inner_node*>(slot.childid);
                 const size_type max_weight = maxweight(inner->level-1);
                 const size_type min_weight = max_weight / 4;
-                UpdateDescriptor subtree_updates[inner->slotuse];
-
+                auto& subtree_updates = tree->tls_data.local().subtree_updates_per_level[MAX_TREE_LEVEL-1];
                 bool rebalancing_needed = false;
 
                 // Distribute operations and find out which subtrees need rebalancing

@@ -148,8 +148,10 @@ protected:
     inline ~btree_base() {
         clear();
         #ifdef PARALLEL_BUILD
-            for (auto leaf : spare_leaves) {
-                free_node(leaf);
+            for (auto& data : tls_data) {
+                if (data.spare_leaf != NULL) {
+                    free_node(data.spare_leaf);
+                }
             }
         #else
             free_node(spare_leaf);
@@ -219,6 +221,7 @@ protected:
         size_type upd_begin;
         size_type upd_end;
     };
+    typedef std::array<UpdateDescriptor, innerslotmax> UpdateDescriptorArray;
 
     static size_type minweight(const level_type level) {
         return maxweight(level) / 4; // when changing: also modify direct computations!
@@ -427,7 +430,7 @@ protected:
     }
 
     inline bool scheduleSubTreeUpdate(const width_type i, const size_type& weight, const size_type minweight,
-            const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptor* subtree_updates) const {
+            const size_type maxweight, const size_type subupd_begin, const size_type subupd_end, UpdateDescriptorArray& subtree_updates) const {
         subtree_updates[i].upd_begin = subupd_begin;
         subtree_updates[i].upd_end = subupd_end;
         subtree_updates[i].weight = weight + getWeightDelta(subupd_begin, subupd_end);
@@ -721,7 +724,7 @@ protected:
         const size_type leaf_count = num_subtrees(n, designated_leafsize);
 
         #ifdef PARALLEL_BUILD 
-            leaf_list& leaves = tls_leaves.local();
+            leaf_list& leaves = tls_data.local().leaves;
         #endif
         leaves.clear();
         leaves.resize(leaf_count, NULL);
@@ -734,9 +737,11 @@ protected:
             write_updated_leaf_to_new_tree(source_node, 0, rank, upd.upd_begin, upd.upd_end, leaves, true);
         } else {
             inner_node* inner = static_cast<inner_node*>(source_node);
-            // FIXME: reuse allocation
-            //UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
-            UpdateDescriptor subtree_updates[inner->slotuse];
+            #ifdef PARALLEL_BUILD
+                auto& subtree_updates = tls_data.local().subtree_updates_per_level[inner->level];
+            #else
+                auto& subtree_updates = subtree_updates_per_level[inner->level];
+            #endif
             
             // Distribute operations and find out which subtrees need rebalancing
             const width_type last = inner->slotuse-1;
@@ -763,9 +768,11 @@ protected:
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const size_type max_weight = maxweight(inner->level-1);
             const size_type min_weight = max_weight / 4;
-            // FIXME: reuse allocation
-            //UpdateDescriptor* subtree_updates = subtree_updates_per_level[inner->level];
-            UpdateDescriptor subtree_updates[inner->slotuse];
+            #ifdef PARALLEL_BUILD
+                auto& subtree_updates = tls_data.local().subtree_updates_per_level[inner->level];
+            #else
+                auto& subtree_updates = subtree_updates_per_level[inner->level];
+            #endif
 
             bool rebalancing_needed = false;
             // Distribute operations and find out which subtrees need rebalancing
@@ -842,7 +849,7 @@ protected:
     }
 
     template<class leaf_list> 
-    inline void rewriteSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const size_type rank, const UpdateDescriptor* subtree_updates, leaf_list& leaves) {
+    inline void rewriteSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const size_type rank, const UpdateDescriptorArray& subtree_updates, leaf_list& leaves) {
         size_type subtree_rank = rank;
         for (width_type i = begin; i < end; ++i) {
             if (subtree_updates[i].weight == 0) {
@@ -854,7 +861,7 @@ protected:
         }
     }
 
-    inline void updateSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const UpdateDescriptor* subtree_updates) {
+    inline void updateSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const UpdateDescriptorArray& subtree_updates) {
         for (width_type i = begin; i < end; ++i) {
             if (hasUpdates(subtree_updates[i])) {
                 update(node->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end);
@@ -961,13 +968,11 @@ protected:
     inline void update_leaf_in_current_tree(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
         #ifdef PARALLEL_BUILD
-            bool exists;
-            typename SpareLeafPerThread::reference spare_leaf = spare_leaves.local(exists);
-            leaf_node* const result = exists ? spare_leaf : allocate_leaf_without_count();
+            auto& spare_leaf = tls_data.local().spare_leaf;
+            leaf_node* const result = spare_leaf != NULL ? spare_leaf : allocate_leaf_without_count();
         #else
             leaf_node* const result = static_cast<leaf_node*>(spare_leaf);
         #endif
-
         width_type in = 0; // existing key to read
         width_type out = 0; // position where to write
         const width_type in_slotuse = leaf->slotuse;
@@ -1053,19 +1058,26 @@ protected:
 
 
     #ifdef PARALLEL_BUILD
-        // Leaves created during the current reconstruction effort
-        typedef tbb::enumerable_thread_specific<leaf_list, tbb::cache_aligned_allocator<leaf_list>, tbb::ets_key_per_instance> LeafListPerThread; 
-        LeafListPerThread tls_leaves;
+        struct tls_data {
+            // Leaves created during the current reconstruction effort
+            leaf_list leaves;
+            // Pointer to spare leaf used for merging.
+            leaf_node* spare_leaf = NULL;
+            UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
+        };
 
-        /// Pointer to spare leaf used for merging.
-        typedef tbb::enumerable_thread_specific<leaf_node*, tbb::cache_aligned_allocator<leaf_node*>, tbb::ets_key_per_instance> SpareLeafPerThread; 
-        SpareLeafPerThread spare_leaves;
+        typedef tbb::enumerable_thread_specific<tls_data, tbb::cache_aligned_allocator<tls_data>, tbb::ets_key_per_instance> DataPerThread; 
+        DataPerThread tls_data;
     #else
         // Leaves created during the current reconstruction effort
         leaf_list leaves;
 
         /// Pointer to spare leaf used for merging.
         node*       spare_leaf;
+
+        // For each level, one array to store the updates needed to push down to the individual subtrees
+        UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
     #endif
+
 
 };
