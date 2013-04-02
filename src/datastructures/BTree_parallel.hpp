@@ -296,7 +296,7 @@ private:
 
         // Adaptive cut-off; Taken from the MCSTL implementation
         const size_type p = tbb::tbb_thread::hardware_concurrency();
-        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), (double)traits::leafparameter_k);
+        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), 32.0);
 
         if (_batch_type == INSERTS_AND_DELETES) {
             // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 

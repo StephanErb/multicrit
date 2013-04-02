@@ -53,10 +53,10 @@
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
 
 #ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 8
+#define BRANCHING_PARAMETER_B 24
 #endif
 #ifndef LEAF_PARAMETER_K
-#define LEAF_PARAMETER_K 1024
+#define LEAF_PARAMETER_K 512
 #endif
 
 enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};
@@ -1054,7 +1054,6 @@ protected:
 
     #ifdef PARALLEL_BUILD
         // Leaves created during the current reconstruction effort
-
         typedef tbb::enumerable_thread_specific<leaf_list, tbb::cache_aligned_allocator<leaf_list>, tbb::ets_key_per_instance> LeafListPerThread; 
         LeafListPerThread tls_leaves;
 
