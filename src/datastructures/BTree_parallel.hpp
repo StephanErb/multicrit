@@ -85,7 +85,7 @@ protected:
     typedef typename base::inner_node_data  inner_node_data;
     typedef typename base::tree_stats       tree_stats;
     typedef typename base::UpdateDescriptor UpdateDescriptor;
-    typedef typename base::leaf_list        leaf_list;
+    typedef typename base::padded_leaf_list padded_leaf_list;
     typedef typename base::SpareLeafPerThread SpareLeafPerThread;
 
 
@@ -333,7 +333,7 @@ private:
         tbb::task_list subtasks;
         width_type subtask_count;
 
-        leaf_list leaves;
+        padded_leaf_list leaves;
         const width_type subtrees;
 
         node* result_node;
@@ -402,11 +402,11 @@ private:
         const size_type rank_end;
 
         btree* const tree;
-        const leaf_list& leaves;
+        const padded_leaf_list& leaves;
 
     public:
 
-        inline TreeCreationTask(inner_node_data& _slot, const width_type _old_slotuse, const bool _reuse_node, const level_type _level, const size_type _rank_begin, const size_type _rank_end, const leaf_list& _leaves, btree* const _tree) 
+        inline TreeCreationTask(inner_node_data& _slot, const width_type _old_slotuse, const bool _reuse_node, const level_type _level, const size_type _rank_begin, const size_type _rank_end, const padded_leaf_list& _leaves, btree* const _tree) 
             : slot(_slot), old_slotuse(_old_slotuse), reuse_node(_reuse_node), level(_level), rank_begin(_rank_begin), rank_end(_rank_end), tree(_tree), leaves(_leaves)
         { }
 
@@ -480,12 +480,12 @@ private:
         node* const source_node;
         const size_type rank;
         const UpdateDescriptor upd;
-        leaf_list& leaves;
+        padded_leaf_list& leaves;
         btree* const tree;
 
     public:
 
-        TreeRewriteTask(node* const _source_node, const size_type _rank, const UpdateDescriptor _upd, leaf_list& _leaves, btree* const _tree)
+        TreeRewriteTask(node* const _source_node, const size_type _rank, const UpdateDescriptor _upd, padded_leaf_list& _leaves, btree* const _tree)
             : source_node(_source_node), rank(_rank), upd(_upd), leaves(_leaves), tree(_tree)
         {}
 

@@ -255,13 +255,15 @@ protected:
     typedef typename _Alloc::template rebind<weightdelta_type>::other weightdelta_listalloc_type;
     typedef std::vector<weightdelta_type, weightdelta_listalloc_type> weightdelta_list;
 
-    #ifdef PARALLEL_BUILD
-        typedef typename _Alloc::template rebind<tbb::atomic<leaf_node*>>::other leaf_list_alloc_type;
-        typedef std::vector<tbb::atomic<leaf_node*>, leaf_list_alloc_type> leaf_list; 
-    #else
-        typedef typename _Alloc::template rebind<leaf_node*>::other leaf_list_alloc_type;
-        typedef std::vector<leaf_node*, leaf_list_alloc_type> leaf_list; 
-    #endif
+    struct PaddedAtomic : public tbb::atomic<leaf_node*> {
+        //char pad[DCACHE_LINESIZE - sizeof(tbb::atomic<leaf_node*>) % DCACHE_LINESIZE];
+    };
+
+    typedef typename _Alloc::template rebind<PaddedAtomic>::other padded_leaf_list_alloc_type;
+    typedef std::vector<PaddedAtomic, padded_leaf_list_alloc_type> padded_leaf_list; 
+
+    typedef typename _Alloc::template rebind<leaf_node*>::other leaf_list_alloc_type;
+    typedef std::vector<leaf_node*, leaf_list_alloc_type> leaf_list; 
 
 public:
 
@@ -666,6 +668,7 @@ protected:
     }
 #endif
 
+    template<class leaf_list> 
     width_type create_subtree_from_leaves(inner_node_data& slot, const width_type old_slotuse, const bool reuse_node, const level_type level, size_type rank_begin, size_type rank_end, const leaf_list& leaves) {
         BTREE_ASSERT(rank_end - rank_begin > 0);
         BTREE_PRINT("Creating tree on level " << level << " for range [" << rank_begin << ", " << rank_end << ")" << std::endl);
@@ -725,6 +728,7 @@ protected:
         return leaves;
     }
 
+    template<class leaf_list> 
     void rewrite(node* const source_node, const size_type rank, const UpdateDescriptor& upd, leaf_list& leaves) {
         if (source_node->isleafnode()) {
             write_updated_leaf_to_new_tree(source_node, 0, rank, upd.upd_begin, upd.upd_end, leaves, true);
@@ -837,6 +841,7 @@ protected:
         }
     }
 
+    template<class leaf_list> 
     inline void rewriteSubTreesInRange(inner_node* node, const width_type begin, const width_type end, const size_type rank, const UpdateDescriptor* subtree_updates, leaf_list& leaves) {
         size_type subtree_rank = rank;
         for (width_type i = begin; i < end; ++i) {
@@ -857,7 +862,8 @@ protected:
             }
         }
     }
-    
+   
+    template<class leaf_list> 
     inline void write_updated_leaf_to_new_tree(const node* const node, width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves, const bool is_last) {
         BTREE_PRINT("Rewriting updated leaf " << source_node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")" << std::endl);
 
@@ -926,23 +932,28 @@ protected:
             + out << ") into " << leaves.size() << " leaves " << std::endl);
     }
 
+    template<class leaf_list> 
     inline bool hasNextLeaf(const size_type leaf_count, const leaf_list& leaves) const {
         return leaf_count+1 < leaves.size();
     }
 
+
+    inline leaf_node* getOrCreateLeaf(const size_type leaf_number, padded_leaf_list& leaves) {
+        if (leaves[leaf_number] == NULL) {
+            leaf_node* tmp = allocate_leaf();
+            if (leaves[leaf_number].compare_and_swap(tmp, NULL) == NULL) {
+                return tmp;
+            } else {
+                // Another thread installed the value, so throw away mine.
+                free_node(tmp);
+            }
+        }
+        return leaves[leaf_number];
+    }
+
     inline leaf_node* getOrCreateLeaf(const size_type leaf_number, leaf_list& leaves) {
         if (leaves[leaf_number] == NULL) {
-            #ifdef PARALLEL_BUILD
-                leaf_node* tmp = allocate_leaf();
-                if (leaves[leaf_number].compare_and_swap(tmp, NULL) == NULL) {
-                    return tmp;
-                } else {
-                    // Another thread installed the value, so throw away mine.
-                    free_node(tmp);
-                }
-            #else
-                leaves[leaf_number] = allocate_leaf();
-            #endif
+            leaves[leaf_number] = allocate_leaf();
         }
         return leaves[leaf_number];
     }
@@ -1042,18 +1053,14 @@ protected:
 
 
     #ifdef PARALLEL_BUILD
-
         // Leaves created during the current reconstruction effort
-        //struct PaddedAtomic : public tbb::atomic<leaf_node*> {
-        //    char pad[DCACHE_LINESIZE - sizeof(tbb::atomic<leaf_node*>) % DCACHE_LINESIZE];
-        //};
+
         typedef tbb::enumerable_thread_specific<leaf_list, tbb::cache_aligned_allocator<leaf_list>, tbb::ets_key_per_instance> LeafListPerThread; 
         LeafListPerThread tls_leaves;
 
         /// Pointer to spare leaf used for merging.
         typedef tbb::enumerable_thread_specific<leaf_node*, tbb::cache_aligned_allocator<leaf_node*>, tbb::ets_key_per_instance> SpareLeafPerThread; 
         SpareLeafPerThread spare_leaves;
-
     #else
         // Leaves created during the current reconstruction effort
         leaf_list leaves;
