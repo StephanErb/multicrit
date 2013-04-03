@@ -28,7 +28,7 @@ set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
 set output "modifications_lset_max_labelset_grid2.ps"
 
-set xrange [0:]
-set yrange [0:50]
+set xrange [-5:105]
+set yrange [:33]
 
 plot "../../logs/grid2_lset_max_labelset" using ($2/1000000) t "Insertions" lc rgb '#4F94CD', '' using ($3/1000000) t "Dominations" lc rgb '#b1cdd7'

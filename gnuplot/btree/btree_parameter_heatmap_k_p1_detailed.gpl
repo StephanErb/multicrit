@@ -22,6 +22,7 @@ set palette gray
 
 set cbrange [:]
 unset cbtics
+set cblabel "fast                                  slow"
 
 set xtics ("64" 0, "512" 7, "1024" 15, "1536" 23, "2048" 31)
 set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
