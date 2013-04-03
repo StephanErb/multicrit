@@ -42,7 +42,7 @@ do
 	echo "" >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_label_leaf_p_1_heatmap"
+out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -62,7 +62,7 @@ do
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
-		current=$(taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -r $r -p 1 -s $skew -k $numelements -h)
+		current=$(taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -r $r -p 8 -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
 	done
@@ -112,7 +112,7 @@ do
 	echo "" >> $out_file
 done
 
-out_file="../timings/btree/insert_nodewidth_label_leaf_p_1_heatmap_detailed"
+out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap_detailed"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -132,7 +132,7 @@ do
 	for k in `seq 64 64 2048`
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
-		current=$(taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -r $r -p 1 -s $skew -k $numelements -h)
+		current=$(taskset -c 0 ./bin/time_pq_btree.par -c $iter_count -r $r -p 8 -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
 	done
