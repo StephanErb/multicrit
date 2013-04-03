@@ -30,7 +30,7 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "10^{%L}"
 set logscale x 10
 
-set title "Bulk Insertion Time (tree size n=100*s)"
+set title "Bulk Insertion Time (ratio=100, skew=1)"
 set xlabel "Inserted elements (s)"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_insertion_r100_s1.ps"

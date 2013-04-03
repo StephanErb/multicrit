@@ -1,8 +1,8 @@
 set encoding iso_8859_1
 set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
-set size 0.6,0.6
+set size 0.4,0.4
 
-set title "Insertion of s=10000 elements (tree size n=r*s; p1) "
+set title "Parallel B-tree (p1)"
 set ylabel "Tree size ratio r"
 set xlabel "Leaf parameter k"
 set output "btree_parameter_heatmap_k_p1_detailed.ps"
@@ -23,7 +23,7 @@ set palette gray
 set cbrange [:]
 unset cbtics
 
-set xtics ("2^7" 1, "2^8" 3, "2^9" 7, "2^{10}" 15, "2^{13}" 31)
+set xtics ("64" 0, "512" 7, "1024" 15, "1536" 23, "2048" 31)
 set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
 
 

@@ -1,8 +1,8 @@
 set encoding iso_8859_1
 set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
-set size 0.6,0.6
+set size 0.4,0.4
 
-set title "Insertion of s=10000 elements (tree size n=r*s; sequ) "
+set title "Sequential B-tree"
 set ylabel "Tree size ratio r"
 set xlabel "Leaf parameter k"
 set output "btree_parameter_heatmap_k_sequ.ps"
@@ -22,8 +22,10 @@ set palette gray
 
 set cbrange [:]
 unset cbtics
+set cblabel "fast                                  slow"
 
-set xtics ("2^3" 0, "2^4" 1, "2^5" 2, "2^6" 3, "2^7" 4, "2^8" 5, "2^9" 6, "2^{10}" 7, "2^{11}" 8, "2^{12}" 9, "2^{13}" 10, "2^{14}" 11)
+#set xtics ("2^3" 0, "2^4" 1, "2^5" 2, "2^6" 3, "2^7" 4, "2^8" 5, "2^9" 6, "2^{10}" 7, "2^{11}" 8, "2^{12}" 9, "2^{13}" 10, "2^{14}" 11)
+set xtics ("2^4" 1, "2^6" 3, "2^8" 5, "2^{10}" 7, "2^{12}" 9, "2^{14}" 11)
 set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
 
 

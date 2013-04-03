@@ -30,7 +30,7 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "10^{%L}"
 set logscale x 10
 
-set title "Skewed Bulk Insertion (range 0.01*MAX\\_INT, n=10*s)"
+set title "Skewed Bulk Insertion (ratio=10, skew=1)"
 set xlabel "Inserted elements (s)"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_insertion_r10_s001.ps"
