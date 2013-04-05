@@ -89,7 +89,10 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
+	Tree tree;
 	for (size_t i = 0; i < iterations; ++i) {
+		tree.clear();
+
 		// Prepare the updates
 		std::vector<Operation<Label>> updates;
 		updates.reserve(k);
@@ -102,7 +105,6 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		
-		Tree tree;
 		if (n > 0) bulkConstruct(tree, n);
 		assert(tree.size() == n);
 

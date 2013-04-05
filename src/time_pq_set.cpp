@@ -58,7 +58,6 @@
 Comparator cmp;
 
 struct RedBlackTree : public std::set<Label, Comparator> {
-	RedBlackTree(size_t n) : std::set<Label, Comparator>(cmp) {if (0) n++;};
 
 	void apply_updates(const std::vector<Label>& updates) {
 		// For benchmarik purposes, we only support inserts
@@ -102,7 +101,11 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
+
+	Tree tree;
 	for (size_t i = 0; i < iterations; ++i) {
+		tree.clear();
+
 		// Prepare the updates
 		std::vector<Label> updates;
 		updates.reserve(k);
@@ -115,7 +118,6 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		}
 		std::sort(updates.begin(), updates.end(), cmp);
 		
-		Tree tree(std::max(n, k));
 		if (n > 0) bulkConstruct(tree, n);
 
 		memory[i] = getCurrentMemorySize();
