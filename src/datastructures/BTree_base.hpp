@@ -397,8 +397,10 @@ public:
     inline void clear() {
         if (root) {
             clear_recursive(root);
+            stats.itemcount = 0;
             root = NULL;
         }
+        BTREE_ASSERT(stats.itemcount == 0);
         BTREE_ASSERT(stats.innernodes == 0);
         BTREE_ASSERT(stats.leaves == 0);
     }
