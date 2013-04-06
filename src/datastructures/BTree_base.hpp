@@ -761,7 +761,7 @@ protected:
     }
 
     void update(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
-        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << _node << " on level " << _node->level << std::endl);
+        BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << slot.childid << " on level " << slot.childid->level << std::endl);
 
         if (slot.childid->isleafnode()) {
             update_leaf_in_current_tree(slot, upd_begin, upd_end);
@@ -831,7 +831,7 @@ protected:
                             result = static_cast<inner_node*>(fake_slot.childid);                            
                         }
                     } else {
-                        BTREE_PRINT("Copying " << in << " to " << out << " " << inner->childid[in] << std::endl);
+                        BTREE_PRINT("Copying " << in << " to " << out << " " << inner->slot[in].childid << std::endl);
                         result->slot[out] = inner->slot[in];
                         result->slot[out].weight = subtree_updates[in].weight;
                         if (hasUpdates(subtree_updates[in])) {
@@ -874,7 +874,7 @@ protected:
    
     template<class leaf_list> 
     inline void write_updated_leaf_to_new_tree(const node* const node, width_type in, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves, const bool is_last) {
-        BTREE_PRINT("Rewriting updated leaf " << source_node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")" << std::endl);
+        BTREE_PRINT("Rewriting updated leaf " << node << " starting with rank " << rank << " and in " << in << " using upd range [" << upd_begin << "," << upd_end << ")");
 
         size_type leaf_number = rank / designated_leafsize;
         width_type offset_in_leaf = rank % designated_leafsize;
