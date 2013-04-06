@@ -928,7 +928,7 @@ protected:
             }
         } 
         // Reached the end of the update range. Have to write the remaining elements
-        size_type next_update = upd_end + 1;
+        size_type next_update = upd_end;
         while (in < in_slotuse && (is_last || key_less(leaf->slotkey[in], updates[next_update].data))) {
             result->slotkey[out++] = leaf->slotkey[in++];
 
