@@ -8,6 +8,7 @@
 
 #define COMPUTE_PARETO_MIN
 #include "datastructures/BTree_sequential.hpp"
+#undef COMPUTE_PARETO_MIN
 #include "Label.hpp"
 
 #include <algorithm>

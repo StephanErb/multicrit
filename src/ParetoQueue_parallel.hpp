@@ -9,6 +9,8 @@
 
 #define COMPUTE_PARETO_MIN
 #include "datastructures/BTree_parallel.hpp"
+#undef COMPUTE_PARETO_MIN
+
 
 #include <algorithm>
 #include <limits>

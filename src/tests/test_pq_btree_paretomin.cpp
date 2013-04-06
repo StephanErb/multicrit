@@ -6,6 +6,7 @@
 
 #define COMPUTE_PARETO_MIN
 #include "../datastructures/BTree.hpp"
+#undef COMPUTE_PARETO_MIN
 #include <iostream>
 #include <algorithm>
 
