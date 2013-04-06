@@ -53,10 +53,11 @@
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
 
 #ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 24
+#define BRANCHING_PARAMETER_B 20
 #endif
+/* unused: See the build_binary script */
 #ifndef LEAF_PARAMETER_K
-#define LEAF_PARAMETER_K 512
+#define LEAF_PARAMETER_K 512 
 #endif
 
 enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};

@@ -68,14 +68,23 @@ mv ./bin/time_road_instances2 ./bin/time_road_instances2_lset_lex
 # BTree algorithm
 #########################################################
 
-make -B time_pq_btree.par > /dev/null
-mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int.par
+make -B CPPFLAGS="-DLEAF_PARAMETER_K=1024" time_pq_btree.par > /dev/null
+mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int_large.par
+make -B CPPFLAGS="-DLEAF_PARAMETER_K=1024" time_pq_btree > /dev/null
+mv ./bin/time_pq_btree ./bin/time_pq_btree_int_large
 
-make -B time_pq_btree > /dev/null
-mv ./bin/time_pq_btree ./bin/time_pq_btree_int
+make -B CPPFLAGS="-DLEAF_PARAMETER_K=64" time_pq_btree.par > /dev/null
+mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int_small.par
+make -B CPPFLAGS="-DLEAF_PARAMETER_K=64" time_pq_btree > /dev/null
+mv ./bin/time_pq_btree ./bin/time_pq_btree_int_small
 
-make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_btree.par > /dev/null
-mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label.par
 
-make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_btree > /dev/null
-mv ./bin/time_pq_btree ./bin/time_pq_btree_label
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=1024" time_pq_btree.par > /dev/null
+mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label_large.par
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=1024" time_pq_btree > /dev/null
+mv ./bin/time_pq_btree ./bin/time_pq_btree_label_large
+
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=64" time_pq_btree.par > /dev/null
+mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label_small.par
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=64" time_pq_btree > /dev/null
+mv ./bin/time_pq_btree ./bin/time_pq_btree_label_small
