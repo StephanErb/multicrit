@@ -983,7 +983,7 @@ protected:
             const min_key_type local_min_dummy(0, std::numeric_limits<typename min_key_type::weight_type>::max());
             const min_key_type* local_min =&local_min_dummy;
         #else 
-            min_key_type* local_min;
+            min_key_type* local_min = NULL;
         #endif
 
         BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
