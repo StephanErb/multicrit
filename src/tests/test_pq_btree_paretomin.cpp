@@ -75,6 +75,10 @@ void testParetoMinInLeaf() {
 	minima.clear();
 	btree.find_pareto_minima(Label(0, 1000000), minima);
 	assertTrue(minima.size() == 4, "4 non-dominated");
+
+	btree.clear();
+	assertTrue(btree.size() == 0, "Empty");
+	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 }
 
 void testParetoMinInInternalNode() {
@@ -107,6 +111,10 @@ void testParetoMinInInternalNode() {
 	minima.clear();
 	btree.find_pareto_minima(Label(0, 1000000), minima);
 	assertTrue(minima.size() == 100, "Find all minima");
+
+	btree.clear();
+	assertTrue(btree.size() == 0, "Empty");
+	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 }
 
 int main() {
