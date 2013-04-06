@@ -118,6 +118,7 @@ private:
     using base::rewrite;
     using base::update;
     using base::get_resized_leaves_array;
+    using base::print_node;
 
 public:
     // *** Constructors and Destructor

@@ -139,6 +139,7 @@ protected:
     using base::update;
     using base::get_resized_leaves_array;
     using base::write_updated_leaf_to_new_tree;
+    using base::print_node;
 
 protected:
     // *** Tree Object Data Members
@@ -501,11 +502,9 @@ private:
                 tree->rewrite(source_node, rank, upd, leaves);
                 return NULL;
             } else if (source_node->isleafnode()) {
-                const leaf_node* const leaf = (leaf_node*)(source_node);
-
                 tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, tree->min_problem_size),
                     [&, this](const cache_aligned_blocked_range<size_type>& r) {
-
+                        const leaf_node* const leaf = (leaf_node*)(source_node);
                         if (r.begin() == upd.upd_begin) {
                             tree->write_updated_leaf_to_new_tree(source_node, /*start index*/0, rank, r.begin(), r.end(), leaves, r.end() == upd.upd_end);
                         } else {
