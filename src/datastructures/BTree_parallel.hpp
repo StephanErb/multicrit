@@ -296,8 +296,8 @@ private:
         batch_type = _batch_type;
 
         // Adaptive cut-off; Taken from the MCSTL implementation
-        const size_type p = tbb::tbb_thread::hardware_concurrency();
-        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), 256.0);
+        const size_type p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
+        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), 1.0);
 
         if (_batch_type == INSERTS_AND_DELETES) {
             // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
