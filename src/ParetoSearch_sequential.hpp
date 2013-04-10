@@ -308,7 +308,11 @@ public:
 				start = stop;
 			#endif
 
+			const size_t pre_update_size = pq.size();
+			stats.report(UPDATE_COUNT, updates.size());
 			pq.applyUpdates(updates);
+			stats.report(PQ_SIZE_DELTA, std::abs(pq.size()-pre_update_size));
+
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[PQ_UPDATE] += (stop-start).seconds();
