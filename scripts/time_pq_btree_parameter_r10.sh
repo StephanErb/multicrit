@@ -7,7 +7,7 @@ cd ../src/
 iter_count=1000
 skew=1
 ratio=10 # r = n/k
-numelements=15000
+numelements=10000
 
 #################################################################
 # BRANCHING PARAMETER (INT)
