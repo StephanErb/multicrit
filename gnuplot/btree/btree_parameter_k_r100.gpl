@@ -39,6 +39,8 @@ set yrange [0:300]
 
 plot '../../timings/btree/insert_nodewidth_label_leaf_p_1_r100' using 5:($1*1000/$4) title ' btree (label, p1)' w lp ls 3,\
 			'../../timings/btree/insert_nodewidth_label_leaf_sequ_r100' using 5:($1*1000/$4) title ' btree (label, seq)' w lp ls 1,\
+			'../../timings/btree/insert_nodewidth_label_leaf_p_2_r100' using 5:($1*1000/$4) title ' btree (label, p2)' w lp ls 4,\
+			'../../timings/btree/insert_nodewidth_label_leaf_p_4_r100' using 5:($1*1000/$4) title ' btree (label, p4)' w lp ls 5,\
 			'../../timings/btree/insert_nodewidth_label_leaf_p_8_r100' using 5:($1*1000/$4) title ' btree (label, p8)' w lp ls 6
 	  		#'../../timings/btree/insert_nodewidth_int_leaf_p_1_r100' using 5:($1*1000/$4) title ' btree (int, p1)' w lp ls 3,\
 			#'../../timings/btree/insert_nodewidth_int_leaf_sequ_r100' using 5:($1*1000/$4) title ' btree (int, seq)' w lp ls 1,\
