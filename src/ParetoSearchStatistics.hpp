@@ -9,10 +9,11 @@
 #include <vector>
 #include <deque>
 
-#define STAT_ELEMENT_COUNT 8
+#define STAT_ELEMENT_COUNT 9
 
 enum StatElement {
-	IDENTICAL_TARGET_NODE,
+	LS_MODIFICATIONS_PER_NODE,
+	CANDIDATE_LABELS_PER_NODE,
 	LABEL_DOMINATED,
 	LABEL_NONDOMINATED,
 	MINIMA_COUNT,
@@ -28,31 +29,22 @@ template<typename Label>
 class ParetoSearchStatistics {
 private:
 	unsigned long data[STAT_ELEMENT_COUNT];
-	unsigned long pq_size;
-	unsigned long peak_pq_size;
-	unsigned long minima_size;
-	unsigned long peak_minima_size;
-	unsigned long update_size;
-	unsigned long peak_update_size;
-	unsigned long pq_size_delta;
-	unsigned long peak_size_delta;
-	unsigned long identical_target_node;
-	unsigned long peak_identical_target_node;
+	unsigned long pq_size = 0;
+	unsigned long peak_pq_size = 0;
+	unsigned long minima_size = 0;
+	unsigned long peak_minima_size = 0;
+	unsigned long update_size = 0;
+	unsigned long peak_update_size = 0;
+	unsigned long pq_size_delta = 0;
+	unsigned long peak_size_delta = 0;
+	unsigned long identical_target_node = 0;
+	unsigned long peak_identical_target_node = 0;
+	unsigned long labelset_modifications = 0;
+    unsigned long peak_labelset_modifications = 0;
 
 public:
 
-	ParetoSearchStatistics() :
-		pq_size(0),
-		peak_pq_size(0),
-		minima_size(0),
-		peak_minima_size(0),
-		update_size(0),
-		peak_update_size(0),
-		pq_size_delta(0),
-		peak_size_delta(0),
-		identical_target_node(0),
-		peak_identical_target_node(0)
-	{
+	ParetoSearchStatistics() {
 		std::fill_n(data, STAT_ELEMENT_COUNT, 0);
 	}
 
@@ -75,9 +67,13 @@ public:
 				pq_size_delta += payload;
 				peak_size_delta = std::max(peak_size_delta, payload);
 			}
-			if (stat == IDENTICAL_TARGET_NODE) {
+			if (stat == CANDIDATE_LABELS_PER_NODE) {
 				identical_target_node += payload;
 				peak_identical_target_node = std::max(peak_identical_target_node, payload);
+			}
+			if (stat == LS_MODIFICATIONS_PER_NODE) {
+				labelset_modifications += payload;
+				peak_labelset_modifications = std::max(peak_labelset_modifications, payload);
 			}
 	}
 
@@ -151,12 +147,19 @@ public:
 			out_stream << "  avg" << ": " << avg_size_delta << "\n";
 			out_stream << "  max" << ": " << peak_size_delta;
 		}
-		if (data[IDENTICAL_TARGET_NODE] > 0) {
+		if (data[CANDIDATE_LABELS_PER_NODE] > 0) {
 			out_stream << "\n";
-			double avg_ident_target_nodes = identical_target_node / data[IDENTICAL_TARGET_NODE];
-			out_stream << "Identical Target Nodes per Iteration: " << "\n";
+			double avg_ident_target_nodes = identical_target_node / data[CANDIDATE_LABELS_PER_NODE];
+			out_stream << "Label Set: Bulk Size per LS: " << "\n";
 			out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
 			out_stream << "  max" << ": " << peak_identical_target_node;
+		}
+		if (data[LS_MODIFICATIONS_PER_NODE] > 0) {
+			out_stream << "\n";
+			double avg_labelset_modifications = labelset_modifications / data[LS_MODIFICATIONS_PER_NODE];
+			out_stream << "Label Set: Non-trivial Modifications per LS: " << "\n";
+			out_stream << "  avg" << ": " << avg_labelset_modifications << "\n";
+			out_stream << "  max" << ": " << peak_labelset_modifications;
 		}
 		return out_stream.str();
 	}

@@ -137,6 +137,7 @@ private:
 	template<class candidates_iter_type>
 	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const candidates_iter_type start, const candidates_iter_type end, std::vector<Operation<NodeLabel>>& updates) {
 		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
+		int modifications = 0;
 
 		label_iter labelset_iter = labelset.begin();
 		for (candidates_iter_type candidate = start; candidate != end; ++candidate) {
@@ -174,6 +175,7 @@ private:
 				// delete range is empty, so just insert
 				labelset_iter = labelset.insert(first_nondominated, new_label);
 			} else {
+				++modifications; // only log non-trivial
 				// schedule deletion of dominated labels
 				for (label_iter i = iter; i != first_nondominated; ++i) {
 					updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, *i)});
@@ -183,6 +185,9 @@ private:
 				labelset_iter = labelset.erase(++iter, first_nondominated);
 			}
 		}
+
+		stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
+		if (modifications > 0) stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
 	}
 
 public:
