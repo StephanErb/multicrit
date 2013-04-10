@@ -179,6 +179,8 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
+		timeBulkInsertion(1, ratio, skew, iterations *       3000, p, heatmap);
+		timeBulkInsertion(10, ratio, skew, iterations *      3000, p, heatmap);
 		timeBulkInsertion(100, ratio, skew, iterations *     3000, p, heatmap);
 		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p, heatmap);
 		timeBulkInsertion(10000, ratio, skew, iterations *    300, p, heatmap);

@@ -182,14 +182,17 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
+		timeBulkInsertion(1, ratio, skew, iterations *       3000, p);
+		timeBulkInsertion(10, ratio, skew, iterations *      3000, p);
 		timeBulkInsertion(100, ratio, skew, iterations *     3000, p);
 		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p);
 		timeBulkInsertion(10000, ratio, skew, iterations *    300, p);
 		timeBulkInsertion(100000, ratio, skew, iterations *    30, p);
 		timeBulkInsertion(1000000, ratio, skew, iterations *   10, p);
 		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p);
-		if (ratio < 50) 
-		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p);
+		// Disabled: Does not fit into 64GB of main memory
+		//if (ratio < 50) 
+		//timeBulkInsertion(100000000, ratio, skew, iterations *  3, p, heatmap);
 	}
 	return 0;
 } 
