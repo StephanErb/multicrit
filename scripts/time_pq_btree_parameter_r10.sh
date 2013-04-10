@@ -82,13 +82,13 @@ do
 done
 
 out_file="../timings/btree/insert_nodewidth_int_leaf_sequ_r$ratio"
-echo "Writing node size computation to $out_file"
+#echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
 for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 do
 	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
-	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
+#	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
 done
 
 
