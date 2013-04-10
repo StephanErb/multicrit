@@ -7,8 +7,10 @@
 #ifndef PARALLEL_PARETO_SEARCH_H_
 #define PARALLEL_PARETO_SEARCH_H_
 
+#ifndef PARALLEL_BUILD
 #define PARALLEL_BUILD
-
+#endif
+ 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "options.hpp"
 #include "ParetoQueue_parallel.hpp"

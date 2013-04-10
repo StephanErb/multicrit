@@ -7,7 +7,9 @@
 
 #include "options.hpp"
 
+#ifndef PARALLEL_BUILD
 #define PARALLEL_BUILD
+#endif
 
 #define COMPUTE_PARETO_MIN
 #include "datastructures/BTree_parallel.hpp"
