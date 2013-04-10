@@ -91,3 +91,14 @@ make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_bt
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label_small.par
 make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree > /dev/null
 mv ./bin/time_pq_btree ./bin/time_pq_btree_label_small
+
+
+#########################################################
+# Vector Pareto Queue
+#########################################################
+
+make -B time_pq_vector > /dev/null
+mv ./bin/time_pq_vector ./bin/time_pq_vector_scan 
+
+make -B CPPFLAGS="-DBINARY_VECTOR_PQ" time_pq_vector > /dev/null
+mv ./bin/time_pq_vector ./bin/time_pq_vector_binary
