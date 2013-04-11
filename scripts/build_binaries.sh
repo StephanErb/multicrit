@@ -98,7 +98,13 @@ mv ./bin/time_pq_btree ./bin/time_pq_btree_label_small
 #########################################################
 
 make -B time_pq_vector > /dev/null
-mv ./bin/time_pq_vector ./bin/time_pq_vector_scan 
+mv ./bin/time_pq_vector ./bin/time_pq_vector_int_scan
 
 make -B CPPFLAGS="-DBINARY_VECTOR_PQ" time_pq_vector > /dev/null
-mv ./bin/time_pq_vector ./bin/time_pq_vector_binary
+mv ./bin/time_pq_vector ./bin/time_pq_vector_int_binary
+
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL" time_pq_vector > /dev/null
+mv ./bin/time_pq_vector ./bin/time_pq_vector_label_scan
+
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DBINARY_VECTOR_PQ" time_pq_vector > /dev/null
+mv ./bin/time_pq_vector ./bin/time_pq_vector_label_binary
