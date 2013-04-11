@@ -35,7 +35,7 @@ set xlabel "Inserted elements (s)"
 set ylabel "Speedup" offset 1
 set output "btree_bulk_insertion_speedup_r100_s001.ps"
 
-set xrange [:]
+set xrange [100:]
 set yrange [:10]
 
 plot\
