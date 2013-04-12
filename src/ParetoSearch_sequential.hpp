@@ -10,9 +10,13 @@
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "options.hpp"
 #include "ParetoQueue_sequential.hpp"
+#include "ParetoLabelSet_sequential.hpp"
 #include "ParetoSearchStatistics.hpp"
 #include <algorithm>
 #include "Label.hpp"
+
+#define BTREE_PARETO_LABELSET
+
 
 #define RADIX_SORT
 #include "radix_sort.hpp"
@@ -28,17 +32,27 @@ private:
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
 
-	typedef std::vector< Label > LabelVec;
+	struct GroupLabelsByWeightComp {
+		inline bool operator() (const Label& i, const Label& j) const {
+			if (i.first_weight == j.first_weight) {
+				return i.second_weight < j.second_weight;
+			}
+			return i.first_weight < j.first_weight;
+		}
+	} groupLabels;
+	
 
-	typedef typename LabelVec::iterator label_iter;
-	typedef typename LabelVec::const_iterator const_label_iter;
-	typedef typename std::vector<NodeLabel>::iterator nodelabel_iter;
+	#ifdef BTREE_PARETO_LABELSET
+		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp> LabelSet;
+	#else
+		typedef VectorParetoLabelSet LabelSet;
+	#endif
 
 	struct LabelSetStruct {
 		#ifdef BUCKET_SORT
 			LabelVec candidates;
 		#endif
-		LabelVec labels;
+		LabelSet labels;
 	};
 	std::vector<LabelSetStruct> labels;
 
@@ -56,139 +70,9 @@ private:
 		std::vector<unsigned long> set_dominations;
 	#endif
 
-	struct GroupNodeLabelsByNodeComp {
-		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
-			if (i.node == j.node) {
-				if (i.first_weight == j.first_weight) {
-					return i.second_weight < j.second_weight;
-				}
-				return i.first_weight < j.first_weight;
-			}
-			return i.node < j.node;
-		}
-	} groupCandidates;
-
-	struct GroupLabelsByNodeComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-			if (i.first_weight == j.first_weight) {
-				return i.second_weight < j.second_weight;
-			}
-			return i.first_weight < j.first_weight;
-		}
-	} groupLabels;
-
-	struct GroupByWeightComp {
-		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
-			if (i.data.first_weight == j.data.first_weight) {
-				if (i.data.second_weight == j.data.second_weight) {
-					return i.data.node < j.data.node;
-				}
-				return i.data.second_weight < j.data.second_weight;
-			}
-			return i.data.first_weight < j.data.first_weight;
-		}
-	} groupByWeight;
-
-	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
-		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
-	}
-
-	static struct WeightLessComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-			return i.first_weight < j.first_weight;
-		}
-	} firstWeightLess;
-
-	static inline bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
-		return i.second_weight >= j.second_weight;
-	}
-
-	/** First label where the x-coord is truly smaller */
-	static inline label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
-		return --std::lower_bound(begin, end, new_label, firstWeightLess);
-	}
-
-	/** First label where the y-coord is truly smaller */
-	static inline label_iter y_predecessor(const label_iter& begin, const Label& new_label) {
-		label_iter i = begin;
-		while (secondWeightGreaterOrEquals(*i, new_label)) {
-			++i;
-		}
-		return i;
-	}
-
-	static inline bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
-		iter = x_predecessor(begin, end, new_label);
-
-		if (iter->second_weight <= new_label.second_weight) {
-			return true; // new label is dominated
-		}
-		++iter; // move to element with greater or equal x-coordinate
-
-		if (iter->first_weight == new_label.first_weight && 
-			iter->second_weight <= new_label.second_weight) {
-			// new label is dominated by the (single) pre-existing element with the same
-			// x-coordinate.
-			return true; 
-		}
-		return false;
-	}
-
-	template<class candidates_iter_type>
-	void updateLabelSet(const NodeID node, std::vector<Label>& labelset, const candidates_iter_type start, const candidates_iter_type end, std::vector<Operation<NodeLabel>>& updates) {
-		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
-		int modifications = 0;
-
-		label_iter labelset_iter = labelset.begin();
-		for (candidates_iter_type candidate = start; candidate != end; ++candidate) {
-			Label new_label = *candidate;
-			// short cut dominated check among candidates
-			if (new_label.second_weight >= min) { 
-				stats.report(LABEL_DOMINATED);
-				stats.report(DOMINATION_SHORTCUT);
-				continue; 
-			}
-			label_iter iter;
-			if (isDominated(labelset_iter, labelset.end(), new_label, iter)) {
-				stats.report(LABEL_DOMINATED);
-				min = iter->second_weight; 
-				#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-					const double size = labelset.size()-2; // without both sentinals
-					const double position = iter - (labelset.begin() + 1); // without leading sentinal 
-					if (size > 0) set_dominations[(int) (100.0 * position / size)]++;
-				#endif	
-				continue;
-			}
-			min = new_label.second_weight;
-			stats.report(LABEL_NONDOMINATED);
-			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
-
-			label_iter first_nondominated = y_predecessor(iter, new_label);
-
-			#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-				const double size = labelset.size()-2; // without both sentinals
-				const double position = iter - (labelset.begin() + 1); // without leading sentinal 
-				if (size > 0) set_insertions[(int) (100.0 * position / size)]++;
-			#endif	
-
-			if (iter == first_nondominated) {
-				// delete range is empty, so just insert
-				labelset_iter = labelset.insert(first_nondominated, new_label);
-			} else {
-				++modifications; // only log non-trivial
-				// schedule deletion of dominated labels
-				for (label_iter i = iter; i != first_nondominated; ++i) {
-					updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, *i)});
-				}
-				// replace first dominated label and remove the rest
-				*iter = new_label;
-				labelset_iter = labelset.erase(++iter, first_nondominated);
-			}
-		}
-
-		stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
-		if (modifications > 0) stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
-	}
+	#ifdef BTREE_PARETO_LABELSET
+		typename LabelSet::ThreadLocalLSData labelset_data;
+	#endif
 
 public:
 	ParetoSearch(const graph_slot& graph_):
@@ -199,15 +83,16 @@ public:
 			,set_dominations(101)
 		#endif
 	{
-		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
-		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
+		#ifdef BTREE_PARETO_LABELSET
+			labelset_data.spare_leaf = labels[0].labels.allocate_leaf_without_count();
+			labelset_data.weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+		#endif
+	 }
 
-		// add sentinals
-		for (size_t i=0; i<labels.size(); ++i) {
-			auto& l = labels[i].labels;
-			l.insert(l.begin(), Label(min, max));
-			l.insert(l.end(), Label(max, min));
-		}
+	~ParetoSearch() {
+		#ifdef BTREE_PARETO_LABELSET
+			labels[0].labels.free_node_without_count(labelset_data.spare_leaf);
+		#endif
 	}
 
 	void run(const NodeID node) {
@@ -255,7 +140,10 @@ public:
 					const NodeID node = affected_nodes[i];
 					auto& ls = labels[node];
 					std::sort(ls.candidates.begin(), ls.candidates.end(), groupLabels);
-					updateLabelSet(node, ls.labels, ls.candidates.cbegin(), ls.candidates.cend(), updates);
+					#ifdef BTREE_PARETO_LABELSET
+    					ls.labels.setup(labelset_data);
+					#endif
+					ls.labels.updateLabelSet(node, ls.candidates.cbegin(), ls.candidates.cend(), updates, stats);
 					ls.candidates.clear();
 				}
 				#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -295,7 +183,10 @@ public:
 	 				#ifdef RADIX_SORT
 						std::sort(range_start, cand_iter, groupLabels);
 					#endif
-					updateLabelSet(range_start->node, ls.labels, range_start, cand_iter, updates);
+					#ifdef BTREE_PARETO_LABELSET
+    					ls.labels.setup(labelset_data);
+					#endif
+					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, stats);
 				}
 				#ifdef GATHER_SUBCOMPNENT_TIMING
 					stop = tbb::tick_count::now();
@@ -305,8 +196,8 @@ public:
 			#endif
 
 			// Sort sequence for batch update
-			std::sort(updates.begin()+minima_count, updates.end(), groupByWeight);
-			std::inplace_merge(updates.begin(), updates.begin()+minima_count, updates.end(), groupByWeight);
+			std::sort(updates.begin()+minima_count, updates.end(), groupOpsByWeight);
+			std::inplace_merge(updates.begin(), updates.begin()+minima_count, updates.end(), groupOpsByWeight);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATES_SORT] += (stop-start).seconds();
@@ -316,7 +207,7 @@ public:
 			const size_t pre_update_size = pq.size();
 			stats.report(UPDATE_COUNT, updates.size());
 			pq.applyUpdates(updates);
-			stats.report(PQ_SIZE_DELTA, std::abs(pq.size()-pre_update_size));
+			stats.report(PQ_SIZE_DELTA, std::abs((signed long)pq.size()-(signed long)pre_update_size));
 
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -332,11 +223,16 @@ public:
 	
 	void printStatistics() {
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			for (auto& ls : labels) {
+				set_insertions += ls.labels.set_insertions;
+				set_dominations += ls.labels.set_dominations;
+			}
 			std::cout << "# LabelSet Modifications: insertion/deletion, dominance position" << std::endl;
 			for (size_t i=0; i < 101; ++i) {
 				std::cout << i << " " << set_insertions[i] << " " << set_dominations[i] << std::endl;
 			}
 		#endif
+		pq.printStatistics();
 		std::cout << stats.toString(labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			std::cout << "Subcomponent Timings:" << std::endl;
@@ -346,16 +242,44 @@ public:
 			std::cout << "  " << timings[UPDATES_SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
-		pq.printStatistics();
 	}
 
-	// Subtraction / addition used to hide the sentinals
-	size_t size(NodeID node) {return labels[node].labels.size()-2; }
+	size_t size(NodeID node) const { return labels[node].labels.size(); }
+	label_iter begin(NodeID node) { return labels[node].labels.begin(); }
+	const_label_iter begin(NodeID node) const { return labels[node].labels.begin(); }
+	label_iter end(NodeID node) { return labels[node].labels.end(); }
+	const_label_iter end(NodeID node) const { return labels[node].labels.end(); }
 
-	label_iter begin(NodeID node) { return ++labels[node].labels.begin(); }
-	const_label_iter begin(NodeID node) const { return ++labels[node].labels.begin(); }
-	label_iter end(NodeID node) { return --labels[node].labels.end(); }
-	const_label_iter end(NodeID node) const { return --labels[node].labels.end(); }
+
+private:
+
+	struct GroupNodeLabelsByNodeComp {
+		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
+			if (i.node == j.node) {
+				if (i.first_weight == j.first_weight) {
+					return i.second_weight < j.second_weight;
+				}
+				return i.first_weight < j.first_weight;
+			}
+			return i.node < j.node;
+		}
+	} groupCandidates;
+
+	struct GroupOpsByWeightComp {
+		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
+			if (i.data.first_weight == j.data.first_weight) {
+				if (i.data.second_weight == j.data.second_weight) {
+					return i.data.node < j.data.node;
+				}
+				return i.data.second_weight < j.data.second_weight;
+			}
+			return i.data.first_weight < j.data.first_weight;
+		}
+	} groupOpsByWeight;
+
+	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
+		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
+	}
 };
 
 

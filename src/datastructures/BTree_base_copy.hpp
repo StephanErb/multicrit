@@ -19,88 +19,23 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/* ######## FIXME ###########
+ *   Exact copy of BTree_base but used differently as we don't want that COMPUTE_PARETO_MIN is defined. 
+ *   We need to make that configurable as template parameter so that we can drop the ugly copy here. 
+ */
+#include "BTree_base.hpp"
 
-#ifndef _BASE_BTREE_COMMON_H_
-#define _BASE_BTREE_COMMON_H_
-
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <cstddef>
-#include <assert.h>
-#include <array>
-#include <unistd.h>
-#include <cmath>
-#include <string.h>
-#include "../utility/datastructure/NullData.hpp"
-#include "../options.hpp"
-
-#include "tbb/atomic.h"
-#include "tbb/enumerable_thread_specific.h"
-#include "tbb/cache_aligned_allocator.h"
-
-// *** Debugging Macros
-#ifdef BTREE_DEBUG
-#define BTREE_PRINT(x)          do { (std::cout << x); } while(0)
-#else
-#define BTREE_PRINT(x)          do { } while(0)
-#endif
-
-#ifndef NDEBUG
-#define BTREE_ASSERT(x)         do { assert(x); } while(0)
-#else
-#define BTREE_ASSERT(x)         do { } while(0)
-#endif
-
-/// The maximum of a and b. Used in some compile-time formulas.
-#define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
-
-#ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 20
-#endif
-/* unused: See the build_binary script */
-#ifndef LEAF_PARAMETER_K
-#define LEAF_PARAMETER_K 512 
-#endif
-
-enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};
-
-template<typename data_type>
-struct Operation {
-    enum OpType {INSERT=1, DELETE=-1};
-    OpType type;
-    data_type data;
-    Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-    Operation() {}
-
-};
-
-template <typename _Key, typename _MinKey>
-struct btree_default_traits {
-    /// If true, the tree will self verify it's invariants after each insert()
-    /// or erase(). The header must have been compiled with BTREE_DEBUG defined.
-    static const bool   selfverify = false;
-
-    /// Configure nodes to have a fixed size of X cache lines. 
-    static const unsigned int leafparameter_k = BTREE_MAX( 8, LEAF_PARAMETER_K );
-    static const unsigned int branchingparameter_b = BTREE_MAX( 8, BRANCHING_PARAMETER_B );
-};
+#ifndef _BASE_COPY_BTREE_COMMON_H_
+#define _BASE_COPY_BTREE_COMMON_H_
 
 template <typename _Key,
-    #ifdef COMPUTE_PARETO_MIN
-          typename _MinKey,
-          typename _Compare,
-          typename _Traits = btree_default_traits<_Key, _MinKey>,
-    #else
-          typename _Compare = std::less<_Key>,
-          typename _Traits = btree_default_traits<_Key, utility::NullData>,
-    #endif
+        typename _Compare = std::less<_Key>,
+        typename _Traits = btree_default_traits<_Key, utility::NullData>,
         typename _Alloc = std::allocator<_Key>>
-class btree_base {
+class btree_base_copy {
 private:
-    btree_base(const btree_base &){}    // do not copy
-    void operator=(const btree_base&){} // do not copy
+    btree_base_copy(const btree_base_copy &){}    // do not copy
+    void operator=(const btree_base_copy&){} // do not copy
 public:
     /// The key type of the B+ tree. This is stored  in inner nodes and leaves
     typedef _Key                        key_type;
@@ -110,13 +45,6 @@ public:
     
     /// Traits object used to define more parameters of the B+ tree
     typedef _Traits                     traits;
-
-    // Key data required to find pareto minima (subset of key_type)
-#ifdef COMPUTE_PARETO_MIN
-    typedef _MinKey                     min_key_type;
-#else 
-    typedef utility::NullData           min_key_type;
-#endif
 
     /// STL allocator for tree nodes
     typedef _Alloc                      allocator_type;
@@ -141,26 +69,12 @@ public:
 
 protected:
 
-    explicit inline btree_base(const allocator_type &alloc=allocator_type())
+    explicit inline btree_base_copy(const allocator_type &alloc=allocator_type())
         : root(NULL), allocator(alloc) { 
-
-        #ifdef PARALLEL_BUILD
-        #else
-            spare_leaf = allocate_leaf_without_count();
-        #endif
     }
 
-    inline ~btree_base() {
+    inline ~btree_base_copy() {
         clear();
-        #ifdef PARALLEL_BUILD
-            for (auto& data : tls_data) {
-                if (data.spare_leaf != NULL) {
-                    free_node(data.spare_leaf);
-                }
-            }
-        #else
-            free_node(spare_leaf);
-        #endif
     }
 
     // *** Node Classes for In-Memory Nodes
@@ -189,10 +103,6 @@ protected:
         size_type       weight;
         /// Pointers to children
         node*           childid;
-    #ifdef COMPUTE_PARETO_MIN
-        /// Heighest key in the subtree with the same slot index
-        min_key_type    minimum; 
-    #endif
     };
 
     struct inner_node : public node {
@@ -272,6 +182,16 @@ protected:
 
     typedef typename _Alloc::template rebind<leaf_node*>::other leaf_list_alloc_type;
     typedef std::vector<leaf_node*, leaf_list_alloc_type> leaf_list; 
+
+    typedef typename std::vector<Operation<key_type>> local_update_list;
+// ST
+    struct ThreadLocalLSData {
+        weightdelta_list weightdelta;
+        leaf_list leaves;
+        node* spare_leaf;
+        UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
+        local_update_list local_updates;
+    };
 
 public:
 
@@ -396,6 +316,20 @@ protected:
         }
     }
 
+    inline void free_node_without_count(node *n) {
+        if (n->isleafnode()) {
+            leaf_node *ln = static_cast<leaf_node*>(n);
+            typename leaf_node::alloc_type a(leaf_node_allocator());
+            a.destroy(ln);
+            a.deallocate(ln, 1);
+        } else {
+            inner_node *in = static_cast<inner_node*>(n);
+            typename inner_node::alloc_type a(inner_node_allocator());
+            a.destroy(in);
+            a.deallocate(in, 1);
+        }
+    }
+
 public:
     // *** Fast Destruction of the B+ Tree
 
@@ -430,7 +364,7 @@ protected:
 
     inline weightdelta_type getWeightDelta(const size_type upd_begin, const size_type upd_end) const {
         if (batch_type == INSERTS_AND_DELETES) {
-            return weightdelta[upd_end]-weightdelta[upd_begin];
+            return tls_data->weightdelta[upd_end]-tls_data->weightdelta[upd_begin];
         } else {
             return (upd_end - upd_begin) * batch_type;
         }
@@ -564,12 +498,12 @@ protected:
             for(width_type slot = 0; slot < leaf->slotuse - 1; ++slot) {
                 assert(key_lessequal(leaf->slotkey[slot], leaf->slotkey[slot + 1]));
             }
-            if ((leaf != root && !(leaf->slotuse >= minweight(leaf->level))) || !( leaf->slotuse <= maxweight(leaf->level))) {
-                std::cout << leaf->slotuse << " min " << minweight(0) << " max " <<maxweight(0) << std::endl;
-                print_node(leaf);
-            }
-            assert( leaf == root || leaf->slotuse >= minweight(leaf->level) );
-            assert( leaf->slotuse <= maxweight(leaf->level) );
+            //if ((leaf != root && !(leaf->slotuse >= minweight(leaf->level))) || !( leaf->slotuse <= maxweight(leaf->level))) {
+             //   std::cout << leaf->slotuse << " min " << minweight(0) << " max " <<maxweight(0) << std::endl;
+              //  print_node(leaf);
+            //}
+            //assert( leaf == root || leaf->slotuse >= minweight(leaf->level) );
+            //assert( leaf->slotuse <= maxweight(leaf->level) );
 
             *minkey = leaf->slotkey[0];
             *maxkey = leaf->slotkey[leaf->slotuse - 1];
@@ -595,12 +529,12 @@ protected:
 
                 assert(subnode->level + 1 == inner->level);
 
-                if ((inner != root && !(inner->slot[slot].weight >= minweight(inner->level-1))) || !(inner->slot[slot].weight <= maxweight(inner->level-1))) {
-                    std::cout << inner->slot[slot].weight << " min " << minweight(inner->level-1) << " max " <<maxweight(inner->level-1) << std::endl;
-                    print_node(inner, 0, true);
-                }
-                assert( inner == root || inner->slot[slot].weight >= minweight(inner->level-1) );
-                assert( inner->slot[slot].weight <= maxweight(inner->level-1) );
+                //if ((inner != root && !(inner->slot[slot].weight >= minweight(inner->level-1))) || !(inner->slot[slot].weight <= maxweight(inner->level-1))) {
+                //    std::cout << inner->slot[slot].weight << " min " << minweight(inner->level-1) << " max " <<maxweight(inner->level-1) << std::endl;
+                //    print_node(inner, 0, true);
+                //}
+                //assert( inner == root || inner->slot[slot].weight >= minweight(inner->level-1) );
+                //assert( inner->slot[slot].weight <= maxweight(inner->level-1) );
 
                 size_type itemcount = vstats.itemcount;
                 verify_node(subnode, &subminkey, &submaxkey, vstats);
@@ -624,60 +558,6 @@ protected:
 
     protected:
 
-#ifdef COMPUTE_PARETO_MIN
-
-    template<typename sequence_type>
-    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
-        if (node->isleafnode()) {
-            const leaf_node* const leaf = (leaf_node*) node;
-            const width_type slotuse = leaf->slotuse;
-
-            const min_key_type* min = &prefix_minima;
-            for (width_type i = 0; i<slotuse; ++i) {
-                if (leaf->slotkey[i].second_weight < min->second_weight ||
-                        (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
-                    minima.push_back({Operation<key_type>::DELETE, leaf->slotkey[i]});
-                    min = &leaf->slotkey[i];
-                }
-            }
-        } else {
-            const inner_node* const inner = (inner_node*) node;
-            const width_type slotuse = inner->slotuse;
-
-            const min_key_type* min = &prefix_minima;
-            for (width_type i = 0; i<slotuse; ++i) {
-                if (inner->slot[i].minimum.second_weight < min->second_weight ||
-                        (inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-                    find_pareto_minima(inner->slot[i].childid, *min, minima);
-                    min = &inner->slot[i].minimum;
-                }
-            }
-        }
-    }
-
-    static inline void set_min_element(inner_node_data& slot, const leaf_node* const node) {
-        slot.minimum = *std::min_element(node->slotkey, node->slotkey+node->slotuse,
-            [](const min_key_type& i, const min_key_type& j) { return i.second_weight < j.second_weight; });
-    }
-
-    static inline void set_min_element(inner_node_data& slot, const min_key_type& local) {
-        slot.minimum = local;
-    }
-
-    static inline void set_min_element(inner_node_data& slot, const inner_node* const node) {
-        slot.minimum = std::min_element(node->slot, node->slot+node->slotuse,
-            [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })->minimum;
-    }
-#else 
-    void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
-        std::cout << "Pareto Min Feature disabled" << std::endl;
-    }
-    static inline void set_min_element(inner_node_data&, const leaf_node* const) {
-    }
-    static inline void set_min_element(inner_node_data&, const min_key_type&) {
-    }
-#endif
-
     template<class leaf_list> 
     width_type create_subtree_from_leaves(inner_node_data& slot, const width_type old_slotuse, const bool reuse_node, const level_type level, size_type rank_begin, size_type rank_end, const leaf_list& leaves) {
         BTREE_ASSERT(rank_end - rank_begin > 0);
@@ -687,7 +567,6 @@ protected:
             // Just re-use the pre-alloced and filled leaf
             leaf_node* result = leaves[rank_begin / designated_leafsize];
             result->slotuse = rank_end - rank_begin;
-            set_min_element(slot, result);
             update_router(slot.slotkey, result->slotkey[result->slotuse-1]);
             slot.childid = result;
             return 1;
@@ -719,7 +598,6 @@ protected:
             result->slot[new_slotuse-1].weight = rank_end - rank;
             create_subtree_from_leaves(result->slot[new_slotuse-1], 0, false, level-1, rank, rank_end, leaves);
 
-            set_min_element(slot, result);
             update_router(slot.slotkey, result->slot[new_slotuse-1].slotkey);
 
             return subtrees;
@@ -730,12 +608,9 @@ protected:
         BTREE_PRINT("Allocating " << num_subtrees(n, designated_leafsize) << " new  nodes for tree of size " << n << std::endl);
         const size_type leaf_count = num_subtrees(n, designated_leafsize);
 
-        #ifdef PARALLEL_BUILD 
-            leaf_list& leaves = tls_data.local().leaves;
-        #endif
-        leaves.clear();
-        leaves.resize(leaf_count, NULL);
-        return leaves;
+        tls_data->leaves.clear();
+        tls_data->leaves.resize(leaf_count, NULL);
+        return tls_data->leaves;
     }
 
     template<class leaf_list> 
@@ -744,11 +619,7 @@ protected:
             write_updated_leaf_to_new_tree(source_node, 0, rank, upd.upd_begin, upd.upd_end, leaves, true);
         } else {
             inner_node* inner = static_cast<inner_node*>(source_node);
-            #ifdef PARALLEL_BUILD
-                auto& subtree_updates = tls_data.local().subtree_updates_per_level[inner->level];
-            #else
-                auto& subtree_updates = subtree_updates_per_level[inner->level];
-            #endif
+            auto& subtree_updates = tls_data->subtree_updates_per_level[inner->level];
             
             // Distribute operations and find out which subtrees need rebalancing
             const width_type last = inner->slotuse-1;
@@ -775,11 +646,7 @@ protected:
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const size_type max_weight = maxweight(inner->level-1);
             const size_type min_weight = max_weight / 4;
-            #ifdef PARALLEL_BUILD
-                auto& subtree_updates = tls_data.local().subtree_updates_per_level[inner->level];
-            #else
-                auto& subtree_updates = subtree_updates_per_level[inner->level];
-            #endif
+            auto& subtree_updates = tls_data->subtree_updates_per_level[inner->level];
 
             bool rebalancing_needed = false;
             // Distribute operations and find out which subtrees need rebalancing
@@ -795,7 +662,6 @@ protected:
             // If no rewrite session is starting on this node, then just push down all updates
             if (!rebalancing_needed) {
                 updateSubTreesInRange(inner, 0, inner->slotuse, subtree_updates);
-                set_min_element(slot, inner);
                 update_router(slot.slotkey, inner->slot[inner->slotuse-1].slotkey);
             } else {
                 BTREE_PRINT("Rewrite session started for " << inner << " on level " << inner->level << std::endl);
@@ -847,7 +713,6 @@ protected:
                     }
                 }
                 result->slotuse = out;
-                set_min_element(slot, result);
                 update_router(slot.slotkey, result->slot[out-1].slotkey);
                 free_node(slot.childid);
                 slot.childid = result;
@@ -974,23 +839,11 @@ protected:
 
     inline void update_leaf_in_current_tree(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
-        #ifdef PARALLEL_BUILD
-            auto& spare_leaf = tls_data.local().spare_leaf;
-            leaf_node* const result = spare_leaf != NULL ? spare_leaf : allocate_leaf_without_count();
-        #else
-            leaf_node* const result = static_cast<leaf_node*>(spare_leaf);
-        #endif
+        leaf_node* const result = static_cast<leaf_node*>(tls_data->spare_leaf);
+
         width_type in = 0; // existing key to read
         width_type out = 0; // position where to write
         const width_type in_slotuse = leaf->slotuse;
-
-        #ifdef COMPUTE_PARETO_MIN
-            const min_key_type local_min_dummy(0, std::numeric_limits<typename min_key_type::weight_type>::max());
-            const min_key_type* local_min =&local_min_dummy;
-        #else 
-            min_key_type* local_min = NULL;
-        #endif
-
         BTREE_PRINT("Updating leaf from " << leaf << " to " << result);
 
         for (size_type i = upd_begin; i != upd_end; ++i) {
@@ -1001,40 +854,27 @@ protected:
                 // We know the element is in here, so no bounds checks
                 while (key_less(leaf->slotkey[in], op.data)) {
                     BTREE_ASSERT(in < in_slotuse);
-                    #ifdef COMPUTE_PARETO_MIN
-                        local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
-                    #endif 
                     result->slotkey[out++] = leaf->slotkey[in++];
                 }
                 ++in; // delete the element by jumping over it
                 continue;
             case Operation<key_type>::INSERT:
                 while(in < in_slotuse && key_less(leaf->slotkey[in], op.data)) {
-                    #ifdef COMPUTE_PARETO_MIN
-                        local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
-                    #endif
                     result->slotkey[out++] = leaf->slotkey[in++];
                 }
-                 #ifdef COMPUTE_PARETO_MIN
-                    local_min = op.data.second_weight < local_min->second_weight ? &op.data : local_min;
-                #endif
                 result->slotkey[out++] = op.data;
                 continue;
             }
         }
         assert(leaf->slotuse <= leafslotmax);
-        while (in < in_slotuse) {
-            #ifdef COMPUTE_PARETO_MIN
-                local_min = leaf->slotkey[in].second_weight < local_min->second_weight ? &leaf->slotkey[in] : local_min;
-            #endif
-            result->slotkey[out++] = leaf->slotkey[in++];
-        }
+        const size_t diff = in_slotuse - in;
+        memcpy(result->slotkey + out, leaf->slotkey + in, sizeof(key_type)*diff);
+        out += diff;
         assert(out <= leafslotmax);
 
-        set_min_element(slot, *local_min);
         result->slotuse = out;
         update_router(slot.slotkey, result->slotkey[out-1]); 
-        spare_leaf = static_cast<leaf_node*>(slot.childid);
+        tls_data->spare_leaf = static_cast<leaf_node*>(slot.childid);
         slot.childid = result;
 
         BTREE_PRINT(": size " << leaf->slotuse << " -> " << result->slotuse << std::endl);
@@ -1060,31 +900,8 @@ protected:
     // Classifies the set of runninng updates
     OperationBatchType batch_type;
 
-    // Weight delta of currently running updates
-    weightdelta_list weightdelta;
+    ThreadLocalLSData* tls_data;
 
-
-    #ifdef PARALLEL_BUILD
-        struct tls_data {
-            // Leaves created during the current reconstruction effort
-            leaf_list leaves;
-            // Pointer to spare leaf used for merging.
-            leaf_node* spare_leaf = NULL;
-            UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
-        };
-
-        typedef tbb::enumerable_thread_specific<tls_data, tbb::cache_aligned_allocator<tls_data>, tbb::ets_key_per_instance> DataPerThread; 
-        DataPerThread tls_data;
-    #else
-        // Leaves created during the current reconstruction effort
-        leaf_list leaves;
-
-        /// Pointer to spare leaf used for merging.
-        node*       spare_leaf;
-
-        // For each level, one array to store the updates needed to push down to the individual subtrees
-        UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
-    #endif
 };
 
 #endif
