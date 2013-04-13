@@ -36,11 +36,11 @@
 
 
 #ifndef LS_LEAF_PARAMETER_K
-#define LS_LEAF_PARAMETER_K 256
+#define LS_LEAF_PARAMETER_K 64
 #endif
 
 #ifndef LS_BRANCHING_PARAMETER_B
-#define LS_BRANCHING_PARAMETER_B 24
+#define LS_BRANCHING_PARAMETER_B 32
 #endif
 
 typedef std::vector< Label > LabelVec;
@@ -140,8 +140,6 @@ private:
     using base::get_resized_leaves_array;
     using base::print_node;
 
-    typename Label::weight_type min;
-
 public:
     // *** Constructors and Destructor
 
@@ -163,25 +161,21 @@ public:
     } groupByWeight;
 
     template<class NodeID, class candidates_iter_type, class Stats>
-    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, std::vector<Operation<NodeLabel>>& updates, Stats&) {
+    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, std::vector<Operation<NodeLabel>>& pq_updates, Stats&) {
         tls_data->local_updates.clear();
-        min = std::numeric_limits<typename Label::weight_type>::max();
 
         inner_node_data fake_slot;
         fake_slot.childid = root;
         batch_type = INSERTS_ONLY;
-        generateUpdates(fake_slot, start, end);
+        generateUpdates(fake_slot, start, end, std::numeric_limits<typename Label::weight_type>::max());
 
         if (tls_data->local_updates.size() > 0) {
             assert(std::is_sorted(tls_data->local_updates.begin(), tls_data->local_updates.end(), groupByWeight));
             apply_updates(tls_data->local_updates, batch_type);
 
-            for (Operation<Label>& op : tls_data->local_updates) {
-                if (op.type == Operation<Label>::INSERT) {
-                    updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.data)});
-                } else {
-                    updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, op.data)});
-                }
+            for (const auto& op : tls_data->local_updates) {
+                const auto type = op.type == Operation<Label>::INSERT ? Operation<NodeLabel>::INSERT : Operation<NodeLabel>::DELETE;
+                pq_updates.push_back({type, NodeLabel(node, op.data)});
             }
         }
     }
@@ -193,10 +187,10 @@ public:
 private:
 
     template<class candidates_iter_type>
-    void generateUpdates(const inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end) {
+    Label::weight_type generateUpdates(const inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, Label::weight_type min) {
 
         if (slot.childid->isleafnode()) {
-            generateLeafUpdates(slot, start, end);
+            return generateLeafUpdates(slot, start, end, min);
         } else {
             const inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const width_type slotuse = inner->slotuse;
@@ -214,7 +208,7 @@ private:
                     ++sub_end;
                 }
                 if (sub_start != sub_end || continue_check) {
-                    generateUpdates(inner->slot[i], sub_start, sub_end);
+                    min = generateUpdates(inner->slot[i], sub_start, sub_end, min);
                     // if the last element (router) is dominated, also check for dominance in the next leaf
                     continue_check = min <= inner->slot[i].slotkey.second_weight;
                 }
@@ -232,11 +226,13 @@ private:
                 }
             }  
         } 
+        return min;
     }
 
-    static inline bool isDominated(const leaf_node* const leaf, width_type& i, const Label& new_label) {
+    static inline bool isDominated(const leaf_node* const leaf, width_type& iii, const Label& new_label) {
         const width_type slotuse = leaf->slotuse;
 
+        width_type i = iii;
         // Find x-predecessor
         while (i < slotuse && leaf->slotkey[i].first_weight < new_label.first_weight) {
             ++i;
@@ -246,6 +242,7 @@ private:
             // Dominated by x-predecessor?
             if (leaf->slotkey[i].second_weight <= new_label.second_weight) {
                 ////std::cout << "  Predecessor " << std::endl;
+                iii = i;
                 return true;
             }
             ++i; // move to element with greater / equal x-coordinate
@@ -253,13 +250,15 @@ private:
         if (i < slotuse && 
             leaf->slotkey[i].first_weight == new_label.first_weight && 
             leaf->slotkey[i].second_weight <= new_label.second_weight) {
+            iii = i;
             return true; 
         }
+        iii = i;
         return false;
     }
 
     template<class candidates_iter_type>
-    inline void generateLeafUpdates(const inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end) {
+    inline Label::weight_type generateLeafUpdates(const inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, Label::weight_type min) {
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
         const width_type slotuse = leaf->slotuse;
         width_type i = 0;
@@ -295,6 +294,7 @@ private:
                 }
             }
         }
+        return min;
     }
 
     template<typename T>

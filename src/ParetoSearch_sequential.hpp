@@ -86,6 +86,8 @@ public:
 		#ifdef BTREE_PARETO_LABELSET
 			labelset_data.spare_leaf = labels[0].labels.allocate_leaf_without_count();
 			labelset_data.weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+			labelset_data.local_updates.reserve(LARGE_ENOUGH_FOR_MOST);
+			labelset_data.leaves.reserve(LARGE_ENOUGH_FOR_MOST);
 		#endif
 	 }
 
