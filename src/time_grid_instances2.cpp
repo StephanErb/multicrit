@@ -42,7 +42,7 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 	}
 	std::cout << num << " " << height << " " << width << " " << pruned_average(timings, iterations, 0) << " "
 		<< pruned_average(label_count, iterations, 0) << " " << q << " " << pruned_average(memory, iterations, 0)/1024 << " " 
-		<< getPeakMemorySize()/1024 << " " << p << " # time in [s], target node label count, q, memory [mb], peak memory [mb], p " << std::endl;
+		<< getPeakMemorySize()/1024 << " " << p << " " << max_costs << " # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs" << std::endl;
 	
 }
 
