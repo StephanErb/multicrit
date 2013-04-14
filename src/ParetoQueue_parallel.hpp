@@ -229,7 +229,7 @@ public:
 		}
     };
 
-	void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
+	inline void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
 		typename TLSData::reference tl = tls_data.local();
 
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
