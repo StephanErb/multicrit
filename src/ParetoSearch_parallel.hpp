@@ -17,6 +17,7 @@
 #include "ParetoSearchStatistics.hpp"
 #include "assert.h"
 #include "Label.hpp"
+#include "algorithm"
 
 //#define RADIX_SORT
 #include "tbb/parallel_sort.hpp"
@@ -284,6 +285,9 @@ public:
 			tbb::tick_count stop = tbb::tick_count::now();
 		#endif
 
+		tbb::affinity_partitioner ap;
+		tbb::affinity_partitioner ap2;
+
 		while (!pq.empty()) {
 			pq.update_counter = 0;
 			pq.candidate_counter = 0;
@@ -311,11 +315,10 @@ public:
 				start = stop;
 			#endif
 
-			tbb::affinity_partitioner ap;
 			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap, 1000);
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap, min_problem_size(pq.candidate_counter, 256));
 			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap, 500);
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap, min_problem_size(pq.candidate_counter, 256));
 			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -323,7 +326,7 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_for(candidate_range(&pq, 64),
+			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter)),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
@@ -393,8 +396,7 @@ public:
 				start = stop;
 			#endif
 
-			tbb::affinity_partitioner ap2;
-			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, ap2, 500);
+			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, ap2, min_problem_size(pq.update_counter, 256));
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_UPDATES] += (stop-start).seconds();
@@ -408,6 +410,12 @@ public:
 				start = stop;
 			#endif
 		}		
+	}
+
+	static size_t min_problem_size(size_t total, const double max=1.0) {
+		const size_t p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
+        return std::max((total/p) / (log2(total/p + 1)+1), max);
+
 	}
 
 
