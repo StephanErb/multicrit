@@ -27,40 +27,53 @@
 # the GNU General Public License.
 
 
-get_ia32(){ 
-	echo SUBSTITUTE_IA32_ARCH_HERE
+function get_library_directory(){
+    gcc_version_full=`gcc --version | grep "gcc"| egrep -o " [0-9]+\.[0-9]+\.[0-9]+.*" | sed -e s/^\ //`
+    if [ $? -eq 0 ]; then
+        gcc_version=`echo "$gcc_version_full" | egrep -o "^[0-9]+\.[0-9]+\.[0-9]+"`
+    fi
+    case "${gcc_version}" in
+	4.[4-9]* )
+	    lib_dir="gcc4.4";;
+	* )
+	    lib_dir="gcc4.1";;
+    esac
+    echo $lib_dir
 }
 
-get_ia64(){
-	echo SUBSTITUTE_IA64_ARCH_HERE
-}
+tbbdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export TBBROOT=$tbbdir/..
 
-get_intel64(){
-	echo cc4.1.0_libc2.4_kernel2.6.16.21
-}
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export TBBROOT=$DIR/..
-if [[ "$1" != "ia32" && "$1" != "intel64" && "$1" != "ia64" ]]; then
-   echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, ia64"
+if [[ "$1" != "ia32" && "$1" != "intel64" && "$1" != "android" ]]; then
+   echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, android"
    return 1;
 fi
 
-TBB_ARCH=$(get_$1)
+if [ "$1" != "android" ]; then
+    library_directory=$(get_library_directory)
+else
+    library_directory=""
+fi
 
-if [ -z "${LD_LIBRARY_PATH}" ]
-then
-   LD_LIBRARY_PATH="$TBBROOT/lib/$1/$TBB_ARCH"; export LD_LIBRARY_PATH
+if [ -z "${MIC_LD_LIBRARY_PATH}" ] ; then
+   MIC_LD_LIBRARY_PATH="$TBBROOT/lib/mic"; export MIC_LD_LIBRARY_PATH
 else
-   LD_LIBRARY_PATH="$TBBROOT/lib/$1/$TBB_ARCH:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
+   MIC_LD_LIBRARY_PATH="$TBBROOT/lib/mic:${MIC_LD_LIBRARY_PATH}"; export MIC_LD_LIBRARY_PATH
 fi
-if [ -z "${LIBRARY_PATH}" ]
-then
-   LIBRARY_PATH="$TBBROOT/lib/$1/$TBB_ARCH"; export LIBRARY_PATH
+
+if [ -z "${LD_LIBRARY_PATH}" ] ; then
+   LD_LIBRARY_PATH="$TBBROOT/lib/$1/$library_directory"; export LD_LIBRARY_PATH
 else
-   LIBRARY_PATH="$TBBROOT/lib/$1/$TBB_ARCH:${LIBRARY_PATH}"; export LIBRARY_PATH
+   LD_LIBRARY_PATH="$TBBROOT/lib/$1/$library_directory:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
 fi
-if [ -z "${CPATH}" ]; then
+
+if [ -z "${LIBRARY_PATH}" ] ; then
+   LIBRARY_PATH="$TBBROOT/lib/$1/$library_directory"; export LIBRARY_PATH
+else
+   LIBRARY_PATH="$TBBROOT/lib/$1/$library_directory:${LIBRARY_PATH}"; export LIBRARY_PATH
+fi
+
+if [ -z "${CPATH}" ] ; then
     CPATH="${TBBROOT}/include"; export CPATH
 else
     CPATH="${TBBROOT}/include:$CPATH"; export CPATH

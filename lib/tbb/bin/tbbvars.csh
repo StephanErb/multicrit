@@ -28,35 +28,47 @@
 
 
 setenv TBBROOT "SUBSTITUTE_INSTALL_DIR_HERE" 
-set TBB_ARCH_ia32=SUBSTITUTE_IA32_ARCH_HERE
-set TBB_ARCH_ia64=SUBSTITUTE_IA64_ARCH_HERE
-set TBB_ARCH_intel64=SUBSTITUTE_INTEL64_ARCH_HERE
+if ( "$1" != "ia32" && "$1" != "intel64" && "$1" != "android" ) then
+  echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, android"
+  exit 1
+endif
 
-switch ("$1")
-  case "ia32":
-      set TBB_ARCH=$TBB_ARCH_ia32
-      breaksw;
-  case "intel64":
-      set TBB_ARCH=$TBB_ARCH_intel64
-      breaksw;
-  case "ia64":
-      set TBB_ARCH=$TBB_ARCH_ia64
-      breaksw;
-  default:
-      echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, ia64"
-      breaksw;
-endsw
+if ( "$1" != "android" ) then
+    set gcc_version_full=`gcc --version | grep "gcc"| egrep -o " [0-9]+\.[0-9]+\.[0-9]+.*" | sed -e s/^\ //`
+    if ( $? == 0 ) then
+	set gcc_version=`echo "$gcc_version_full" | egrep -o "^[0-9]+\.[0-9]+\.[0-9]+"`
+    endif
+
+    switch ("$gcc_version")
+	case 4.[4-9]*:
+	    set library_directory="gcc4.4"
+	    breaksw
+	default:
+	    set library_directory="gcc4.1"
+	    breaksw
+    endsw
+else
+    set library_directory=""
+endif
+
+if (! $?MIC_LD_LIBRARY_PATH) then 
+    setenv MIC_LD_LIBRARY_PATH "${TBBROOT}/lib/mic" 
+else 
+    setenv MIC_LD_LIBRARY_PATH "${TBBROOT}/lib/mic:$MIC_LD_LIBRARY_PATH" 
+endif 
+
+if (! $?LD_LIBRARY_PATH) then 
+    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}" 
+else 
+    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}:$LD_LIBRARY_PATH" 
+endif 
 
 if (! $?LIBRARY_PATH) then 
-    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${TBB_ARCH}" 
+    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}" 
 else 
-    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${TBB_ARCH}:$LIBRARY_PATH" 
+    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}:$LIBRARY_PATH" 
 endif 
-if (! $?LD_LIBRARY_PATH) then 
-    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${TBB_ARCH}" 
-else 
-    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${TBB_ARCH}:$LD_LIBRARY_PATH" 
-endif 
+
 if (! $?CPATH) then 
     setenv CPATH "${TBBROOT}/include" 
 else 
