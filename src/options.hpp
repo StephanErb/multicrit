@@ -48,8 +48,8 @@
  * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector
  */
 #ifndef PARETO_QUEUE
-  #define PARETO_QUEUE VectorParetoQueue
-  //#define PARETO_QUEUE BTreeParetoQueue
+  //#define PARETO_QUEUE VectorParetoQueue
+  #define PARETO_QUEUE BTreeParetoQueue
 #endif
 
 /**
