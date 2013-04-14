@@ -267,12 +267,12 @@ public:
 			assert(position + tl.candidates.size() < candidates.capacity());
 			memcpy(candidates.data() + position, tl.candidates.data()+remaining, sizeof(CandLabelVec::value_type) * aligned_size);
 			tl.candidates.resize(remaining);
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				stop = tbb::tick_count::now();
+				subtimings.write_local_to_shared += (stop-start).seconds();
+				start = stop;
+			#endif
 		}
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			stop = tbb::tick_count::now();
-			subtimings.write_local_to_shared += (stop-start).seconds();
-			start = stop;
-		#endif
 	}
 
 	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {

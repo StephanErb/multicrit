@@ -364,13 +364,13 @@ public:
 						assert(position + tl.updates.size() < pq.updates.capacity());
 						memcpy(pq.updates.data() + position, tl.updates.data()+remaining, sizeof(Operation<NodeLabel>) * aligned_size );
 						tl.updates.resize(remaining);
-					}
-					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-						stop = tbb::tick_count::now();
-						subtimings.write_local_to_shared += (stop-start).seconds();
-						start = stop;
-					#endif
 
+						#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+							stop = tbb::tick_count::now();
+							subtimings.write_local_to_shared += (stop-start).seconds();
+							start = stop;
+						#endif
+					}
 				}
 			}, ap);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
