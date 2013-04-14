@@ -192,6 +192,7 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
+		labels.reserve(INITIAL_LABELSET_SIZE);
 		labels.insert(labels.begin(), label_type_extended(min, max, /*permanent*/ true));
 		labels.insert(labels.end(), label_type_extended(max, min, /*permanent*/ true));
 
@@ -405,6 +406,7 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
+		labels.reserve(INITIAL_LABELSET_SIZE);
 		labels.insert(labels.begin(), label_type_extended(min, max, 0));
 		labels.insert(labels.end(), label_type_extended(max, min, 0));
 	}
@@ -508,6 +510,7 @@ public:
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
 		// add sentinals
+		labels.reserve(INITIAL_LABELSET_SIZE);
 		labels.insert(labels.begin(), label_type_extended(min, max, 0));
 		labels.insert(labels.end(), label_type_extended(max, min, 0));
 	}

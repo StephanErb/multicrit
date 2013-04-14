@@ -380,6 +380,7 @@ public:
         const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
         const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
 
+        labels.reserve(INITIAL_LABELSET_SIZE);
         labels.insert(labels.begin(), Label(min, max));
         labels.insert(labels.end(), Label(max, min));
     }
