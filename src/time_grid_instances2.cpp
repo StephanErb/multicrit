@@ -13,7 +13,7 @@
 #include "tbb/tick_count.h"
 
 
-void timeGrid(int num, int height, int width, bool verbose, int iterations, double q, int p) {
+void timeGrid(int num, int height, int width, bool verbose, int iterations, double q, int p, int max_costs) {
 	GraphGenerator<Graph> generator;
 	double timings[iterations];
 	double label_count[iterations];
@@ -24,7 +24,7 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 
 	for (int i = 0; i < iterations; i++) {
 		Graph graph;
-		generator.generateRandomGridGraphWithCostCorrleation(graph, height, width, q);
+		generator.generateRandomGridGraphWithCostCorrleation(graph, height, width, q, max_costs);
 
 		LabelSettingAlgorithm algo(graph, p);
 
@@ -51,15 +51,19 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 	double q = 0;
 	int p = tbb::task_scheduler_init::default_num_threads();
+	int max_costs = 10;
 
 	int c;
-	while( (c = getopt( argc, args, "c:q:p:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:q:p:m:v") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
 			break;
 		case 'q':
 			q = atof(optarg);
+			break;
+		case 'm':
+			max_costs = atoi(optarg);
 			break;
 		case 'p':
 			p = atoi(optarg);
@@ -72,7 +76,7 @@ int main(int argc, char ** args) {
 		}
 	}
 	#ifdef PARALLEL_BUILD
-		tbb::task_scheduler_init init(p);
+		tbb::task_scheduler_init init(p, max_costs);
 	#else
 		p = 0;
 	#endif
@@ -86,26 +90,26 @@ int main(int argc, char ** args) {
 	//		for each correlation is 8.6, 96.2, 274.7, 435.6 and 772.3 in order of decreasing value of ρ.
 
 	std::cout << "# " << currentConfig() << std::endl;
-	timeGrid(1,   20, 20, verbose, iterations, q, p);
-	timeGrid(2,   40, 40, verbose, iterations, q, p);
-	timeGrid(3,   60, 60, verbose, iterations, q, p);
-	timeGrid(4,   80, 80, verbose, iterations, q, p);
-	timeGrid(5,  100, 100, verbose, iterations, q, p);
-	timeGrid(6,  120, 120, verbose, iterations, q, p);
-	timeGrid(7,  140, 140, verbose, iterations, q, p);
-	timeGrid(8,  160, 160, verbose, iterations, q, p);
-	timeGrid(9,  180, 180, verbose, iterations, q, p);
-	timeGrid(10, 200, 200, verbose, iterations, q, p);
-	timeGrid(11, 220, 220, verbose, iterations, q, p);
-	timeGrid(12, 240, 240, verbose, iterations, q, p);
-	timeGrid(13, 260, 260, verbose, iterations, q, p);
-	timeGrid(14, 280, 280, verbose, iterations, q, p);
-	timeGrid(15, 300, 300, verbose, iterations, q, p);
-	timeGrid(15, 320, 320, verbose, iterations, q, p);
-	timeGrid(15, 340, 340, verbose, iterations, q, p);
-	timeGrid(15, 360, 360, verbose, iterations, q, p);
-	timeGrid(15, 380, 380, verbose, iterations, q, p);
-	timeGrid(15, 400, 400, verbose, iterations, q, p);
+	timeGrid(1,   20, 20, verbose, iterations, q, p, max_costs);
+	timeGrid(2,   40, 40, verbose, iterations, q, p, max_costs);
+	timeGrid(3,   60, 60, verbose, iterations, q, p, max_costs);
+	timeGrid(4,   80, 80, verbose, iterations, q, p, max_costs);
+	timeGrid(5,  100, 100, verbose, iterations, q, p, max_costs);
+	timeGrid(6,  120, 120, verbose, iterations, q, p, max_costs);
+	timeGrid(7,  140, 140, verbose, iterations, q, p, max_costs);
+	timeGrid(8,  160, 160, verbose, iterations, q, p, max_costs);
+	timeGrid(9,  180, 180, verbose, iterations, q, p, max_costs);
+	timeGrid(10, 200, 200, verbose, iterations, q, p, max_costs);
+	timeGrid(11, 220, 220, verbose, iterations, q, p, max_costs);
+	timeGrid(12, 240, 240, verbose, iterations, q, p, max_costs);
+	timeGrid(13, 260, 260, verbose, iterations, q, p, max_costs);
+	timeGrid(14, 280, 280, verbose, iterations, q, p, max_costs);
+	timeGrid(15, 300, 300, verbose, iterations, q, p, max_costs);
+	timeGrid(15, 320, 320, verbose, iterations, q, p, max_costs);
+	timeGrid(15, 340, 340, verbose, iterations, q, p, max_costs);
+	timeGrid(15, 360, 360, verbose, iterations, q, p, max_costs);
+	timeGrid(15, 380, 380, verbose, iterations, q, p, max_costs);
+	timeGrid(15, 400, 400, verbose, iterations, q, p, max_costs);
 	return 0;
 }
 

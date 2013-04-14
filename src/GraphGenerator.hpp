@@ -104,8 +104,8 @@ public:
 
 	  * Interesting p values from easy to difficult: 0.8, 0.4, 0, -0.4, -0.8
 	  */
-	void generateRandomGridGraphWithCostCorrleation(Graph& graph, int height, int width, double p) {
-		const WeightType max_cost = 10;
+	void generateRandomGridGraphWithCostCorrleation(Graph& graph, int height, int width, double p, const WeightType max_cost = 10) {
+		;
 		NodeID nodes[width][height];
 
 		// Create grid of nodes
