@@ -138,6 +138,7 @@ public:
 
 		// add sentinals
 		for (size_t i=0; i<labelsets.size(); ++i) {
+			labelsets.reserve(INITIAL_LABELSET_SIZE);
 			labelsets[i].labels.insert(labelsets[i].labels.begin(), Label(min, max));
 			labelsets[i].labels.insert(labelsets[i].labels.end(), Label(max, min));
 		}
