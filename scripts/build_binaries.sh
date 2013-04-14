@@ -68,7 +68,7 @@ mv ./bin/time_road_instances2 ./bin/time_road_instances2_lset_lex
 # BTree algorithm
 #########################################################
 
-large_leaf_k=2048
+large_leaf_k=640
 small_leaf_k=64
 
 make -B CPPFLAGS="-DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
