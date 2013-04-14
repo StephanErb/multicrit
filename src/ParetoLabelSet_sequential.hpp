@@ -411,6 +411,8 @@ public:
                 continue;
             }
             min = new_label.second_weight;
+
+            ++modifications;
             stats.report(LABEL_NONDOMINATED);
             updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
 
@@ -426,7 +428,6 @@ public:
                 // delete range is empty, so just insert
                 labelset_iter = labels.insert(first_nondominated, new_label);
             } else {
-                ++modifications; // only log non-trivial
                 // schedule deletion of dominated labels
                 for (label_iter i = iter; i != first_nondominated; ++i) {
                     updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, *i)});
@@ -438,7 +439,7 @@ public:
         }
 
         stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
-        if (modifications > 0) stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
+        stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
     }
 
     // Accessors, corrected for internal sentinals

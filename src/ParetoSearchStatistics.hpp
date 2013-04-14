@@ -41,40 +41,45 @@ private:
 	unsigned long peak_identical_target_node = 0;
 	unsigned long labelset_modifications = 0;
     unsigned long peak_labelset_modifications = 0;
+    unsigned long modified_labelset_in_iteration[2];
 
 public:
 
 	ParetoSearchStatistics() {
 		std::fill_n(data, STAT_ELEMENT_COUNT, 0);
+		std::fill_n(modified_labelset_in_iteration, 2, 0);
 	}
 
 	void report(StatElement stat, unsigned long payload=0) {
-			data[stat]++;
+		data[stat]++;
 
-			if (stat == ITERATION) {
-				pq_size += payload;
-				peak_pq_size = std::max(peak_pq_size, payload);
-			}
-			if (stat == MINIMA_COUNT) {
-				minima_size += payload;
-				peak_minima_size = std::max(peak_minima_size, payload);
-			}
-			if (stat == UPDATE_COUNT) {
-				update_size += payload;
-				peak_update_size = std::max(peak_update_size, payload);
-			}
-			if (stat == PQ_SIZE_DELTA) {
-				pq_size_delta += payload;
-				peak_size_delta = std::max(peak_size_delta, payload);
-			}
-			if (stat == CANDIDATE_LABELS_PER_NODE) {
-				identical_target_node += payload;
-				peak_identical_target_node = std::max(peak_identical_target_node, payload);
-			}
-			if (stat == LS_MODIFICATIONS_PER_NODE) {
+		if (stat == ITERATION) {
+			pq_size += payload;
+			peak_pq_size = std::max(peak_pq_size, payload);
+		}
+		if (stat == MINIMA_COUNT) {
+			minima_size += payload;
+			peak_minima_size = std::max(peak_minima_size, payload);
+		}
+		if (stat == UPDATE_COUNT) {
+			update_size += payload;
+			peak_update_size = std::max(peak_update_size, payload);
+		}
+		if (stat == PQ_SIZE_DELTA) {
+			pq_size_delta += payload;
+			peak_size_delta = std::max(peak_size_delta, payload);
+		}
+		if (stat == CANDIDATE_LABELS_PER_NODE) {
+			identical_target_node += payload;
+			peak_identical_target_node = std::max(peak_identical_target_node, payload);
+		}
+		if (stat == LS_MODIFICATIONS_PER_NODE) {
+			modified_labelset_in_iteration[payload > 0] += 1;
+			if (payload > 0) { // only log successful modifications
 				labelset_modifications += payload;
 				peak_labelset_modifications = std::max(peak_labelset_modifications, payload);
 			}
+		}
 	}
 
 #ifdef PARALLEL_BUILD
@@ -114,50 +119,58 @@ public:
 		double finally_dom_percent = 100.0 * finally_dominated / data[LABEL_NONDOMINATED];
 		out_stream << "    finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
 
-		double avg_set_size = final_total_label_count / labels.size();
+		double avg_set_size = final_total_label_count / (double) labels.size();
 		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), 
 			[](const T& x, const T& y) { return x.labels.size() < y.labels.size(); })).labels.size() -2; //sentinal correction
 		out_stream << "LabelSet sizes: " << "\n";
 		out_stream << "  avg" << ": " << avg_set_size << "\n";
 		out_stream << "  max" << ": " << max_set_size << "\n";
 
-		double avg_pq_size = pq_size / data[ITERATION];
+		double avg_pq_size = pq_size / (double) data[ITERATION];
 		out_stream << "ParetoQueue sizes: " << "\n";
 		out_stream << "  avg" << ": " << avg_pq_size << "\n";
 		out_stream << "  max" << ": " << peak_pq_size;
 
 		if (data[MINIMA_COUNT] > 0) {
 			out_stream << "\n";
-			double avg_minima_size = minima_size / data[MINIMA_COUNT];
+			double avg_minima_size = minima_size / (double) data[MINIMA_COUNT];
 			out_stream << "Pareto Optimal Elements: " << "\n";
 			out_stream << "  avg" << ": " << avg_minima_size << "\n";
 			out_stream << "  max" << ": " << peak_minima_size;
 		}
 		if (data[UPDATE_COUNT] > 0) {
 			out_stream << "\n";
-			double avg_update_size = update_size / data[UPDATE_COUNT];
+			double avg_update_size = update_size / (double) data[UPDATE_COUNT];
 			out_stream << "Pareto Queue Updates: " << "\n";
 			out_stream << "  avg" << ": " << avg_update_size << "\n";
 			out_stream << "  max" << ": " << peak_update_size;
 		}
 		if (data[PQ_SIZE_DELTA] > 0) {
 			out_stream << "\n";
-			double avg_size_delta = pq_size_delta / data[PQ_SIZE_DELTA];
+			double avg_size_delta = pq_size_delta / (double) data[PQ_SIZE_DELTA];
 			out_stream << "Pareto Queue Size Delta: " << "\n";
 			out_stream << "  avg" << ": " << avg_size_delta << "\n";
 			out_stream << "  max" << ": " << peak_size_delta;
 		}
+		if (data[LS_MODIFICATIONS_PER_NODE] > 0) {
+			out_stream << "\n";
+			unsigned long  total_ls_updates = modified_labelset_in_iteration[0] + modified_labelset_in_iteration[1];
+			double ls_mods_percent = 100.0 * modified_labelset_in_iteration[1] / total_ls_updates;
+			out_stream << "Label Set Updates:" <<  "\n";
+			out_stream << "  total" << ": " << total_ls_updates << "\n";
+			out_stream << "  leading to modifications" << ": " << ls_mods_percent << "%";
+		}
 		if (data[CANDIDATE_LABELS_PER_NODE] > 0) {
 			out_stream << "\n";
-			double avg_ident_target_nodes = identical_target_node / data[CANDIDATE_LABELS_PER_NODE];
-			out_stream << "Label Set: Bulk Size per LS: " << "\n";
+			double avg_ident_target_nodes = identical_target_node / (double) data[CANDIDATE_LABELS_PER_NODE];
+			out_stream << "Label Set Bulk Size per LS: " << "\n";
 			out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
 			out_stream << "  max" << ": " << peak_identical_target_node;
 		}
 		if (data[LS_MODIFICATIONS_PER_NODE] > 0) {
 			out_stream << "\n";
-			double avg_labelset_modifications = labelset_modifications / data[LS_MODIFICATIONS_PER_NODE];
-			out_stream << "Label Set: Non-trivial Modifications per LS: " << "\n";
+			double avg_labelset_modifications = labelset_modifications / (double) modified_labelset_in_iteration[1];
+			out_stream << "Label Set Modifications per sucessful update: " << "\n";
 			out_stream << "  avg" << ": " << avg_labelset_modifications << "\n";
 			out_stream << "  max" << ": " << peak_labelset_modifications;
 		}
