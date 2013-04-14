@@ -155,11 +155,11 @@ protected:
         #ifdef PARALLEL_BUILD
             for (auto& data : tls_data) {
                 if (data.spare_leaf != NULL) {
-                    free_node(data.spare_leaf);
+                    free_node_without_count(data.spare_leaf);
                 }
             }
         #else
-            free_node(spare_leaf);
+            free_node_without_count(spare_leaf);
         #endif
     }
 
@@ -393,6 +393,20 @@ protected:
             a.destroy(in);
             a.deallocate(in, 1);
             if (stats.gather_stats) stats.innernodes.fetch_and_decrement();
+        }
+    }
+
+    inline void free_node_without_count(node *n) {
+        if (n->isleafnode()) {
+            leaf_node *ln = static_cast<leaf_node*>(n);
+            typename leaf_node::alloc_type a(leaf_node_allocator());
+            a.destroy(ln);
+            a.deallocate(ln, 1);
+        } else {
+            inner_node *in = static_cast<inner_node*>(n);
+            typename inner_node::alloc_type a(inner_node_allocator());
+            a.destroy(in);
+            a.deallocate(in, 1);
         }
     }
 
