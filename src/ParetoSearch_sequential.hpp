@@ -223,15 +223,16 @@ public:
 	void printStatistics() {
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			for (auto& ls : labels) {
-				set_insertions += ls.labels.set_insertions;
-				set_dominations += ls.labels.set_dominations;
+				for (size_t i=0; i < 101; ++i) {
+					set_insertions[i] += ls.labels.set_insertions[i];
+					set_dominations[i] += ls.labels.set_dominations[i];
+				}
 			}
 			std::cout << "# LabelSet Modifications: insertion/deletion, dominance position" << std::endl;
 			for (size_t i=0; i < 101; ++i) {
 				std::cout << i << " " << set_insertions[i] << " " << set_dominations[i] << std::endl;
 			}
 		#endif
-		pq.printStatistics();
 		std::cout << stats.toString(labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			std::cout << "Subcomponent Timings:" << std::endl;
@@ -241,6 +242,7 @@ public:
 			std::cout << "  " << timings[UPDATES_SORT] << " Sort Updates"  << std::endl;
 			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
+		pq.printStatistics();
 	}
 
 	size_t size(NodeID node) const { return labels[node].labels.size(); }
