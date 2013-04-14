@@ -68,7 +68,7 @@ public:
 
 			FORALL_EDGES(graph, current_node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				Label new_label = createNewLabel(current_label, edge);
+				const Label new_label = createNewLabel(current_label, edge);
 
 				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
 
@@ -77,7 +77,7 @@ public:
 
 					//std::cout << "Label added." << std::endl;
 					// label is non-dominated and has been added to the label set
-					Priority priority = LabelSet<Label>::computePriority(new_label);
+					const Priority priority = LabelSet<Label>::computePriority(new_label);
 
 					if (!heap.contains(edge.target)) {
 						heap.reinsertingPush(edge.target, priority, new_label);
