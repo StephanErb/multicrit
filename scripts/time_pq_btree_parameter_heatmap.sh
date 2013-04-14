@@ -42,6 +42,7 @@ do
 	echo "" >> $out_file
 done
 
+iter_count=1000
 out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
@@ -79,6 +80,7 @@ done
 #################################################################
 # BRANCHING PARAMETER (LABEL) - detailed
 #################################################################
+iter_count=1000
 out_file="../timings/btree/insert_nodewidth_label_leaf_sequ_heatmap_detailed"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
@@ -112,6 +114,7 @@ do
 	echo "" >> $out_file
 done
 
+iter_count=1000
 out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap_detailed"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
