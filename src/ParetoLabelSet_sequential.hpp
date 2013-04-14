@@ -312,14 +312,13 @@ private:
         level_type level = num_optimal_levels(new_size);
         bool rebuild_needed = (level < root->level && size() < minweight(root->level)) || size() > maxweight(root->level);
 
-        UpdateDescriptor upd = {rebuild_needed, new_size, 0, _updates.size()};
         inner_node_data fake_slot;
         fake_slot.childid = root;
 
         if (rebuild_needed) {
             BTREE_PRINT("Root-level rewrite session started for new level " << level << std::endl);
             auto& leaves = get_resized_leaves_array(new_size);
-            rewrite(fake_slot.childid, 0, upd, leaves);
+            rewrite(fake_slot.childid, 0, 0, _updates.size(), leaves);
             create_subtree_from_leaves(fake_slot, 0, false, level, 0, new_size, leaves);
         } else {
             update(fake_slot, 0, _updates.size());

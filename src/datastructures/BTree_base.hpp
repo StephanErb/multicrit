@@ -753,9 +753,9 @@ protected:
     }
 
     template<class leaf_list> 
-    void rewrite(node* const source_node, const size_type rank, const UpdateDescriptor& upd, leaf_list& leaves) {
+    void rewrite(node* const source_node, const size_type rank, const size_type upd_begin, const size_type upd_end, leaf_list& leaves) {
         if (source_node->isleafnode()) {
-            write_updated_leaf_to_new_tree(source_node, 0, rank, upd.upd_begin, upd.upd_end, leaves, true);
+            write_updated_leaf_to_new_tree(source_node, 0, rank, upd_begin, upd_end, leaves, true);
         } else {
             inner_node* inner = static_cast<inner_node*>(source_node);
             #ifdef PARALLEL_BUILD
@@ -766,13 +766,13 @@ protected:
             
             // Distribute operations and find out which subtrees need rebalancing
             const width_type last = inner->slotuse-1;
-            size_type subupd_begin = upd.upd_begin;
+            size_type subupd_begin = upd_begin;
             for (width_type i = 0; i < last; ++i) {
-                size_type subupd_end = find_lower(subupd_begin, upd.upd_end, inner->slot[i].slotkey);
+                size_type subupd_end = find_lower(subupd_begin, upd_end, inner->slot[i].slotkey);
                 scheduleSubTreeUpdate(i, inner->slot[i].weight, 0, 0, subupd_begin, subupd_end, subtree_updates);
                 subupd_begin = subupd_end;
             } 
-            scheduleSubTreeUpdate(last, inner->slot[last].weight, 0, 0, subupd_begin, upd.upd_end, subtree_updates);
+            scheduleSubTreeUpdate(last, inner->slot[last].weight, 0, 0, subupd_begin, upd_end, subtree_updates);
 
             rewriteSubTreesInRange(inner, 0, inner->slotuse, rank, subtree_updates, leaves);
         }
@@ -876,7 +876,7 @@ protected:
             if (subtree_updates[i].weight == 0) {
                 clear_recursive(node->slot[i].childid);
             } else {
-                rewrite(node->slot[i].childid, subtree_rank, subtree_updates[i], leaves);
+                rewrite(node->slot[i].childid, subtree_rank, subtree_updates[i].upd_begin, subtree_updates[i].upd_end, leaves);
             }
             subtree_rank += subtree_updates[i].weight;
         }

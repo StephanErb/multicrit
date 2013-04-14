@@ -499,7 +499,7 @@ private:
                 tree->clear_recursive(source_node);
                 return NULL; 
             } else if (upd.upd_end - upd.upd_begin < tree->min_problem_size) {
-                tree->rewrite(source_node, rank, upd, leaves);
+                tree->rewrite(source_node, rank, upd.upd_begin, upd.upd_end, leaves);
                 return NULL;
             } else if (source_node->isleafnode()) {
                 tbb::parallel_for(cache_aligned_blocked_range<size_type>(upd.upd_begin, upd.upd_end, tree->min_problem_size),
