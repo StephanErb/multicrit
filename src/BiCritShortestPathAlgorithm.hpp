@@ -10,10 +10,10 @@
 
 // Width of nodes given as number of cache-lines
 #ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 8
+#define BRANCHING_PARAMETER_B 16
 #endif
 #ifndef LEAF_PARAMETER_K
-#define LEAF_PARAMETER_K 1024
+#define LEAF_PARAMETER_K 512
 #endif
 
 #ifdef PARALLEL_BUILD
