@@ -17,8 +17,7 @@
 
 #define BTREE_PARETO_LABELSET
 
-
-#define RADIX_SORT
+//#define RADIX_SORT
 #include "radix_sort.hpp"
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
@@ -182,9 +181,7 @@ public:
 						++cand_iter;
 					}
 					auto& ls = labels[range_start->node];
-	 				#ifdef RADIX_SORT
-						std::sort(range_start, cand_iter, groupLabels);
-					#endif
+					std::sort(range_start, cand_iter, groupLabels);
 					#ifdef BTREE_PARETO_LABELSET
     					ls.labels.setup(labelset_data);
 					#endif
@@ -257,12 +254,6 @@ private:
 
 	struct GroupNodeLabelsByNodeComp {
 		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
-			if (i.node == j.node) {
-				if (i.first_weight == j.first_weight) {
-					return i.second_weight < j.second_weight;
-				}
-				return i.first_weight < j.first_weight;
-			}
 			return i.node < j.node;
 		}
 	} groupCandidates;

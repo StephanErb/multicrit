@@ -18,7 +18,7 @@
 #include "assert.h"
 #include "Label.hpp"
 
-#define RADIX_SORT
+//#define RADIX_SORT
 #include "tbb/parallel_sort.hpp"
 
 #include "tbb/parallel_sort.h"
@@ -86,12 +86,6 @@ private:
 
 	struct GroupNodeLabelsByNodeComp {
 		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
-			if (i.node == j.node) {
-				if (i.first_weight == j.first_weight) {
-					return i.second_weight < j.second_weight;
-				}
-				return i.first_weight < j.first_weight;
-			}
 			return i.node < j.node;
 		}
 	} groupCandidates;
@@ -349,13 +343,11 @@ public:
 						++i;
 					}
 					auto& ls = pq.labelsets[node];
-					#ifdef RADIX_SORT
-						std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
-						#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-							stop = tbb::tick_count::now();
-							subtimings.candidates_sort += (stop-start).seconds();
-							start = stop;
-						#endif
+					std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
+					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+						stop = tbb::tick_count::now();
+						subtimings.candidates_sort += (stop-start).seconds();
+						start = stop;
 					#endif
 					updateLabelSet(node, ls.labels, tl.spare_labelset, pq.candidates.begin()+range_start, pq.candidates.begin()+i, tl.updates, nondominated_labels);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
