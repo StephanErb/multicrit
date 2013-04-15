@@ -76,7 +76,7 @@ int main(int argc, char ** args) {
 		}
 	}
 	#ifdef PARALLEL_BUILD
-		tbb::task_scheduler_init init(p, max_costs);
+		tbb::task_scheduler_init init(p);
 	#else
 		p = 0;
 	#endif
