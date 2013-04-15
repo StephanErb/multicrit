@@ -41,5 +41,7 @@ set yrange [:]
 set xtics rotate
 
 plot '../timings/road1_lset_lex' using 1:3:xticlabels(2) title ' LSet (lex)' ls 4,\
-	 '../timings/road1_paretosearch_sequ' using 1:3:xticlabels(2) title ' ParetoSearch (seq)' ls 7,\
-	 '../timings/road1_paretosearch_p8' using 1:3:xticlabels(2) title ' ParetoSearch (p8)' ls 6
+	 '../timings/road1_paretosearch_sequ_vec' using 1:3:xticlabels(2) title ' ParetoSearch (seq, vec)' ls 3,\
+	 '../timings/road1_paretosearch_sequ_btree' using 1:3:xticlabels(2) title ' ParetoSearch (seq, btree)' ls 5,\
+	 '../timings/road1_paretosearch_p8_vec' using 1:3:xticlabels(2) title ' ParetoSearch (p8, vec)' ls 2,\
+	 '../timings/road1_paretosearch_p8_btree' using 1:3:xticlabels(2) title ' ParetoSearch (p8, btee)' ls 6

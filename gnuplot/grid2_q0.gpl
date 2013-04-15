@@ -39,9 +39,11 @@ set output "grid2_q0.ps"
 set xrange [50:]
 set yrange [-2.5:]
 
-plot '../timings/grid2_lset_lex_q0' using 2:4 title ' LSet (lex)' ls 4,\
- 	 '../timings/grid2_paretosearch_sequ_q0' using 2:4 title ' ParetoSearch (seq)' ls 7,\
-	 '../timings/grid2_paretosearch_p8_q0' using 2:4 title ' ParetoSearch (p8)' ls 6
+plot '../timings/grid2_lset_lex_q0' using 2:4 title ' LSet (lex)' ls 4 w lp,\
+ 	 '../timings/grid2_paretosearch_sequ_vec_q0' using 2:4 title ' ParetoSearch (seq, vec)' ls 3 w lp,\
+ 	 '../timings/grid2_paretosearch_sequ_btree_q0' using 2:4 title ' ParetoSearch (seq, btree)' ls 5 w lp,\
+	 '../timings/grid2_paretosearch_p8_vec_q0' using 2:4 title ' ParetoSearch (p8, vec)' ls 2 w lp,\
+	 '../timings/grid2_paretosearch_p8_btree_q0' using 2:4 title ' ParetoSearch (p8, btree)' ls 6 w lp
 
 
 
