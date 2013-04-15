@@ -73,7 +73,7 @@
  * A suitable size for dynamic but pre-allocated data structures where we want
  * to actually reserve memory only when we trigger a page fault.
  */    
-#define LARGE_ENOUGH_FOR_MOST 100000                             
+#define LARGE_ENOUGH_FOR_MOST 16384                        
 #define LARGE_ENOUGH_FOR_EVERYTHING 134217728
 #define MAX_TREE_LEVEL 14
 #define INITIAL_LABELSET_SIZE 64
