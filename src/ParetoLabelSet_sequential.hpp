@@ -40,7 +40,7 @@
 #endif
 
 #ifndef LS_BRANCHING_PARAMETER_B
-#define LS_BRANCHING_PARAMETER_B 16
+#define LS_BRANCHING_PARAMETER_B 32
 #endif
 
 typedef std::vector< Label > LabelVec;
