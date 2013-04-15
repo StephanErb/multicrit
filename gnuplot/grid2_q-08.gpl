@@ -31,7 +31,7 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "%g^{2}"
 #set logscale y 10
 
-set title "Square Grids - negatively correlated (-0.8)"
+set title "Square Grids - negatively correlated (q=-0.8, c_{max}=10)"
 set xlabel "Grid Instance"
 set ylabel "Runtime [s]" offset 1
 set output "grid2_q-08.ps"

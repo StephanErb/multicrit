@@ -31,17 +31,17 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "%g^{2}"
 #set logscale y 10
 
-set title "Square Grids - highly correlated (q=0.8, c_{max}=10)"
+set title "Hard Square Grids - negatively correlated (q=-0.8, c_{max}=1000)"
 set xlabel "Grid Instance"
 set ylabel "Runtime [s]" offset 1
-set output "grid2_q08.ps"
+set output "grid2_q-08_hard.ps"
 
 set xrange [50:]
-set yrange [-0.05:]
+set yrange [-10:]
 
-plot '../timings/grid2_lset_lex_q0.8' using 2:4 title ' LSet (lex)' ls 4,\
- 	 '../timings/grid2_paretosearch_sequ_q0.8' using 2:4 title ' ParetoSearch (seq)' ls 7,\
-	 '../timings/grid2_paretosearch_p8_q0.8' using 2:4 title ' ParetoSearch (p8)' ls 6
+plot '../timings/grid2_lset_lex_q-0.8_hard' using 2:4 title ' LSet (lex)' ls 4,\
+ 	 '../timings/grid2_paretosearch_sequ_q-0.8_hard' using 2:4 title ' ParetoSearch (seq)' ls 7,\
+	 '../timings/grid2_paretosearch_p8_q-0.8_hard' using 2:4 title ' ParetoSearch (p8)' ls 6
 
 
 
