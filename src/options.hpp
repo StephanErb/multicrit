@@ -96,6 +96,11 @@
 		#else 
 			out_stream << STR(PARETO_QUEUE);
 		#endif
+		#ifdef BTREE_PARETO_LABELSET
+			out_stream << "_BTreeLabelSet";
+		#else
+			out_stream << "_VectorLabelSet";
+		#endif
 	} else {
 		if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
 			out_stream << STR(LABEL_SET) << "_";
