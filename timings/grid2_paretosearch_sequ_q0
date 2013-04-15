@@ -1,22 +1,22 @@
 # Class 1 Grid Instances of [Machuca 2012]
-# SequentialParetoSearch_VectorParetoQueue
-1 20 20 0.00308724 38.4167 0 1.64355 1 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-2 40 40 0.0296259 99.5 0 2.54395 2 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-3 60 60 0.105013 143.583 0 4.53027 5 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-4 80 80 0.275993 210.583 0 9.09831 10 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-5 100 100 0.577588 276.25 0 16.3083 17 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-6 120 120 1.08042 341.833 0 28.3249 33 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-7 140 140 1.8102 396.917 0 45.0941 48 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-8 160 160 2.84934 464.25 0 66.4668 70 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-9 180 180 4.30833 546.417 0 94.2051 99 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-10 200 200 6.19287 581.083 0 127.68 132 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-11 220 220 9.1776 663.75 0 178.335 190 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-12 240 240 12.6174 714.583 0 228.085 249 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-13 260 260 17.3123 771.417 0 297.387 307 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-14 280 280 22.4607 830.75 0 363.557 383 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-15 300 300 29.0542 896.583 0 447.951 460 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-15 320 320 37.0573 952.667 0 539.994 554 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-15 340 340 46.4778 1026.17 0 644.974 660 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-15 360 360 56.5223 1094.33 0 761.32 783 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-15 380 380 68.7651 1169.5 0 908.031 967 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
-15 400 400 81.7428 1204 0 1058.16 1081 0 # time in [s], target node label count, q, memory [mb], peak memory [mb], p 
+# SequentialParetoSearch_BTreeParetoQueue
+1 20 20 0.00325864 38.4167 0 2.21615 2 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+2 40 40 0.0345805 99.5 0 5.31543 6 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+3 60 60 0.126188 143.583 0 12.6035 14 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+4 80 80 0.352285 210.583 0 29.6224 32 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+5 100 100 0.767991 276.25 0 55.6891 59 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+6 120 120 1.45912 341.833 0 92.9486 104 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+7 140 140 2.47137 396.917 0 143.26 151 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+8 160 160 3.93164 464.25 0 207.348 223 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+9 180 180 6.01116 546.417 0 288.607 295 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+10 200 200 8.51085 581.083 0 380.556 396 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+11 220 220 12.1776 663.75 0 503.945 527 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+12 240 240 16.4215 714.583 0 638.411 680 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+13 260 260 22.0876 771.417 0 802.523 822 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+14 280 280 28.1769 830.75 0 981.911 1022 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+15 300 300 36.2347 896.583 0 1195.35 1222 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+15 320 320 45.9497 952.667 0 1439.88 1474 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+15 340 340 57.7377 1026.17 0 1721.11 1759 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+15 360 360 69.5111 1094.33 0 2020.02 2080 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+15 380 380 85.0029 1169.5 0 2366.52 2499 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
+15 400 400 101.192 1204 0 2730.36 2802 0 10 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs
