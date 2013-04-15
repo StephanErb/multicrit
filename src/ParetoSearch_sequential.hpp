@@ -15,7 +15,7 @@
 #include <algorithm>
 #include "Label.hpp"
 
-#define BTREE_PARETO_LABELSET
+//#define BTREE_PARETO_LABELSET
 
 //#define RADIX_SORT
 #include "radix_sort.hpp"
