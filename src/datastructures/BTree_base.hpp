@@ -91,12 +91,12 @@ template <typename _Key,
     #ifdef COMPUTE_PARETO_MIN
           typename _MinKey,
           typename _Compare,
-          typename _Traits = btree_default_traits<_Key, _MinKey>,
+          typename _Traits,
     #else
-          typename _Compare = std::less<_Key>,
-          typename _Traits = btree_default_traits<_Key, utility::NullData>,
+          typename _Compare,
+          typename _Traits,
     #endif
-        typename _Alloc = std::allocator<_Key>>
+        typename _Alloc>
 class btree_base {
 private:
     btree_base(const btree_base &){}    // do not copy

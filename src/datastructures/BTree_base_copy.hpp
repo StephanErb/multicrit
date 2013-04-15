@@ -29,9 +29,9 @@
 #define _BASE_COPY_BTREE_COMMON_H_
 
 template <typename _Key,
-        typename _Compare = std::less<_Key>,
-        typename _Traits = btree_default_traits<_Key, utility::NullData>,
-        typename _Alloc = std::allocator<_Key>>
+        typename _Compare,
+        typename _Traits,
+        typename _Alloc>
 class btree_base_copy {
 private:
     btree_base_copy(const btree_base_copy &){}    // do not copy
@@ -184,13 +184,21 @@ protected:
     typedef std::vector<leaf_node*, leaf_list_alloc_type> leaf_list; 
 
     typedef typename std::vector<Operation<key_type>> local_update_list;
-// ST
+
     struct ThreadLocalLSData {
         weightdelta_list weightdelta;
         leaf_list leaves;
         node* spare_leaf;
         UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
         local_update_list local_updates;
+
+        ThreadLocalLSData() {
+            weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+            
+            local_updates.reserve(LARGE_ENOUGH_FOR_MOST);
+            leaves.reserve(LARGE_ENOUGH_FOR_MOST);
+        }
+
     };
 
 public:
