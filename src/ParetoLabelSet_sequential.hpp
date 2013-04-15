@@ -36,11 +36,11 @@
 
 
 #ifndef LS_LEAF_PARAMETER_K
-#define LS_LEAF_PARAMETER_K 64
+#define LS_LEAF_PARAMETER_K 512
 #endif
 
 #ifndef LS_BRANCHING_PARAMETER_B
-#define LS_BRANCHING_PARAMETER_B 32
+#define LS_BRANCHING_PARAMETER_B 16
 #endif
 
 typedef std::vector< Label > LabelVec;
