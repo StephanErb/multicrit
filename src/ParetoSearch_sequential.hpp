@@ -9,13 +9,14 @@
 
 #include "utility/datastructure/graph/GraphMacros.h"
 #include "options.hpp"
+
 #include "ParetoQueue_sequential.hpp"
-#include "ParetoLabelSet_sequential.hpp"
 #include "ParetoSearchStatistics.hpp"
 #include <algorithm>
 #include "Label.hpp"
 
 //#define BTREE_PARETO_LABELSET
+#include "ParetoLabelSet_sequential.hpp"
 
 //#define RADIX_SORT
 #include "radix_sort.hpp"
@@ -42,9 +43,9 @@ private:
 	
 
 	#ifdef BTREE_PARETO_LABELSET
-		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp> LabelSet;
+		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp, std::allocator<Label>> LabelSet;
 	#else
-		typedef VectorParetoLabelSet LabelSet;
+		typedef VectorParetoLabelSet<std::allocator<Label>> LabelSet;
 	#endif
 
 	struct LabelSetStruct {
@@ -84,9 +85,6 @@ public:
 	{
 		#ifdef BTREE_PARETO_LABELSET
 			labelset_data.spare_leaf = labels[0].labels.allocate_leaf_without_count();
-			labelset_data.weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
-			labelset_data.local_updates.reserve(LARGE_ENOUGH_FOR_MOST);
-			labelset_data.leaves.reserve(LARGE_ENOUGH_FOR_MOST);
 		#endif
 	 }
 
@@ -142,9 +140,10 @@ public:
 					auto& ls = labels[node];
 					std::sort(ls.candidates.begin(), ls.candidates.end(), groupLabels);
 					#ifdef BTREE_PARETO_LABELSET
-    					ls.labels.setup(labelset_data);
+						ls.labels.updateLabelSet(node, ls.candidates.cbegin(), ls.candidates.cend(), updates, labelset_data);
+					#else
+						ls.labels.updateLabelSet(node, ls.candidates.cbegin(), ls.candidates.cend(), updates, stats);
 					#endif
-					ls.labels.updateLabelSet(node, ls.candidates.cbegin(), ls.candidates.cend(), updates, stats);
 					ls.candidates.clear();
 				}
 				#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -176,16 +175,17 @@ public:
 				auto cand_iter = candidates.begin();
 				while (cand_iter != candidates.end()) {
 					// find all labels belonging to the same target node
-					nodelabel_iter range_start = cand_iter;
+					auto range_start = cand_iter;
 					while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
 						++cand_iter;
 					}
 					auto& ls = labels[range_start->node];
 					std::sort(range_start, cand_iter, groupLabels);
 					#ifdef BTREE_PARETO_LABELSET
-    					ls.labels.setup(labelset_data);
+						ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data);
+					#else
+						ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, stats);
 					#endif
-					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, stats);
 				}
 				#ifdef GATHER_SUBCOMPNENT_TIMING
 					stop = tbb::tick_count::now();
@@ -246,10 +246,10 @@ public:
 	}
 
 	size_t size(NodeID node) const { return labels[node].labels.size(); }
-	label_iter begin(NodeID node) { return labels[node].labels.begin(); }
-	const_label_iter begin(NodeID node) const { return labels[node].labels.begin(); }
-	label_iter end(NodeID node) { return labels[node].labels.end(); }
-	const_label_iter end(NodeID node) const { return labels[node].labels.end(); }
+	std::vector<Label>::iterator begin(NodeID node) { return labels[node].labels.begin(); }
+	std::vector<Label>::const_iterator begin(NodeID node) const { return labels[node].labels.begin(); }
+	std::vector<Label>::iterator end(NodeID node) { return labels[node].labels.end(); }
+	std::vector<Label>::const_iterator end(NodeID node) const { return labels[node].labels.end(); }
 
 
 private:

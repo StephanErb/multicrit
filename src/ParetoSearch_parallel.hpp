@@ -45,23 +45,9 @@ private:
 	typedef typename graph_slot::Edge Edge;
 
 	typedef ParallelBTreeParetoQueue<graph_slot> ParetoQueue;
-
-	typedef typename ParetoQueue::LabelVec::iterator label_iter;
-	typedef typename ParetoQueue::CandLabelVec::iterator const_label_iter;
-
-	struct LabelInsPos {
-		size_t pos;
-		const Label& label;
-	};
-
-	typedef std::vector<LabelInsPos, tbb::cache_aligned_allocator<LabelInsPos> > LabelInsertionPositionVec;
-	typedef tbb::enumerable_thread_specific< LabelInsertionPositionVec, tbb::cache_aligned_allocator<LabelInsertionPositionVec>, tbb::ets_key_per_instance > TLSLabInsPos; 
-	TLSLabInsPos tls_insertion_positions;
-
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 	const graph_slot& graph;
-
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
 		enum Component {FIND_PARETO_MIN=0, UPDATE_LABELSETS=1, SORT_CANDIDATES=2, SORT_UPDATES=3, PQ_UPDATE=4, CLEAR_BUFFERS=9,
@@ -100,173 +86,7 @@ private:
 		}
 	} groupLabels;
 
-	static struct WeightLessComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-			return i.first_weight < j.first_weight;
-		}
-	} firstWeightLess;
 
-	static inline bool secondWeightGreaterOrEquals(const Label& i, const Label& j) {
-		return i.second_weight >= j.second_weight;
-	}
-
-	/** First label where the x-coord is truly smaller */
-	static inline label_iter x_predecessor(label_iter begin, label_iter end, const Label& new_label) {
-		return --std::lower_bound(begin, end, new_label, firstWeightLess);
-	}
-
-	/** First label where the y-coord is truly smaller */
-	static inline size_t y_predecessor(const typename ParetoQueue::LabelVec& labelset, size_t i, const Label& new_label) {
-		while (secondWeightGreaterOrEquals(labelset[i], new_label)) {
-			++i;
-		}
-		return i;
-	}
-
-	static inline bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
-		iter = x_predecessor(begin, end, new_label);
-
-		if (iter->second_weight <= new_label.second_weight) {
-			return true; // new label is dominated
-		}
-		++iter; // move to element with greater or equal x-coordinate
-
-		if (iter->first_weight == new_label.first_weight && 
-			iter->second_weight <= new_label.second_weight) {
-			// new label is dominated by the (single) pre-existing element with the same
-			// x-coordinate.
-			return true; 
-		}
-		return false;
-	}
-
-	template<class iter_type>
-	static void updateLabelSet(const NodeID node, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::LabelVec& spare_labelset, const iter_type start, const iter_type end, typename ParetoQueue::OpVec& updates, LabelInsertionPositionVec& nondominated) {
-		typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
-
-		label_iter unprocessed_range_begin = labelset.begin();
-		for (iter_type candidate = start; candidate != end; ++candidate) {
-			// short cut dominated check among candidates
-			if (candidate->second_weight >= min) { 
-				continue; 
-			}
-			label_iter iter;
-			if (isDominated(unprocessed_range_begin, labelset.end(), *candidate, iter)) {
-				min = iter->second_weight; 
-			} else {
-				min = candidate->second_weight;
-				nondominated.push_back({(size_t)(iter-labelset.begin()), *candidate});
-			}
-			unprocessed_range_begin = iter;
-		}
-		switch (nondominated.size()) {
-		case 0:
-			break; // nothing to insert
-		case 1:
-			labelset_simple_insert(node, nondominated.front(), labelset, updates);
-			break;
-		default:
-			// Sentinal: (max position, any label)
-			nondominated.push_back({labelset.size(), nondominated.front().label});
-
-			if (is_update_at_the_end(labelset, nondominated.front().pos)) {
-				labelset_bulk_update(node, nondominated, labelset, updates);
-			} else {
-				labelset_rewrite(node, nondominated, labelset, spare_labelset, updates);
-			}
-		}
-		nondominated.clear();
-	}
-
-	static inline void labelset_simple_insert(const NodeID node, const LabelInsPos& op, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::OpVec& updates) {
-		updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.label)});
-		const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
-
-		if (op.pos == first_nondominated) {
-			labelset.insert(labelset.begin() + op.pos, op.label);
-		} else {
-			for (size_t i = op.pos; i != first_nondominated; ++i) {
-				// schedule deletion of dominated labels
-				updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labelset[i])});
-			}
-			// replace first dominated label and remove the rest
-			labelset[op.pos] = op.label;
-			labelset.erase(labelset.begin() + op.pos + 1, labelset.begin() + first_nondominated);
-		}
-	}
-
-	static inline void labelset_bulk_update(const NodeID node, LabelInsertionPositionVec& nondominated, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::OpVec& updates) {
-		size_t delta = 0;
-		for (size_t i = 0; i < nondominated.size()-1; ++i) {
-			LabelInsPos& op = nondominated[i];
-			op.pos += delta;
-
-			const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
-			const size_t range_end = std::min(first_nondominated, nondominated[i+1].pos+delta);
-			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.label)});
-
-			if (op.pos == range_end) {
-				// No elements dominated directly by us. Just insert here
-				labelset.insert(labelset.begin() + op.pos, op.label);
-			} else {
-				for (size_t i = op.pos; i != range_end; ++i) {
-					// schedule deletion of dominated labels
-					updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labelset[i])});
-				}
-				// replace first dominated label and remove the rest
-				labelset[op.pos] = op.label;
-				labelset.erase(labelset.begin() + op.pos + 1, labelset.begin() + range_end);
-			}
-			delta += op.pos - range_end + 1;
-		}
-	}
-
-	static inline void labelset_rewrite(const NodeID node, const LabelInsertionPositionVec& nondominated, typename ParetoQueue::LabelVec& labelset, typename ParetoQueue::LabelVec& spare_labelset, typename ParetoQueue::OpVec& updates) {
-		size_t copied_until = 0;
-		// power of two to allow efficient caching by the allocator
-		spare_labelset.reserve(next_power_of_two(labelset.size() + nondominated.size()));
-
-		for (size_t i = 0; i < nondominated.size()-1; ++i) {
-			const LabelInsPos& op = nondominated[i];
-			const size_t first_nondominated = y_predecessor(labelset, op.pos, op.label);
-			updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, op.label)});
-
-			// Move all non-affected labels
-			if (copied_until < op.pos)	{
-				spare_labelset.insert(spare_labelset.end(), labelset.begin() + copied_until, labelset.begin() + op.pos);
-				copied_until = op.pos;
-			}
-			// Insert the new label
-			spare_labelset.push_back(op.label);
-
-			// Delete all dominated labels by
-			size_t range_end = std::min(first_nondominated, nondominated[i+1].pos);
-			for (size_t i = op.pos; i != range_end; ++i) {
-				updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labelset[i])});
-			}
-			copied_until = range_end;
-		}
-		// copy remaining labels
-		spare_labelset.insert(spare_labelset.end(),  labelset.begin() + copied_until, labelset.end());
-		labelset.swap(spare_labelset);
-		spare_labelset.clear();
-	}
-
-	static inline bool is_update_at_the_end(const typename ParetoQueue::LabelVec& labelset, const size_t pos) {
-		return labelset.size() > 8 || pos / (double) labelset.size() > 0.75;
-	}
-
-	// http://graphics.stanford.edu/~seander/bithacks.html
-	static inline unsigned int next_power_of_two(unsigned int v) {
-		v--;
-		v |= v >> 1;
-		v |= v >> 2;
-		v |= v >> 4;
-		v |= v >> 8;
-		v |= v >> 16;
-		v++;
-		return v;
-	}
 
 public:
 	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
@@ -276,6 +96,16 @@ public:
 			,set_changes(101)
 		#endif
 	{ }
+
+	~ParetoSearch() {
+		#ifdef BTREE_PARETO_LABELSET
+			for (auto& tl : pq.tls_data) {
+				if (tl.labelset_data.spare_leaf != NULL) {
+					pq.labelsets[0].free_node_without_count(tl.labelset_data.spare_leaf);
+				}
+			}
+		#endif
+	}
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));
@@ -330,8 +160,12 @@ public:
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-				typename TLSLabInsPos::reference nondominated_labels = tls_insertion_positions.local();
-
+				#ifdef BTREE_PARETO_LABELSET
+					if (tl.labelset_data.spare_leaf == NULL) {
+						tl.labelset_data.spare_leaf = pq.labelsets[0].allocate_leaf_without_count();
+					}
+				#endif
+				
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
 					tbb::tick_count start = tbb::tick_count::now();
@@ -352,7 +186,11 @@ public:
 						subtimings.candidates_sort += (stop-start).seconds();
 						start = stop;
 					#endif
-					updateLabelSet(node, ls.labels, tl.spare_labelset, pq.candidates.begin()+range_start, pq.candidates.begin()+i, tl.updates, nondominated_labels);
+					#ifdef BTREE_PARETO_LABELSET
+						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data);
+					#else
+						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, stats);
+					#endif
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();
 						subtimings.update_labelsets += (stop-start).seconds();
@@ -417,7 +255,6 @@ public:
         return std::max((total/p) / (log2(total/p + 1)+1), max);
 
 	}
-
 
 	class candidate_range {
 	public:
@@ -506,13 +343,11 @@ public:
 		pq.printStatistics();
 	}
 
-	// Subtraction / addition used to hide the sentinals
-	size_t size(NodeID node) {return pq.labelsets[node].labels.size()-2; }
-
-	label_iter begin(NodeID node) { return ++pq.labelsets[node].labels.begin(); }
-	const_label_iter begin(NodeID node) const { return ++pq.labelsets[node].labels.begin(); }
-	label_iter end(NodeID node) { return --pq.labelsets[node].labels.end(); }
-	const_label_iter end(NodeID node) const { return --pq.labelsets[node].labels.end(); }
+	size_t size(NodeID node) const { return pq.labelsets[node].size(); }
+	std::vector<Label>::iterator begin(NodeID node) { return pq.labelsets[node].begin(); }
+	std::vector<Label>::const_iterator begin(NodeID node) const { return pq.labelsets[node].begin(); }
+	std::vector<Label>::iterator end(NodeID node) { return pq.labelsets[node].end(); }
+	std::vector<Label>::const_iterator end(NodeID node) const { return pq.labelsets[node].end(); }
 
 };
 

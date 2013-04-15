@@ -15,6 +15,8 @@
 #include "datastructures/BTree_parallel.hpp"
 #undef COMPUTE_PARETO_MIN
 
+//#define BTREE_PARETO_LABELSET
+#include "ParetoLabelSet_sequential.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -78,14 +80,35 @@ private:
 	tbb::task_list root_tasks;
 
 public:
+
+	struct GroupLabelsByWeightComp {
+		inline bool operator() (const Label& i, const Label& j) const {
+			if (i.first_weight == j.first_weight) {
+				return i.second_weight < j.second_weight;
+			}
+			return i.first_weight < j.first_weight;
+		}
+	};
+
+	#ifdef BTREE_PARETO_LABELSET
+		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp, tbb::cache_aligned_allocator<Label>> LabelSet;
+	#else
+		typedef VectorParetoLabelSet<tbb::cache_aligned_allocator<Label>> LabelSet;
+	#endif
+
 	typedef std::vector< Operation<NodeLabel>, tbb::cache_aligned_allocator<Operation<NodeLabel>> > OpVec; 
 	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<Label> > CandLabelVec;
-	typedef std::vector< Label, tbb::cache_aligned_allocator<Label> > LabelVec; 
 
 	struct ThreadData {
 		OpVec updates;
 		CandLabelVec candidates;
-		LabelVec spare_labelset;
+		#ifdef BTREE_PARETO_LABELSET
+			typename LabelSet::ThreadLocalLSData labelset_data;
+		#endif
+		ThreadData() {
+			updates.reserve(LARGE_ENOUGH_FOR_MOST);
+			candidates.reserve(LARGE_ENOUGH_FOR_MOST);
+		}
 	};	
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
 	TLSData tls_data;
@@ -93,9 +116,6 @@ public:
 	typedef unsigned short thread_count;
 	const thread_count num_threads; 
 
-	struct LabelSet { 
-		LabelVec labels;
-	};
 	struct PaddedLabelSet : public LabelSet {
 		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
 	};
@@ -106,7 +126,6 @@ public:
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> candidate_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) CandLabelVec candidates;
-
 
 	 #ifdef GATHER_SUBCOMPNENT_TIMING
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -132,16 +151,6 @@ public:
 
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		candidates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
-
-		const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
-		const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
-
-		// add sentinals
-		for (size_t i=0; i<labelsets.size(); ++i) {
-			labelsets.reserve(INITIAL_LABELSET_SIZE);
-			labelsets[i].labels.insert(labelsets[i].labels.begin(), Label(min, max));
-			labelsets[i].labels.insert(labelsets[i].labels.end(), Label(max, min));
-		}
 	}
 
 	void init(const NodeLabel& data) {
