@@ -383,22 +383,18 @@ public:
         typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
         int modifications = 0;
 
-        size_t insertion_pos = 0;
-        size_t first_nondominated = 0;
-        size_t previous_insertion_pos = 0;          // of the previous iteration
-        size_t previous_first_nondominated = 0;    // of the previous iteration
+        size_t previous_first_nondominated = 0;  // of the previous iteration
+        bool deferred_insertion = false;
+        size_t deferred_ins_pos_start = 0;                    // where to start writing the current open candidate range 
+        candidates_iter_type deferred_ins_cand_start = start; // first element in the currently open candidate range
 
-        size_t deferred_insertion_start = 0; 
-        candidates_iter_type deferred_ins_start;
-        candidates_iter_type deferred_ins_end;
-
-        //std::cout << node << std::endl;
         for (candidates_iter_type candidate = start; candidate != end; ++candidate) {
             const Label new_label = *candidate;
             // short cut dominated check among candidates
             if (new_label.second_weight >= min) {
                 stats.report(LABEL_DOMINATED);
                 stats.report(DOMINATION_SHORTCUT);
+                perform_deferred_insertion(deferred_insertion, deferred_ins_pos_start, previous_first_nondominated, deferred_ins_cand_start, candidate);
                 continue; 
             }
             label_iter iter;
@@ -410,6 +406,7 @@ public:
                     const double position = iter - (labels.begin() + 1); // without leading sentinal 
                     if (size > 0) set_dominations[(int) (100.0 * position / size)]++;
                 #endif  
+                perform_deferred_insertion(deferred_insertion, deferred_ins_pos_start, previous_first_nondominated, deferred_ins_cand_start, candidate);
                 continue;
             }
             // Log upcoming insertion
@@ -423,56 +420,39 @@ public:
 
             // Find affected range
             min = new_label.second_weight;
-            insertion_pos = (size_t)(iter - labels.begin());
-            first_nondominated = y_predecessor(insertion_pos, new_label);
-
-           /* std::cout << "[" << previous_insertion_pos << ", " << previous_first_nondominated << "] [" << insertion_pos << ", " << first_nondominated << "]" << std::endl;
-            for (auto& l : labels) {
-                std::cout << l << " ";
-            }
-            std::cout << std::endl;*/
-
+            size_t insertion_pos = (size_t)(iter - labels.begin());
+            size_t first_nondominated = y_predecessor(insertion_pos, new_label);
 
             // Schedule PQ updates
             updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
             for (size_t i = insertion_pos; i != first_nondominated ; ++i) {
-                std::cout << "del " << i  << std::endl;
                 updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labels[i])});
             }
 
-            // If we have moved pass the previous affected range and if there is a unfilled range of deleted elements there. 
-            // Fill the gap by shifting
-            const size_t deletion_gap_size = previous_first_nondominated - previous_insertion_pos;
-            const size_t elements_to_shift = insertion_pos - previous_first_nondominated;
-            if (elements_to_shift > 0 && deletion_gap_size > 0) {
-                //std::cout << "Memmv " << previous_insertion_pos << " <- " << previous_first_nondominated << " + " << elements_to_shift << std::endl;
-                memmove(labels.data() + previous_insertion_pos, labels.data() + previous_first_nondominated, sizeof(Label)*elements_to_shift);
+            const size_t insertion_distance = insertion_pos - previous_first_nondominated;
+            if (insertion_distance > 0) {
+                const size_t delta = perform_deferred_insertion(deferred_insertion, deferred_ins_pos_start, previous_first_nondominated, deferred_ins_cand_start, candidate);
+                insertion_pos += delta;
+                first_nondominated += delta;
+                // Move the gap so that we can use it for the next (deferred) insertion
+                if (deferred_ins_pos_start < previous_first_nondominated) {
+                    memmove(labels.data() + deferred_ins_pos_start, labels.data() + previous_first_nondominated, sizeof(Label)*insertion_distance);
+                }
             }
-            insertion_pos -= deletion_gap_size;
-
-            if (insertion_pos == first_nondominated) {
-                // there is no gap we might write to, so just insert 
-                std::cout << "Insert at " << insertion_pos  << " (" << labels.size() << ") candidate "<< (size_t)(candidate-start) << std::endl;
-                
-                deferred_insertion_start = insertion_pos;
-                labels.insert(labels.begin()+insertion_pos, new_label);
-            } else {
-                std::cout << "Write into gap at " << insertion_pos << " (" << labels.size() << ")"<< std::endl;
-                labels[insertion_pos++] = new_label;
+            // Start new deferred insertion
+            if (!deferred_insertion) {
+                // insertion_pos + correction to make it point into the gap
+                deferred_ins_pos_start = insertion_pos - (previous_first_nondominated - deferred_ins_pos_start);
+                deferred_ins_cand_start = candidate;
+                deferred_insertion = true;
             }
-            previous_insertion_pos = insertion_pos;
             previous_first_nondominated = first_nondominated;
         }
-        // Remove the final remaining gap.
-        labels.erase(labels.begin()+previous_insertion_pos, labels.begin()+previous_first_nondominated);
+        perform_deferred_insertion(deferred_insertion, deferred_ins_pos_start, previous_first_nondominated, deferred_ins_cand_start, end);
 
-        /*if (!std::is_sorted(labels.begin(), labels.end(), groupByWeight)) {
-            for (auto& l : labels) {
-                std::cout << l << " ";
-            }
-            std::cout << std::endl;
-        }*/
-
+        if (deferred_ins_pos_start < previous_first_nondominated) {
+            labels.erase(labels.begin()+deferred_ins_pos_start, labels.begin()+previous_first_nondominated);
+        }
         assert(std::is_sorted(labels.begin(), labels.end(), groupByWeight));
 
         stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
@@ -488,6 +468,29 @@ public:
 
 
 private:
+
+    template<class candidates_iter_type>
+    inline size_t perform_deferred_insertion(bool& deferred_insertion, size_t& deferred_ins_pos_start, size_t& previous_first_nondominated, candidates_iter_type& deferred_ins_cand_start, const candidates_iter_type& candidate) {
+        if (deferred_insertion) {
+            deferred_insertion = false;
+
+            const size_t deletion_gap_size = previous_first_nondominated - deferred_ins_pos_start;
+            const size_t elements_moved_into_gap = std::min((size_t)(candidate - deferred_ins_cand_start), deletion_gap_size);
+            for (int i=0; i < elements_moved_into_gap; ++i)  {
+                labels[deferred_ins_pos_start++] = *deferred_ins_cand_start++;
+            }
+            // Gap space is filled. Insert remaining elements
+            const size_t remaining_elements = (size_t) (candidate - deferred_ins_cand_start);
+            if (remaining_elements > 0) {
+                //std::cout << "Range ins of " << remaining_elements << " at " << deferred_ins_pos_start << std::endl;
+                labels.insert(labels.begin()+deferred_ins_pos_start, deferred_ins_cand_start, candidate);
+                deferred_ins_pos_start += remaining_elements;
+                previous_first_nondominated += remaining_elements;
+            }
+            return remaining_elements;
+        }
+        return 0; 
+    }
 
     struct GroupByWeightComp {
         inline bool operator() (const Label& i, const Label& j) const {
