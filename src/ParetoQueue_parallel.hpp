@@ -77,8 +77,6 @@ private:
 
 	const graph_slot& graph;
 
-	tbb::task_list root_tasks;
-
 public:
 
 	struct GroupLabelsByWeightComp {
@@ -185,6 +183,7 @@ public:
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
 
+			tbb::task_list root_tasks;
 			const Label* min = &min_label;
 			for (width_type i = 0; i<slotuse; ++i) {
 				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
@@ -194,7 +193,6 @@ public:
 				}
 			}
 			tbb::task::spawn_root_and_wait(root_tasks);
-			root_tasks.clear();
 		}
 	}
 

@@ -144,8 +144,6 @@ protected:
 protected:
     // *** Tree Object Data Members
 
-    tbb::task_list root_tasks;
-
     size_type min_problem_size;
 
 public:
@@ -223,6 +221,7 @@ public:
 
                 if (!rebalancing_needed) {
                     // No rebalancing needed at all (this is the common case). Push updates to subtrees to update them parallel
+                    tbb::task_list root_tasks;
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(subtree_updates[i])) {
                             root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end, this));
@@ -230,7 +229,6 @@ public:
                         }
                     }
                     tbb::task::spawn_root_and_wait(root_tasks);
-                    root_tasks.clear();
                 } else {
                     TreeUpdateTask& task = *new(tbb::task::allocate_root()) TreeUpdateTask(fake_slot, 0, update_count, this);
                     tbb::task::spawn_root_and_wait(task);
