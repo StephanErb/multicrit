@@ -1,9 +1,9 @@
 # Bulk Insertion
-1.49643 0 2 1 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-4.53186 0 2 10 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-16.5967 0 2 100 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-38.8086 0 15 1000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-477.15 0 66 10000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-6059.3 0 454 100000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-60184.1 0 4221 1000000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-546094 0 42101 10000000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+1.19979 0 2 1 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+4.06162 0 2 10 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+14.4468 0 2 100 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+38.6176 0 14 1000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+466.934 0 67 10000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+6189.26 0 469 100000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+60422.5 0 4235 1000000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+513990 0 42213 10000000 64 16 100 1 8 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p

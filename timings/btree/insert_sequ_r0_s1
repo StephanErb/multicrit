@@ -1,10 +1,10 @@
 # Bulk Construction
-0.637426 0 2 1 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-0.68793 0 2 10 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-0.917287 0 2 100 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-4.59082 0 2 1000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-30.5705 0 2 10000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-464.714 0.622422 7 100000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-9460.26 14.4336 38 1000000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-106445 194.355 371 10000000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-1.06129e+06 2006.96 3558 100000000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+0.570283 0 2 1 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+0.569507 0 2 10 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+0.806224 0 2 100 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+4.08111 0 2 1000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+29.5724 0 2 10000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+684.202 1.91797 5 100000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+10618.9 18.7422 35 1000000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+103079 186.621 341 10000000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+1.00488e+06 1867.48 3397 100000000 640 16 0 1 0 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
