@@ -18,7 +18,7 @@
 //#define BTREE_PARETO_LABELSET
 #include "ParetoLabelSet_sequential.hpp"
 
-//#define RADIX_SORT
+#define RADIX_SORT
 #include "radix_sort.hpp"
 
 #ifdef GATHER_SUBCOMPNENT_TIMING

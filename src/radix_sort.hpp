@@ -37,7 +37,7 @@ permitted provided that the following conditions are met:
 #include <strings.h>
 
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
-#define MIN_BUCKET_SIZE 16
+#define MIN_BUCKET_SIZE 32
 
 template<class T, class KeyExtractor>
 inline void insertion_sort(T* array, const int offset, const int end, const KeyExtractor key) {
