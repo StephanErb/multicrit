@@ -176,10 +176,11 @@ public:
 				while (cand_iter != candidates.end()) {
 					// find all labels belonging to the same target node
 					auto range_start = cand_iter;
+					auto& ls = labels[range_start->node];
+					ls.labels.prefetch();
 					while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
 						++cand_iter;
 					}
-					auto& ls = labels[range_start->node];
 					std::sort(range_start, cand_iter, groupLabels);
 					#ifdef BTREE_PARETO_LABELSET
 						ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data);

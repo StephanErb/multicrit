@@ -80,6 +80,8 @@
 
 #define DCACHE_LINESIZE 128
 
+#define PREFETCH_LABELSETS
+
  std::string currentConfig() {
 	std::ostringstream out_stream;
 

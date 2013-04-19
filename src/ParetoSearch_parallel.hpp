@@ -176,10 +176,11 @@ public:
 				while(i != r.end()) {
 					const size_t range_start = i;
 					const NodeID node = pq.candidates[i].node;
+					auto& ls = pq.labelsets[node];
+					ls.prefetch();
 					while (i != r.end() && pq.candidates[i].node == node) {
 						++i;
 					}
-					auto& ls = pq.labelsets[node];
 					std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
 					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 						stop = tbb::tick_count::now();

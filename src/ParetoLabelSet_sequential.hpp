@@ -175,6 +175,12 @@ public:
         }
     }
 
+    inline void prefetch() {
+        #ifdef PREFETCH_LABELSETS
+            __builtin_prefetch(root);
+        #endif
+    }
+
 private:
 
     template<class candidates_iter_type>
@@ -459,6 +465,15 @@ public:
         stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
     }
 
+    inline void prefetch() {
+        #ifdef PREFETCH_LABELSETS
+            __builtin_prefetch(&(labels[labels.size() * 0.5]));
+            __builtin_prefetch(&(labels[labels.size() * 0.75]));
+            __builtin_prefetch(&(labels[labels.size() * 0.25]));
+            __builtin_prefetch(&(labels[labels.size() * 1.0]));
+        #endif
+    }
+
     // Accessors, corrected for internal sentinals
     size_t size() const { return labels.size() - 2; };
     label_iter begin() { return ++labels.begin(); }
@@ -481,12 +496,10 @@ private:
             }
             // Gap space is filled. Insert remaining elements
             const size_t remaining_elements = (size_t) (candidate - deferred_ins_cand_start);
-            if (remaining_elements > 0) {
-                //std::cout << "Range ins of " << remaining_elements << " at " << deferred_ins_pos_start << std::endl;
-                labels.insert(labels.begin()+deferred_ins_pos_start, deferred_ins_cand_start, candidate);
-                deferred_ins_pos_start += remaining_elements;
-                previous_first_nondominated += remaining_elements;
-            }
+            labels.insert(labels.begin()+deferred_ins_pos_start, deferred_ins_cand_start, candidate);
+            deferred_ins_pos_start += remaining_elements;
+            previous_first_nondominated += remaining_elements;
+            
             return remaining_elements;
         }
         return 0; 
