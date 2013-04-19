@@ -68,6 +68,11 @@
 #define GATHER_SUBCOMPNENT_TIMING
 //#define GATHER_SUB_SUBCOMPNENT_TIMING
 
+/**
+ * Pareto Search Option
+ */
+#define PREFETCH_LABELSETS
+#define RADIX_SORT
 
 /**
  * A suitable size for dynamic but pre-allocated data structures where we want
@@ -80,7 +85,8 @@
 
 #define DCACHE_LINESIZE 128
 
-#define PREFETCH_LABELSETS
+
+
 
  std::string currentConfig() {
 	std::ostringstream out_stream;

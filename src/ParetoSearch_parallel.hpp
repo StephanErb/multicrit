@@ -19,7 +19,6 @@
 #include "Label.hpp"
 #include "algorithm"
 
-#define RADIX_SORT
 #include "tbb/parallel_sort.hpp"
 
 #include "tbb/parallel_sort.h"

@@ -15,7 +15,6 @@
 #include "datastructures/BTree_parallel.hpp"
 #undef COMPUTE_PARETO_MIN
 
-//#define BTREE_PARETO_LABELSET
 #include "ParetoLabelSet_sequential.hpp"
 
 #include <algorithm>
