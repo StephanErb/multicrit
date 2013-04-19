@@ -476,7 +476,7 @@ private:
 
             const size_t deletion_gap_size = previous_first_nondominated - deferred_ins_pos_start;
             const size_t elements_moved_into_gap = std::min((size_t)(candidate - deferred_ins_cand_start), deletion_gap_size);
-            for (int i=0; i < elements_moved_into_gap; ++i)  {
+            for (size_t i=0; i < elements_moved_into_gap; ++i)  {
                 labels[deferred_ins_pos_start++] = *deferred_ins_cand_start++;
             }
             // Gap space is filled. Insert remaining elements
