@@ -383,17 +383,26 @@ public:
         typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
         int modifications = 0;
 
-        label_iter labelset_iter = labels.begin();
+        size_t insertion_pos = 0;
+        size_t first_nondominated = 0;
+        size_t previous_insertion_pos = 0;          // of the previous iteration
+        size_t previous_first_nondominated = 0;    // of the previous iteration
+
+        size_t deferred_insertion_start = 0; 
+        candidates_iter_type deferred_ins_start;
+        candidates_iter_type deferred_ins_end;
+
+        //std::cout << node << std::endl;
         for (candidates_iter_type candidate = start; candidate != end; ++candidate) {
-            Label new_label = *candidate;
+            const Label new_label = *candidate;
             // short cut dominated check among candidates
-            if (new_label.second_weight >= min) { 
+            if (new_label.second_weight >= min) {
                 stats.report(LABEL_DOMINATED);
                 stats.report(DOMINATION_SHORTCUT);
                 continue; 
             }
             label_iter iter;
-            if (isDominated(labelset_iter, labels.end(), new_label, iter)) {
+            if (isDominated(previous_first_nondominated, new_label, iter)) {
                 stats.report(LABEL_DOMINATED);
                 min = iter->second_weight; 
                 #ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -403,33 +412,68 @@ public:
                 #endif  
                 continue;
             }
-            min = new_label.second_weight;
-
+            // Log upcoming insertion
             ++modifications;
             stats.report(LABEL_NONDOMINATED);
-            updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
-
-            label_iter first_nondominated = y_predecessor(iter, new_label);
-
             #ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
                 const double size = labels.size()-2; // without both sentinals
                 const double position = iter - (labels.begin() + 1); // without leading sentinal 
                 if (size > 0) set_insertions[(int) (100.0 * position / size)]++;
             #endif  
 
-            if (iter == first_nondominated) {
-                // delete range is empty, so just insert
-                labelset_iter = labels.insert(first_nondominated, new_label);
-            } else {
-                // schedule deletion of dominated labels
-                for (label_iter i = iter; i != first_nondominated; ++i) {
-                    updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, *i)});
-                }
-                // replace first dominated label and remove the rest
-                *iter = new_label;
-                labelset_iter = labels.erase(++iter, first_nondominated);
+            // Find affected range
+            min = new_label.second_weight;
+            insertion_pos = (size_t)(iter - labels.begin());
+            first_nondominated = y_predecessor(insertion_pos, new_label);
+
+           /* std::cout << "[" << previous_insertion_pos << ", " << previous_first_nondominated << "] [" << insertion_pos << ", " << first_nondominated << "]" << std::endl;
+            for (auto& l : labels) {
+                std::cout << l << " ";
             }
+            std::cout << std::endl;*/
+
+
+            // Schedule PQ updates
+            updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
+            for (size_t i = insertion_pos; i != first_nondominated ; ++i) {
+                std::cout << "del " << i  << std::endl;
+                updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labels[i])});
+            }
+
+            // If we have moved pass the previous affected range and if there is a unfilled range of deleted elements there. 
+            // Fill the gap by shifting
+            const size_t deletion_gap_size = previous_first_nondominated - previous_insertion_pos;
+            const size_t elements_to_shift = insertion_pos - previous_first_nondominated;
+            if (elements_to_shift > 0 && deletion_gap_size > 0) {
+                //std::cout << "Memmv " << previous_insertion_pos << " <- " << previous_first_nondominated << " + " << elements_to_shift << std::endl;
+                memmove(labels.data() + previous_insertion_pos, labels.data() + previous_first_nondominated, sizeof(Label)*elements_to_shift);
+            }
+            insertion_pos -= deletion_gap_size;
+
+            if (insertion_pos == first_nondominated) {
+                // there is no gap we might write to, so just insert 
+                std::cout << "Insert at " << insertion_pos  << " (" << labels.size() << ") candidate "<< (size_t)(candidate-start) << std::endl;
+                
+                deferred_insertion_start = insertion_pos;
+                labels.insert(labels.begin()+insertion_pos, new_label);
+            } else {
+                std::cout << "Write into gap at " << insertion_pos << " (" << labels.size() << ")"<< std::endl;
+                labels[insertion_pos++] = new_label;
+            }
+            previous_insertion_pos = insertion_pos;
+            previous_first_nondominated = first_nondominated;
         }
+        // Remove the final remaining gap.
+        labels.erase(labels.begin()+previous_insertion_pos, labels.begin()+previous_first_nondominated);
+
+        /*if (!std::is_sorted(labels.begin(), labels.end(), groupByWeight)) {
+            for (auto& l : labels) {
+                std::cout << l << " ";
+            }
+            std::cout << std::endl;
+        }*/
+
+        assert(std::is_sorted(labels.begin(), labels.end(), groupByWeight));
 
         stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
         stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
@@ -444,6 +488,16 @@ public:
 
 
 private:
+
+    struct GroupByWeightComp {
+        inline bool operator() (const Label& i, const Label& j) const {
+            if (i.first_weight == j.first_weight) {
+                return i.second_weight < j.second_weight;
+            }
+            return i.first_weight < j.first_weight;
+        }
+    } groupByWeight;
+
     static struct WeightLessComp {
         inline bool operator() (const Label& i, const Label& j) const {
             return i.first_weight < j.first_weight;
@@ -460,16 +514,15 @@ private:
     }
 
     /** First label where the y-coord is truly smaller */
-    static inline label_iter y_predecessor(const label_iter& begin, const Label& new_label) {
-        label_iter i = begin;
-        while (secondWeightGreaterOrEquals(*i, new_label)) {
+    inline size_t y_predecessor(size_t i, const Label& new_label) const {
+        while (secondWeightGreaterOrEquals(labels[i], new_label)) {
             ++i;
         }
         return i;
     }
 
-    static inline bool isDominated(label_iter begin, label_iter end, const Label& new_label, label_iter& iter) {
-        iter = x_predecessor(begin, end, new_label);
+    inline bool isDominated(size_t begin, const Label& new_label, label_iter& iter) {
+        iter = x_predecessor(labels.begin() + begin, labels.end(), new_label);
 
         if (iter->second_weight <= new_label.second_weight) {
             return true; // new label is dominated
