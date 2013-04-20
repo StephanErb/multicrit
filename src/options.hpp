@@ -111,6 +111,19 @@
 		#else
 			out_stream << "_VectorLabelSet";
 		#endif
+
+		out_stream << "_(";
+		#ifdef RADIX_SORT 
+			out_stream << "radixsort";
+		#else
+			out_stream << "quicksort";
+
+		#endif
+		#ifdef PREFETCH_LABELSETS
+			out_stream << ", prefetching";
+		#endif
+		out_stream << ")";
+
 	} else {
 		if (strcmp(STR(LABEL_SETTING_ALGORITHM), "NodeHeapLabelSettingAlgorithm") == 0) {
 			out_stream << STR(LABEL_SET) << "_";
