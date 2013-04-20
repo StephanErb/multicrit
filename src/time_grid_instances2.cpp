@@ -36,7 +36,7 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(NodeID(graph.numberOfNodes()-1));
-		if (verbose) {
+		if (verbose && i == 0) {
 			algo.printStatistics();
 		}
 	}
@@ -105,11 +105,16 @@ int main(int argc, char ** args) {
 	timeGrid(13, 260, 260, verbose, iterations, q, p, max_costs);
 	timeGrid(14, 280, 280, verbose, iterations, q, p, max_costs);
 	timeGrid(15, 300, 300, verbose, iterations, q, p, max_costs);
-	timeGrid(15, 320, 320, verbose, iterations, q, p, max_costs);
-	timeGrid(15, 340, 340, verbose, iterations, q, p, max_costs);
-	timeGrid(15, 360, 360, verbose, iterations, q, p, max_costs);
-	timeGrid(15, 380, 380, verbose, iterations, q, p, max_costs);
-	timeGrid(15, 400, 400, verbose, iterations, q, p, max_costs);
+	timeGrid(16, 320, 320, verbose, iterations, q, p, max_costs);
+	timeGrid(17, 340, 340, verbose, iterations, q, p, max_costs);
+	timeGrid(18, 360, 360, verbose, iterations, q, p, max_costs);
+	timeGrid(19, 380, 380, verbose, iterations, q, p, max_costs);
+	timeGrid(20, 400, 400, verbose, iterations, q, p, max_costs);
+	timeGrid(21, 420, 420, verbose, iterations, q, p, max_costs);
+	timeGrid(22, 440, 440, verbose, iterations, q, p, max_costs);
+	timeGrid(23, 460, 460, verbose, iterations, q, p, max_costs);
+	timeGrid(24, 480, 480, verbose, iterations, q, p, max_costs);
+	timeGrid(25, 500, 500, verbose, iterations, q, p, max_costs);
 	return 0;
 }
 

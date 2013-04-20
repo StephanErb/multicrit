@@ -36,7 +36,7 @@ void timeGrid(int num, std::string label, int height, int width, bool verbose, i
 		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(NodeID(1));
-		if (verbose) {
+		if (verbose && i == 0) {
 			algo.printStatistics();
 		}
 	}

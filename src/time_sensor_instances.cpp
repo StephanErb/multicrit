@@ -48,7 +48,7 @@ static void time(const Graph& graph, std::string nodecount, std::string degree, 
 		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(end_node);
-		if (verbose) {
+		if (verbose && i == 0) {
 			algo.printStatistics();
 		}
 	}

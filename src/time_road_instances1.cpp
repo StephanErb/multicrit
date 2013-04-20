@@ -35,7 +35,7 @@ static void time(const Graph& graph, NodeID start_node, NodeID end, int total_nu
 		memory[i] = getCurrentMemorySize();
 
 		label_count[i] = algo.size(end);
-		if (verbose) {
+		if (verbose && i == 0) {
 			algo.printStatistics();
 		}
 	}
