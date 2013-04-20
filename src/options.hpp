@@ -52,6 +52,8 @@
   #define PARETO_QUEUE BTreeParetoQueue
 #endif
 
+//#define BTREE_PARETO_LABELSET
+
 /**
  * Keep this defined to gather runtime stats during label setting
  */

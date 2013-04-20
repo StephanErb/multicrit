@@ -505,7 +505,7 @@ public:
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		   : set_insertions(101), set_dominations(101)
 		#endif
-	 {
+	{
 		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
 		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
 
@@ -569,6 +569,11 @@ public:
 		}
 #endif
 		return true;
+	}
+
+	void init(const label_type& label) {
+		label_type_extended new_label(label);
+		labels.insert(++labels.begin(), new_label);
 	}
 
 	/* Subtraction used to hide the sentinals */

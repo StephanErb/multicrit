@@ -108,6 +108,14 @@ public:
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));
+		#ifdef BTREE_PARETO_LABELSET
+			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
+			tl.labelset_data.spare_leaf = pq.labelsets[node].allocate_leaf_without_count();
+			pq.labelsets[node].init(Label(0,0), tl.labelset_data);
+		#else
+			pq.labelsets[node].init(Label(0,0));
+		#endif
+
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
@@ -161,7 +169,7 @@ public:
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
 				#ifdef BTREE_PARETO_LABELSET
 					if (tl.labelset_data.spare_leaf == NULL) {
-						tl.labelset_data.spare_leaf = pq.labelsets[0].allocate_leaf_without_count();
+						tl.labelset_data.spare_leaf = pq.labelsets[pq.candidates[r.begin()].node].allocate_leaf_without_count();
 					}
 				#endif
 				

@@ -96,6 +96,11 @@ public:
 		std::vector<NodeID> affected_nodes;
 		std::vector<NodeLabel> candidates;
 		pq.init(NodeLabel(node, Label(0,0)));
+		#ifdef BTREE_PARETO_LABELSET
+			labels[node].labels.init(Label(0,0), labelset_data);
+		#else
+			labels[node].labels.init(Label(0,0));
+		#endif
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();

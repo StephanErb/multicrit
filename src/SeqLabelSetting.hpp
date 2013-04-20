@@ -49,6 +49,7 @@ public:
 
 	void run(NodeID node) {
 		heap.push(node, (Priority) 0, Label(0,0));
+		labels[node].init(Label(0,0));
 
 		while (!heap.empty()) {
 			const NodeID current_node = heap.getMin();
@@ -144,6 +145,7 @@ public:
 
 	void run(NodeID node) {
 		heap.push((Priority) 0, NodeLabel(node, Label(0,0)));
+		labels[node].init(Label(0,0));
 
 		while (!heap.empty()) {
 			const NodeLabel current = heap.getUserData(heap.getMin());

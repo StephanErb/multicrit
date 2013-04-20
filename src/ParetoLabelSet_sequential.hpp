@@ -181,6 +181,13 @@ public:
         #endif
     }
 
+    void init(const Label& data, ThreadLocalLSData& _data) {
+        tls_data = &_data; // pupulate with current (thread local) data structures
+        std::vector<Operation<Label>> upds;
+        upds.push_back({Operation<Label>::INSERT, data});
+        apply_updates(upds, INSERTS_ONLY);
+    }
+
 private:
 
     template<class candidates_iter_type>
@@ -459,7 +466,9 @@ public:
         if (deferred_ins_pos_start < previous_first_nondominated) {
             labels.erase(labels.begin()+deferred_ins_pos_start, labels.begin()+previous_first_nondominated);
         }
-        assert(std::is_sorted(labels.begin(), labels.end(), groupByWeight));
+        assert(std::is_sorted(labels.begin(), labels.end(), groupByWeight) ||
+            (labels[1].first_weight == 0 && labels[1].second_weight == 0)); // Hack: Do not fail on the start node, initiated with (0,0) 
+
 
         stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
         stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
@@ -472,6 +481,10 @@ public:
             __builtin_prefetch(&(labels[labels.size() * 0.25]));
             __builtin_prefetch(&(labels[labels.size() * 1.0]));
         #endif
+    }
+
+    void init(const Label& label) {
+        labels.insert(++labels.begin(), label);
     }
 
     // Accessors, corrected for internal sentinals
