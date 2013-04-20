@@ -70,6 +70,7 @@ static void readGraphFromFile(Graph& graph, std::ifstream& in) {
 	}
 	GraphGenerator<Graph> generator;
 	generator.buildGraphFromEdges(graph, edges);
+	std::cout << "# Nodes " << graph.numberOfNodes() <<  " Edges " << graph.numberOfEdges() << std::endl;
 }
 
 int main(int argc, char ** args) {
