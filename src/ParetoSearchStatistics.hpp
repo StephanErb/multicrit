@@ -86,7 +86,7 @@ public:
 
 	std::string toString() {
 		std::ostringstream out_stream;
-		out_stream << "\n# Iterations: " << data[ITERATION] << "\n";
+		out_stream << "#\n# Iterations: " << data[ITERATION] << "\n";
 
 		double avg_pq_size = pq_size / data[ITERATION];
 		out_stream << "# ParetoQueue sizes: " << "\n";

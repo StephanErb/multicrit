@@ -49,7 +49,7 @@ public:
 	std::string toString() {
 		std::ostringstream out_stream;
 		
-		out_stream << "\n# Iterations: " << data[NEXT_ITERATION] << "\n";
+		out_stream << "#\n# Iterations: " << data[NEXT_ITERATION] << "\n";
 		unsigned long total_label_count = data[NEW_LABEL_NONDOMINATED] + data[NEW_LABEL_DOMINATED];
 		double dom_percent = 100.0 * data[NEW_LABEL_DOMINATED] / total_label_count;
 		out_stream << "# Created Labels: " << total_label_count << "\n";
