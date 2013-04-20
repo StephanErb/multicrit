@@ -36,7 +36,7 @@
 
 
 #ifndef LS_LEAF_PARAMETER_K
-#define LS_LEAF_PARAMETER_K 512
+#define LS_LEAF_PARAMETER_K 64
 #endif
 
 #ifndef LS_BRANCHING_PARAMETER_B
@@ -134,6 +134,8 @@ private:
     using base::get_resized_leaves_array;
     using base::print_node;
 
+
+
 public:
     // *** Constructors and Destructor
 
@@ -220,6 +222,7 @@ private:
                 min = std::min(min, inner->slot[i].slotkey.second_weight);
             } 
             if (sub_start != end) {
+                // Generate updates for all elements larger than the largest router key
                 for (candidates_iter_type candidate = sub_start; candidate != end; ++candidate) {
                     const Label& new_label = *candidate;
                     if (new_label.second_weight >= min) {
@@ -450,7 +453,7 @@ public:
                 insertion_pos += delta;
                 first_nondominated += delta;
                 start_deferred_insertion(deferred_insertion, deferred_ins_pos_start, insertion_pos, previous_first_nondominated, deferred_ins_cand_start, candidate);
-                
+
             } else if (!deferred_insertion) {
                 start_deferred_insertion(deferred_insertion, deferred_ins_pos_start, insertion_pos, previous_first_nondominated, deferred_ins_cand_start, candidate);
             }
