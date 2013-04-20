@@ -86,12 +86,12 @@ public:
 
 	std::string toString() {
 		std::ostringstream out_stream;
-		out_stream << "\nIterations: " << data[ITERATION] << "\n";
+		out_stream << "\n# Iterations: " << data[ITERATION] << "\n";
 
 		double avg_pq_size = pq_size / data[ITERATION];
-		out_stream << "ParetoQueue sizes: " << "\n";
-		out_stream << "  avg" << ": " << avg_pq_size << "\n";
-		out_stream << "  max" << ": " << peak_pq_size;
+		out_stream << "# ParetoQueue sizes: " << "\n";
+		out_stream << "#   avg" << ": " << avg_pq_size << "\n";
+		out_stream << "#   max" << ": " << peak_pq_size;
 		
 		return out_stream.str();
 	}
@@ -101,78 +101,78 @@ public:
 	template<class T>
 	std::string toString(std::vector<T>& labels) {
 		std::ostringstream out_stream;
-		out_stream << "\nIterations: " << data[ITERATION] << "\n";
+		out_stream << "\n# Iterations: " << data[ITERATION] << "\n";
 
 		unsigned long total_label_count = data[LABEL_NONDOMINATED] + data[LABEL_DOMINATED];
 		double dom_percent = 100.0 * data[LABEL_DOMINATED] / total_label_count;
 		double dom_shortcut_percent = 100.0 * data[DOMINATION_SHORTCUT] / data[LABEL_DOMINATED];
 
-		out_stream << "Created Labels: " << total_label_count << "\n";
-		out_stream << "  initially dominated" << ": " << dom_percent << "% (=" << data[LABEL_DOMINATED] <<")\n";
-		out_stream << "    via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
-		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
+		out_stream << "# Created Labels: " << total_label_count << "\n";
+		out_stream << "#   initially dominated" << ": " << dom_percent << "% (=" << data[LABEL_DOMINATED] <<")\n";
+		out_stream << "#     via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
+		out_stream << "#   initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
 
 
 		unsigned long final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0,
 			[](const unsigned long accum, const T& ls) { return accum + ls.labels.size() -2; /*sentinal correction*/ });
 		unsigned long finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
 		double finally_dom_percent = 100.0 * finally_dominated / data[LABEL_NONDOMINATED];
-		out_stream << "    finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
+		out_stream << "#     finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
 
 		double avg_set_size = final_total_label_count / (double) labels.size();
 		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), 
 			[](const T& x, const T& y) { return x.labels.size() < y.labels.size(); })).labels.size() -2; //sentinal correction
-		out_stream << "LabelSet sizes: " << "\n";
-		out_stream << "  avg" << ": " << avg_set_size << "\n";
-		out_stream << "  max" << ": " << max_set_size << "\n";
+		out_stream << "# LabelSet sizes: " << "\n";
+		out_stream << "#   avg" << ": " << avg_set_size << "\n";
+		out_stream << "#   max" << ": " << max_set_size << "\n";
 
 		double avg_pq_size = pq_size / (double) data[ITERATION];
-		out_stream << "ParetoQueue sizes: " << "\n";
-		out_stream << "  avg" << ": " << avg_pq_size << "\n";
-		out_stream << "  max" << ": " << peak_pq_size;
+		out_stream << "# ParetoQueue sizes: " << "\n";
+		out_stream << "#   avg" << ": " << avg_pq_size << "\n";
+		out_stream << "#   max" << ": " << peak_pq_size;
 
 		if (data[MINIMA_COUNT] > 0) {
 			out_stream << "\n";
 			double avg_minima_size = minima_size / (double) data[MINIMA_COUNT];
-			out_stream << "Pareto Optimal Elements: " << "\n";
-			out_stream << "  avg" << ": " << avg_minima_size << "\n";
-			out_stream << "  max" << ": " << peak_minima_size;
+			out_stream << "# Pareto Optimal Elements: " << "\n";
+			out_stream << "#   avg" << ": " << avg_minima_size << "\n";
+			out_stream << "#   max" << ": " << peak_minima_size;
 		}
 		if (data[UPDATE_COUNT] > 0) {
 			out_stream << "\n";
 			double avg_update_size = update_size / (double) data[UPDATE_COUNT];
-			out_stream << "Pareto Queue Updates: " << "\n";
-			out_stream << "  avg" << ": " << avg_update_size << "\n";
-			out_stream << "  max" << ": " << peak_update_size;
+			out_stream << "# Pareto Queue Updates: " << "\n";
+			out_stream << "#   avg" << ": " << avg_update_size << "\n";
+			out_stream << "#   max" << ": " << peak_update_size;
 		}
 		if (data[PQ_SIZE_DELTA] > 0) {
 			out_stream << "\n";
 			double avg_size_delta = pq_size_delta / (double) data[PQ_SIZE_DELTA];
-			out_stream << "Pareto Queue Size Delta: " << "\n";
-			out_stream << "  avg" << ": " << avg_size_delta << "\n";
-			out_stream << "  max" << ": " << peak_size_delta;
+			out_stream << "# Pareto Queue Size Delta: " << "\n";
+			out_stream << "#   avg" << ": " << avg_size_delta << "\n";
+			out_stream << "#   max" << ": " << peak_size_delta;
 		}
 		if (data[LS_MODIFICATIONS_PER_NODE] > 0) {
 			out_stream << "\n";
 			unsigned long  total_ls_updates = modified_labelset_in_iteration[0] + modified_labelset_in_iteration[1];
 			double ls_mods_percent = 100.0 * modified_labelset_in_iteration[1] / total_ls_updates;
-			out_stream << "Label Set Updates:" <<  "\n";
-			out_stream << "  total" << ": " << total_ls_updates << "\n";
-			out_stream << "  leading to modifications" << ": " << ls_mods_percent << "%";
+			out_stream << "# Label Set Updates:" <<  "\n";
+			out_stream << "#   total" << ": " << total_ls_updates << "\n";
+			out_stream << "#   leading to modifications" << ": " << ls_mods_percent << "%";
 		}
 		if (data[CANDIDATE_LABELS_PER_NODE] > 0) {
 			out_stream << "\n";
 			double avg_ident_target_nodes = identical_target_node / (double) data[CANDIDATE_LABELS_PER_NODE];
-			out_stream << "Label Set Bulk Size per LS: " << "\n";
-			out_stream << "  avg" << ": " << avg_ident_target_nodes << "\n";
-			out_stream << "  max" << ": " << peak_identical_target_node;
+			out_stream << "# Label Set Bulk Size per LS: " << "\n";
+			out_stream << "#   avg" << ": " << avg_ident_target_nodes << "\n";
+			out_stream << "#   max" << ": " << peak_identical_target_node;
 		}
 		if (data[LS_MODIFICATIONS_PER_NODE] > 0) {
 			out_stream << "\n";
 			double avg_labelset_modifications = labelset_modifications / (double) modified_labelset_in_iteration[1];
-			out_stream << "Label Set Modifications per sucessful update: " << "\n";
-			out_stream << "  avg" << ": " << avg_labelset_modifications << "\n";
-			out_stream << "  max" << ": " << peak_labelset_modifications;
+			out_stream << "# Label Set Modifications per sucessful update: " << "\n";
+			out_stream << "#   avg" << ": " << avg_labelset_modifications << "\n";
+			out_stream << "#   max" << ": " << peak_labelset_modifications;
 		}
 		return out_stream.str();
 	}
@@ -197,8 +197,8 @@ public:
 	template<class T>
 	std::string toString(std::vector<T>&) {
 #endif
-	std::ostringstream out_stream;
-	out_stream << " Statistics disabled at compile time. See options file.";
+		std::ostringstream out_stream;
+		out_stream << "";
 		return out_stream.str();
 	}
 };

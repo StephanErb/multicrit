@@ -329,23 +329,23 @@ public:
 					timings[TL_CREATE_CANDIDATES] = std::max(subtimings.create_candidates, timings[TL_CREATE_CANDIDATES]);
 				}
 			#endif
-			std::cout << "Subcomponent Timings:" << std::endl;
-			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+			std::cout << "# Subcomponent Timings:" << std::endl;
+			std::cout << "#   " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "      " << timings[TL_FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
-				std::cout << "      " << timings[TL_CREATE_CANDIDATES]  << " Create Candidates" << std::endl;
+				std::cout << "#       " << timings[TL_FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+				std::cout << "#       " << timings[TL_CREATE_CANDIDATES]  << " Create Candidates" << std::endl;
 			#endif
-			std::cout << "  " << timings[SORT_CANDIDATES] << " Sort Candidates"  << std::endl;
-			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			std::cout << "#   " << timings[SORT_CANDIDATES] << " Sort Candidates"  << std::endl;
+			std::cout << "#   " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "      " << timings[TL_CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
-				std::cout << "      " << timings[TL_UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+				std::cout << "#       " << timings[TL_CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
+				std::cout << "#       " << timings[TL_UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#endif
-			std::cout << "  " << timings[SORT_UPDATES] << " Sort Updates"  << std::endl;
-			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
+			std::cout << "#   " << timings[SORT_UPDATES] << " Sort Updates"  << std::endl;
+			std::cout << "#   " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "  " << timings[TL_WRITE_LOCAL_TO_SHARED] << " Writing thread local data to shared memory"  << std::endl;
-				std::cout << "  " << timings[CLEAR_BUFFERS] << " Copying remainig data from thread local buffers"  << std::endl;
+				std::cout << "#   " << timings[TL_WRITE_LOCAL_TO_SHARED] << " Writing thread local data to shared memory"  << std::endl;
+				std::cout << "#   " << timings[CLEAR_BUFFERS] << " Copying remainig data from thread local buffers"  << std::endl;
 			#endif
 		#endif
 		pq.printStatistics();

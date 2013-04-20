@@ -238,12 +238,12 @@ public:
 		#endif
 		std::cout << stats.toString(labels) << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
-			std::cout << "Subcomponent Timings:" << std::endl;
-			std::cout << "  " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
-			std::cout << "  " << timings[CANDIDATE_SORT]  << " Group Candidates" << std::endl;
-			std::cout << "  " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			std::cout << "  " << timings[UPDATES_SORT] << " Sort Updates"  << std::endl;
-			std::cout << "  " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
+			std::cout << "# Subcomponent Timings:" << std::endl;
+			std::cout << "#   " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+			std::cout << "#   " << timings[CANDIDATE_SORT]  << " Group Candidates" << std::endl;
+			std::cout << "#   " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			std::cout << "#   " << timings[UPDATES_SORT] << " Sort Updates"  << std::endl;
+			std::cout << "#   " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
 		#endif
 		pq.printStatistics();
 	}

@@ -49,24 +49,24 @@ public:
 	std::string toString() {
 		std::ostringstream out_stream;
 		
-		out_stream << "\nIterations: " << data[NEXT_ITERATION] << "\n";
+		out_stream << "\n# Iterations: " << data[NEXT_ITERATION] << "\n";
 		unsigned long total_label_count = data[NEW_LABEL_NONDOMINATED] + data[NEW_LABEL_DOMINATED];
 		double dom_percent = 100.0 * data[NEW_LABEL_DOMINATED] / total_label_count;
-		out_stream << "Created Labels: " << total_label_count << "\n";
-		out_stream << "  initially dominated" << ": " << dom_percent << "% (=" << data[NEW_LABEL_DOMINATED] <<")\n";
-		out_stream << "  initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[NEW_LABEL_NONDOMINATED] <<")\n";
+		out_stream << "# Created Labels: " << total_label_count << "\n";
+		out_stream << "#   initially dominated" << ": " << dom_percent << "% (=" << data[NEW_LABEL_DOMINATED] <<")\n";
+		out_stream << "#   initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[NEW_LABEL_NONDOMINATED] <<")\n";
 
 		unsigned long final_total_label_count = std::accumulate(labels_set_size.begin(), labels_set_size.end(), 0);
 		unsigned long finally_dominated = data[NEW_LABEL_NONDOMINATED] - final_total_label_count;
 		double finally_dom_percent = 100.0 * finally_dominated / data[NEW_LABEL_NONDOMINATED];
-		out_stream << "    finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
+		out_stream << "#     finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
 
 		double avg_final_set_size = final_total_label_count / labels_set_size.size();
 		unsigned long max_final_set_size = *std::max_element(labels_set_size.begin(), labels_set_size.end());
-		out_stream << "LabelSet sizes: " << "\n";
-		out_stream << "  avg (final)" << ": " << avg_final_set_size << "\n";
-		out_stream << "  max (final)" << ": " << max_final_set_size << "\n";
-		out_stream << "  max (temp)"  << ": " << max_temp_set_size  << "";
+		out_stream << "# LabelSet sizes: " << "\n";
+		out_stream << "#   avg (final)" << ": " << avg_final_set_size << "\n";
+		out_stream << "#   max (final)" << ": " << max_final_set_size << "\n";
+		out_stream << "#   max (temp)"  << ": " << max_temp_set_size  << "";
 
 		return out_stream.str();
 
@@ -85,9 +85,8 @@ public:
 
 	std::string toString() {
 		std::ostringstream out_stream;
-		out_stream << " Statistics disabled at compile time. See options file.";
+		out_stream << "";
 		return out_stream.str();
-
 	}
 };
 

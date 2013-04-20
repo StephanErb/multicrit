@@ -201,9 +201,9 @@ public:
 	}
 
 	void printStatistics() {
-		std::cout << QueueType::name() << ": " << std::endl;
-		std::cout << "  inner slots size [" << QueueType::innerslotmin << ", " << QueueType::innerslotmax << "]" << std::endl;
-		std::cout << "  leaf slots size [" << QueueType::leafslotmin << ", " << QueueType::leafslotmax << "]" << std::endl;
+		std::cout << "# " << QueueType::name() << ": " << std::endl;
+		std::cout << "#  inner slots size [" << QueueType::innerslotmin << ", " << QueueType::innerslotmax << "]" << std::endl;
+		std::cout << "#  leaf slots size [" << QueueType::leafslotmin << ", " << QueueType::leafslotmax << "]" << std::endl;
 	}
 };
 
