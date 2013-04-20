@@ -175,7 +175,7 @@ public:
         }
     }
 
-    inline void prefetch() {
+    inline void prefetch() const {
         #ifdef PREFETCH_LABELSETS
             __builtin_prefetch(root);
         #endif
@@ -402,7 +402,7 @@ public:
         candidates_iter_type deferred_ins_cand_start = start; // first element in the currently open candidate range
 
         for (candidates_iter_type candidate = start; candidate != end; ++candidate) {
-            const Label new_label = *candidate;
+            const Label& new_label = *candidate;
             // short cut dominated check among candidates
             if (new_label.second_weight >= min) {
                 stats.report(LABEL_DOMINATED);
@@ -431,50 +431,42 @@ public:
                 if (size > 0) set_insertions[(int) (100.0 * position / size)]++;
             #endif  
 
-            // Find affected range
             min = new_label.second_weight;
-            size_t insertion_pos = (size_t)(iter - labels.begin());
-            size_t first_nondominated = y_predecessor(insertion_pos, new_label);
-
-            // Schedule PQ updates
+            
+            // Schedule PQ updates && Find affected range
             updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
-            for (size_t i = insertion_pos; i != first_nondominated ; ++i) {
-                updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labels[i])});
+            size_t insertion_pos = (size_t)(iter - labels.begin());
+            size_t first_nondominated = insertion_pos; /* will point to first label where the y-coord is truly smaller */
+            while (secondWeightGreaterOrEquals(labels[first_nondominated], new_label)) { 
+                updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labels[first_nondominated++])});
             }
 
             const size_t insertion_distance = insertion_pos - previous_first_nondominated;
             if (insertion_distance > 0) {
                 const size_t delta = perform_deferred_insertion(deferred_insertion, deferred_ins_pos_start, previous_first_nondominated, deferred_ins_cand_start, candidate);
+                // Move the gap so that we can use it for the next (deferred) insertion
+                memmove(labels.data() + deferred_ins_pos_start, labels.data() + previous_first_nondominated, sizeof(Label)*insertion_distance);
+
                 insertion_pos += delta;
                 first_nondominated += delta;
-                // Move the gap so that we can use it for the next (deferred) insertion
-                if (deferred_ins_pos_start < previous_first_nondominated) {
-                    memmove(labels.data() + deferred_ins_pos_start, labels.data() + previous_first_nondominated, sizeof(Label)*insertion_distance);
-                }
-            }
-            // Start new deferred insertion
-            if (!deferred_insertion) {
-                // insertion_pos + correction to make it point into the gap
-                deferred_ins_pos_start = insertion_pos - (previous_first_nondominated - deferred_ins_pos_start);
-                deferred_ins_cand_start = candidate;
-                deferred_insertion = true;
+                start_deferred_insertion(deferred_insertion, deferred_ins_pos_start, insertion_pos, previous_first_nondominated, deferred_ins_cand_start, candidate);
+                
+            } else if (!deferred_insertion) {
+                start_deferred_insertion(deferred_insertion, deferred_ins_pos_start, insertion_pos, previous_first_nondominated, deferred_ins_cand_start, candidate);
             }
             previous_first_nondominated = first_nondominated;
         }
         perform_deferred_insertion(deferred_insertion, deferred_ins_pos_start, previous_first_nondominated, deferred_ins_cand_start, end);
+        labels.erase(labels.begin()+deferred_ins_pos_start, labels.begin()+previous_first_nondominated);
 
-        if (deferred_ins_pos_start < previous_first_nondominated) {
-            labels.erase(labels.begin()+deferred_ins_pos_start, labels.begin()+previous_first_nondominated);
-        }
         assert(std::is_sorted(labels.begin(), labels.end(), groupByWeight) ||
             (labels[1].first_weight == 0 && labels[1].second_weight == 0)); // Hack: Do not fail on the start node, initiated with (0,0) 
-
 
         stats.report(CANDIDATE_LABELS_PER_NODE, end - start);
         stats.report(LS_MODIFICATIONS_PER_NODE, modifications);
     }
 
-    inline void prefetch() {
+    inline void prefetch() const {
         #ifdef PREFETCH_LABELSETS
             __builtin_prefetch(&(labels[labels.size() * 0.5]));
             __builtin_prefetch(&(labels[labels.size() * 0.75]));
@@ -496,6 +488,14 @@ public:
 
 
 private:
+
+    template<class candidates_iter_type>
+    inline void start_deferred_insertion(bool& deferred_insertion, size_t& deferred_ins_pos_start, const size_t& insertion_pos, const size_t& previous_first_nondominated, candidates_iter_type& deferred_ins_cand_start, const candidates_iter_type& candidate) const {
+        // insertion_pos + correction to make it point into the gap
+        deferred_ins_pos_start = insertion_pos - (previous_first_nondominated - deferred_ins_pos_start);
+        deferred_ins_cand_start = candidate;
+        deferred_insertion = true;
+    }
 
     template<class candidates_iter_type>
     inline size_t perform_deferred_insertion(bool& deferred_insertion, size_t& deferred_ins_pos_start, size_t& previous_first_nondominated, candidates_iter_type& deferred_ins_cand_start, const candidates_iter_type& candidate) {
@@ -542,15 +542,7 @@ private:
         return --std::lower_bound(begin, end, new_label, firstWeightLess);
     }
 
-    /** First label where the y-coord is truly smaller */
-    inline size_t y_predecessor(size_t i, const Label& new_label) const {
-        while (secondWeightGreaterOrEquals(labels[i], new_label)) {
-            ++i;
-        }
-        return i;
-    }
-
-    inline bool isDominated(size_t begin, const Label& new_label, label_iter& iter) {
+    inline bool isDominated(const size_t begin, const Label& new_label, label_iter& iter) {
         iter = x_predecessor(labels.begin() + begin, labels.end(), new_label);
 
         if (iter->second_weight <= new_label.second_weight) {
