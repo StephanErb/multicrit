@@ -2,6 +2,8 @@
 # Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
 # Nodes 264346 Edges 733846
 # Nodes 264347 Edges 730100
-1 NY1 528.567 1089 3828.69 3828 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 668.275 1469 4049.03 4049 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
-3 NY3 1654.06 16 8102.18 8102 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+1 NY1 513.08 1089 3828.7 3828 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 651.566 1469 4049.04 4049 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 1618.04 16 8102.18 8102 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+4 NY4 763.54 5121 6544.74 8102 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+5 NY5 736.015 2451 4468.06 8102 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
