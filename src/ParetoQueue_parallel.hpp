@@ -29,10 +29,6 @@
 #include "tbb/concurrent_vector.h"
 
 
-#ifndef PARETO_FIND_RECURSION_END_LEVEL
-#define PARETO_FIND_RECURSION_END_LEVEL 2
-#endif
-
 #ifndef BATCH_SIZE
 #define BATCH_SIZE 512
 #endif
@@ -71,10 +67,14 @@ private:
 
 	typedef typename base_type::node node;
 	typedef typename base_type::inner_node inner_node;
+	typedef typename base_type::inner_node_data inner_node_data;
 	typedef typename base_type::leaf_node leaf_node;
 	typedef typename base_type::width_type width_type;
 
 	const graph_slot& graph;
+
+ 	const size_type p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
+	size_type min_problem_size;
 
 public:
 
@@ -176,19 +176,23 @@ public:
 	}
 
 	void findParetoMinima() {
-		if (base_type::root->level < PARETO_FIND_RECURSION_END_LEVEL) {
+		// Adaptive cut-off; Taken from the MCSTL implementation
+        min_problem_size = std::max((base_type::size()/p) / (log2(base_type::size()/p + 1)+1), base_type::maxweight(1)*1.0);
+
+		if (base_type::size() <= min_problem_size) {
 			findParetoMinAndDistribute(base_type::root, min_label);
 		} else {
+			assert(!base_type::root->isleafnode());
 			const inner_node* const inner = (inner_node*) base_type::root;
 			const width_type slotuse = inner->slotuse;
 
 			tbb::task_list root_tasks;
 			const Label* min = &min_label;
 			for (width_type i = 0; i<slotuse; ++i) {
-				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
-						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i].childid, min, this));
-					min = &inner->slot[i].minimum;
+				const Label& l = inner->slot[i].minimum;
+				if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
+					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i], min, this));
+					min = &l;
 				}
 			}
 			tbb::task::spawn_root_and_wait(root_tasks);
@@ -196,22 +200,23 @@ public:
 	}
 
     class FindParetMinTask : public tbb::task {
-       	const node* const in_node;
+       	const inner_node_data& slot;
        	const Label* const prefix_minima;
         ParallelBTreeParetoQueue* const tree;
 
     public:
 		
-		inline FindParetMinTask(const node* const _in_node, const Label* const _prefix_minima, ParallelBTreeParetoQueue* const _tree)
-			: in_node(_in_node), prefix_minima(_prefix_minima), tree(_tree)
+		inline FindParetMinTask(const inner_node_data& _slot, const Label* const _prefix_minima, ParallelBTreeParetoQueue* const _tree)
+			: slot(_slot), prefix_minima(_prefix_minima), tree(_tree)
 		{ }
 
 		tbb::task* execute() {
-			if (in_node->level < PARETO_FIND_RECURSION_END_LEVEL) {
-				tree->findParetoMinAndDistribute(in_node, *prefix_minima);
+			if (slot.weight <= tree->min_problem_size) {
+				tree->findParetoMinAndDistribute(slot.childid, *prefix_minima);
 				return NULL;
 			} else {
-				const inner_node* const inner = (inner_node*) in_node;
+				assert(!slot.childid->isleafnode());
+				const inner_node* const inner = (inner_node*) slot.childid;
 				const width_type slotuse = inner->slotuse;
 
 				tbb::task_list tasks;
@@ -220,11 +225,11 @@ public:
 
 				const Label* min = prefix_minima;
 				for (width_type i = 0; i<slotuse; ++i) {
-				 if (inner->slot[i].minimum.second_weight < min->second_weight ||
-						(inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i].childid, min, tree));
+					const Label& l = inner->slot[i].minimum;
+					if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
+						tasks.push_back(*new(c.allocate_child()) FindParetMinTask(inner->slot[i], min, tree));
 						++task_count;
-						min = &inner->slot[i].minimum;
+						min = &l;
 					}
 				}
 				c.set_ref_count(task_count);
