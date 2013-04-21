@@ -122,8 +122,8 @@ public:
 			tbb::tick_count stop = tbb::tick_count::now();
 		#endif
 
-		tbb::affinity_partitioner ap;
-		tbb::affinity_partitioner ap2;
+		tbb::auto_partitioner ap;
+		tbb::auto_partitioner ap2;
 
 		while (!pq.empty()) {
 			pq.update_counter = 0;
@@ -153,9 +153,9 @@ public:
 			#endif
 
 			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap, min_problem_size(pq.candidate_counter, 256));
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap, min_problem_size(pq.candidate_counter, 512));
 			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap, min_problem_size(pq.candidate_counter, 256));
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap, min_problem_size(pq.candidate_counter, 512));
 			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -163,7 +163,7 @@ public:
 				start = stop;
 			#endif
 
-			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter)),
+			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 512)),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
@@ -242,7 +242,7 @@ public:
 				start = stop;
 			#endif
 
-			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, ap2, min_problem_size(pq.update_counter, 256));
+			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, ap2, min_problem_size(pq.update_counter, 512));
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_UPDATES] += (stop-start).seconds();
