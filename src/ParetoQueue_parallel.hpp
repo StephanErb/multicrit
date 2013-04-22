@@ -30,10 +30,46 @@
 
 
 #ifndef BATCH_SIZE
-#define BATCH_SIZE 512
+#define BATCH_SIZE 2048
 #endif
 
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+
+
+template<typename value_type, typename vector_type, typename counter_type>
+class BufferedSharedVector {
+private:
+
+	vector_type* vec;
+	counter_type* counter;
+
+
+	size_t increments = 0;
+public:
+
+	size_t current = 0;
+	size_t end = 0;
+
+	void setup(vector_type& _vec, counter_type& _counter) {
+		vec = &_vec;
+		counter = &_counter;
+	}
+
+	void reset() {
+		current = end = increments = 0;
+	}
+
+	void push_back(value_type&& val) {
+		if (current == end) {
+			current = counter->fetch_and_add(BATCH_SIZE );
+			end = current + BATCH_SIZE;
+			++increments;
+		}
+		assert(vec->capacity() > current);
+		vec->data()[current++] = val;
+	}
+
+};
 
 
 template<typename type>
@@ -96,20 +132,6 @@ public:
 	typedef std::vector< Operation<NodeLabel>, tbb::cache_aligned_allocator<Operation<NodeLabel>> > OpVec; 
 	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<Label> > CandLabelVec;
 
-	struct ThreadData {
-		OpVec updates;
-		CandLabelVec candidates;
-		#ifdef BTREE_PARETO_LABELSET
-			typename LabelSet::ThreadLocalLSData labelset_data;
-		#endif
-		ThreadData() {
-			updates.reserve(LARGE_ENOUGH_FOR_MOST);
-			candidates.reserve(LARGE_ENOUGH_FOR_MOST);
-		}
-	};	
-	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
-	TLSData tls_data;
-
 	typedef unsigned short thread_count;
 	const thread_count num_threads; 
 
@@ -123,6 +145,22 @@ public:
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> candidate_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) CandLabelVec candidates;
+
+
+	struct ThreadData {
+		OpVec updates;
+		BufferedSharedVector<NodeLabel, CandLabelVec, tbb::atomic<size_t>> candidates;
+
+		#ifdef BTREE_PARETO_LABELSET
+			typename LabelSet::ThreadLocalLSData labelset_data;
+		#endif
+		ThreadData() {
+			updates.reserve(LARGE_ENOUGH_FOR_MOST);
+		}
+	};	
+	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
+	TLSData tls_data;
+
 
 	 #ifdef GATHER_SUBCOMPNENT_TIMING
 		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -271,6 +309,7 @@ public:
 		#endif
 
 		// Derive candidates 
+		tl.candidates.setup(candidates, candidate_counter);
 		for (size_t i=pre_size; i < tl.updates.size(); ++i) {
 			const NodeLabel& min = tl.updates[i].data;
 			FORALL_EDGES(graph, min.node, eid) {
@@ -283,21 +322,6 @@ public:
 			subtimings.create_candidates += (stop-start).seconds();
 			start = stop;
 		#endif
-
-		// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
-		if (tl.candidates.size() > BATCH_SIZE) {
-			const size_t aligned_size = ROUND_DOWN(tl.candidates.size(), DCACHE_LINESIZE / sizeof(CandLabelVec::value_type));
-			const size_t remaining = tl.candidates.size() - aligned_size;
-			const size_t position = candidate_counter.fetch_and_add(aligned_size);
-			assert(position + tl.candidates.size() < candidates.capacity());
-			memcpy(candidates.data() + position, tl.candidates.data()+remaining, sizeof(CandLabelVec::value_type) * aligned_size);
-			tl.candidates.resize(remaining);
-			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				subtimings.write_local_to_shared += (stop-start).seconds();
-				start = stop;
-			#endif
-		}
 	}
 
 	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {

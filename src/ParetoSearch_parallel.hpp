@@ -125,6 +125,7 @@ public:
 		tbb::auto_partitioner auto_part;
 		tbb::affinity_partitioner candidates_aff_part;
 		tbb::affinity_partitioner tree_aff_part;
+		const NodeID MAX_NODE = NodeID(graph.numberOfNodes()+1); 
 
 		while (!pq.empty()) {
 			pq.update_counter = 0;
@@ -139,13 +140,14 @@ public:
 				start = stop;
 			#endif
 
+			size_t candidate_counter_size_diff = 0;
 			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				if (!tl.candidates.empty()) {
-					const size_t position = pq.candidate_counter.fetch_and_add(tl.candidates.size());
-					assert(position + tl.candidates.size() < pq.candidates.capacity());
-					memcpy(pq.candidates.data() + position, tl.candidates.data(), sizeof(Operation<NodeLabel>) * tl.candidates.size());
-					tl.candidates.clear();
+				// We mark gaps so that they will be moved to the end via sorting. Then we can ignore them
+				candidate_counter_size_diff += (tl.candidates.end - tl.candidates.current);
+				for (size_t i = tl.candidates.current; i < tl.candidates.end; ++i) {
+					pq.candidates[i].node = MAX_NODE;
 				}
+				tl.candidates.reset();
 			}
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -164,6 +166,7 @@ public:
 				start = stop;
 			#endif
 
+			pq.candidate_counter -= candidate_counter_size_diff;
 			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 512)),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
