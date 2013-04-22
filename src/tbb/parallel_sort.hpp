@@ -130,9 +130,8 @@ struct radix_sort_body {
     @ingroup algorithms **/
 template<typename RandomAccessIterator, typename Compare, typename Partitioner>
 void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare comp, Partitioner& partitioner, const size_t grainsize) { 
-    const int min_parallel_size = 500; 
     if( end > begin ) {
-        if (end - begin < min_parallel_size) { 
+        if (end - begin < grainsize) { 
             std::sort(begin, end, comp);
         } else {
             tbb::parallel_for( quick_sort_range<RandomAccessIterator,Compare>(begin, end-begin, comp, grainsize), 
@@ -144,9 +143,8 @@ void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const C
 
 template<typename T, typename KeyExtractor, typename Partitioner>
 void parallel_radix_sort(T* data , size_t size, const KeyExtractor key, Partitioner& partitioner, const size_t grainsize) { 
-    const unsigned int min_parallel_size = 500; 
     if( size > 0 ) {
-        if (size < min_parallel_size) { 
+        if (size < grainsize) { 
             radix_sort(data, size, key);
         } else {
             auto key_compare = [key](const T& a, const T& b){ return key(a) < key(b); };

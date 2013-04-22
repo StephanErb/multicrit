@@ -181,12 +181,13 @@ public:
 				#endif
 
 				size_t i = r.begin();
-				while(i != r.end()) {
+				const size_t end = r.end();
+				while(i != end) {
 					const size_t range_start = i;
 					const NodeID node = pq.candidates[i].node;
 					auto& ls = pq.labelsets[node];
 					ls.prefetch();
-					while (i != r.end() && pq.candidates[i].node == node) {
+					while (i != end && pq.candidates[i].node == node) {
 						++i;
 					}
 					std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
@@ -205,22 +206,21 @@ public:
 						subtimings.update_labelsets += (stop-start).seconds();
 						start = stop;
 					#endif
+				}
+				// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
+				if (tl.updates.size() > BATCH_SIZE) {
+					const size_t aligned_size = ROUND_DOWN(tl.updates.size(), DCACHE_LINESIZE / sizeof(Operation<NodeLabel>) );
+					const size_t remaining = tl.updates.size() - aligned_size;
+					const size_t position = pq.update_counter.fetch_and_add(aligned_size);
+					assert(position + tl.updates.size() < pq.updates.capacity());
+					memcpy(pq.updates.data() + position, tl.updates.data()+remaining, sizeof(Operation<NodeLabel>) * aligned_size );
+					tl.updates.resize(remaining);
 
-					// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
-					if (tl.updates.size() > BATCH_SIZE) {
-						const size_t aligned_size = ROUND_DOWN(tl.updates.size(), DCACHE_LINESIZE / sizeof(Operation<NodeLabel>) );
-						const size_t remaining = tl.updates.size() - aligned_size;
-						const size_t position = pq.update_counter.fetch_and_add(aligned_size);
-						assert(position + tl.updates.size() < pq.updates.capacity());
-						memcpy(pq.updates.data() + position, tl.updates.data()+remaining, sizeof(Operation<NodeLabel>) * aligned_size );
-						tl.updates.resize(remaining);
-
-						#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-							stop = tbb::tick_count::now();
-							subtimings.write_local_to_shared += (stop-start).seconds();
-							start = stop;
-						#endif
-					}
+					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+						stop = tbb::tick_count::now();
+						subtimings.write_local_to_shared += (stop-start).seconds();
+						start = stop;
+					#endif
 				}
 			}, candidates_aff_part);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
