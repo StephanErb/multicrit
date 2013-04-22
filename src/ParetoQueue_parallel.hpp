@@ -191,7 +191,7 @@ public:
 			for (width_type i = 0; i<slotuse; ++i) {
 				const Label& l = inner->slot[i].minimum;
 				if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
-					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i], min, this));
+					root_tasks.push_back(*new(tbb::task::allocate_root()) FindParetMinTask(inner->slot[i], min, this, &base_type::subtree_affinity[i]));
 					min = &l;
 				}
 			}
@@ -203,12 +203,25 @@ public:
        	const inner_node_data& slot;
        	const Label* const prefix_minima;
         ParallelBTreeParetoQueue* const tree;
+        tbb::task::affinity_id* affinity;
 
     public:
 		
 		inline FindParetMinTask(const inner_node_data& _slot, const Label* const _prefix_minima, ParallelBTreeParetoQueue* const _tree)
-			: slot(_slot), prefix_minima(_prefix_minima), tree(_tree)
+			: slot(_slot), prefix_minima(_prefix_minima), tree(_tree), affinity(NULL)
 		{ }
+
+		inline FindParetMinTask(const inner_node_data& _slot, const Label* const _prefix_minima, ParallelBTreeParetoQueue* const _tree, tbb::task::affinity_id* _affinity)
+			: slot(_slot), prefix_minima(_prefix_minima), tree(_tree), affinity(_affinity)
+		{ 
+			set_affinity(*affinity);
+		}
+
+		virtual void note_affinity(tbb::task::affinity_id id) {
+            if (affinity != NULL && *affinity != id) {
+                *affinity = id;
+            }
+        }
 
 		tbb::task* execute() {
 			if (slot.weight <= tree->min_problem_size) {

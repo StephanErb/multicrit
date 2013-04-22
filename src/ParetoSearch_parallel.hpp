@@ -122,8 +122,9 @@ public:
 			tbb::tick_count stop = tbb::tick_count::now();
 		#endif
 
-		tbb::auto_partitioner ap;
-		tbb::auto_partitioner ap2;
+		tbb::auto_partitioner auto_part;
+		tbb::affinity_partitioner candidates_aff_part;
+		tbb::affinity_partitioner tree_aff_part;
 
 		while (!pq.empty()) {
 			pq.update_counter = 0;
@@ -153,9 +154,9 @@ public:
 			#endif
 
 			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, ap, min_problem_size(pq.candidate_counter, 512));
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_problem_size(pq.candidate_counter, 512));
 			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, ap, min_problem_size(pq.candidate_counter, 512));
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, auto_part, min_problem_size(pq.candidate_counter, 512));
 			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -221,7 +222,7 @@ public:
 						#endif
 					}
 				}
-			}, ap);
+			}, candidates_aff_part);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[UPDATE_LABELSETS] += (stop-start).seconds();
@@ -242,14 +243,14 @@ public:
 				start = stop;
 			#endif
 
-			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, ap2, min_problem_size(pq.update_counter, 512));
+			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, auto_part, min_problem_size(pq.update_counter, 512));
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[SORT_UPDATES] += (stop-start).seconds();
 				start = stop;
 			#endif
 
-			pq.applyUpdates(pq.updates.data(), pq.update_counter, ap2);
+			pq.applyUpdates(pq.updates.data(), pq.update_counter, tree_aff_part);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[PQ_UPDATE] += (stop-start).seconds();

@@ -145,6 +145,7 @@ protected:
     // *** Tree Object Data Members
 
     size_type min_problem_size;
+    tbb::task::affinity_id subtree_affinity[innerslotmax] = {0};
 
 public:
     // *** Constructors and Destructor
@@ -224,7 +225,7 @@ public:
                     tbb::task_list root_tasks;
                     for (width_type i = 0; i < inner->slotuse; ++i) {
                         if (hasUpdates(subtree_updates[i])) {
-                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end, this));
+                            root_tasks.push_back(*new(tbb::task::allocate_root()) TreeUpdateTask(inner->slot[i], subtree_updates[i].upd_begin, subtree_updates[i].upd_end, this, &subtree_affinity[i]));
                             inner->slot[i].weight = subtree_updates[i].weight;
                         }
                     }
@@ -576,11 +577,24 @@ private:
         const size_type upd_begin;
         const size_type upd_end;
         btree* const tree;
+        tbb::task::affinity_id* affinity;
 
     public:
         inline TreeUpdateTask(inner_node_data& _slot, const size_type _upd_begin, const size_type _upd_end, btree* const _tree)
-            : slot(_slot), upd_begin(_upd_begin), upd_end(_upd_end), tree(_tree)
+            : slot(_slot), upd_begin(_upd_begin), upd_end(_upd_end), tree(_tree), affinity(NULL)
         {}
+
+        inline TreeUpdateTask(inner_node_data& _slot, const size_type _upd_begin, const size_type _upd_end, btree* const _tree, tbb::task::affinity_id* _affinity)
+            : slot(_slot), upd_begin(_upd_begin), upd_end(_upd_end), tree(_tree), affinity(_affinity)
+        {
+            set_affinity(*affinity);
+        }
+
+        virtual void note_affinity(tbb::task::affinity_id id) {
+            if (affinity != NULL && *affinity != id) {
+                *affinity = id;
+            }
+        }
 
         tbb::task* execute() {
             BTREE_PRINT("Applying updates [" << upd_begin << ", " << upd_end << ") to " << slot.childid   << " on level " << slot.childid->level << std::endl);
