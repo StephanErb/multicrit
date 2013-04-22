@@ -113,13 +113,14 @@ public:
 			pq.findParetoMinima(updates);
 			const size_t minima_count = updates.size();
 			stats.report(MINIMA_COUNT, minima_count);
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[FIND_PARETO_MIN] += (stop-start).seconds();
-				start = stop;
-			#endif
+
 
 			#ifdef BUCKET_SORT
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					stop = tbb::tick_count::now();
+					timings[FIND_PARETO_MIN] += (stop-start).seconds();
+					start = stop;
+				#endif
 				for (const auto& op : updates) {
 					const NodeLabel& min = op.data;
 					FORALL_EDGES(graph, min.node, eid) {
@@ -163,6 +164,12 @@ public:
 						candidates.push_back(NodeLabel(edge.target, createNewLabel(min, edge)));
 					}
  				}
+				#ifdef GATHER_SUBCOMPNENT_TIMING
+					stop = tbb::tick_count::now();
+					timings[FIND_PARETO_MIN] += (stop-start).seconds();
+					start = stop;
+				#endif
+
  				#ifdef RADIX_SORT
  					radix_sort(candidates.data(), candidates.size(), [](const NodeLabel& x) { return x.node; });
 				#else 
