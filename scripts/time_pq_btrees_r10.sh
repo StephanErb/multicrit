@@ -2,11 +2,9 @@
 cd ../src/
 
 iter_count=1
-ratio=0
-skew=1
+ratio=10
 
 # Bulk Insertion
-ratio=10 # tree is 10 times larger than the elements we try to insert
 skew=1
 for p in 1 2 4 8 16
 do
@@ -21,7 +19,6 @@ taskset -c 0 ./bin/time_pq_btree_label_large -c $iter_count -r $ratio -s $skew  
 
 
 # Skewed Bulk Insertion
-ratio=10 # tree is 10 times larger than the elements we try to insert
 skew=0.01
 for p in 1 2 4 8 16
 do
