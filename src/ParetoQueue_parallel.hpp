@@ -287,7 +287,7 @@ public:
 			set_affinity(*affinity);
 		}
 
-		virtual void note_affinity(tbb::task::affinity_id id) {
+		void note_affinity(tbb::task::affinity_id id) {
             if (affinity != NULL && *affinity != id) {
                 *affinity = id;
             }

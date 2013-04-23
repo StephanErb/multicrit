@@ -354,7 +354,6 @@ private:
             if (continuation_mode == 0) {
                 // Allocate & fill leaves via TreeRewriteTask
                 const size_type subtrees = num_subtrees(size, designated_leafsize);
-                leaves.reserve(next_power_of_two(subtrees)); // use next power of two to allow efficient caching by the allocator
                 leaves.resize(subtrees); // but use actual size
 
                 continuation_mode++;
@@ -377,18 +376,6 @@ private:
                 result_node = fake_slot.childid;
                 return NULL;
             }
-        }
-
-        // http://graphics.stanford.edu/~seander/bithacks.html
-        static inline unsigned int next_power_of_two(unsigned int v) {
-            v--;
-            v |= v >> 1;
-            v |= v >> 2;
-            v |= v >> 4;
-            v |= v >> 8;
-            v |= v >> 16;
-            v++;
-            return v;
         }
     };
 
@@ -590,7 +577,7 @@ private:
             set_affinity(*affinity);
         }
 
-        virtual void note_affinity(tbb::task::affinity_id id) {
+        void note_affinity(tbb::task::affinity_id id) {
             if (affinity != NULL && *affinity != id) {
                 *affinity = id;
             }
