@@ -309,16 +309,17 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(1, ratio, skew, iterations *       3000, p, heatmap);
-		timeBulkInsertion(10, ratio, skew, iterations *      3000, p, heatmap);
 		timeBulkInsertion(100, ratio, skew, iterations *     3000, p, heatmap);
+		timeBulkInsertion(316, ratio, skew, iterations *     3000, p, heatmap);
 		timeBulkInsertion(1000, ratio, skew, iterations *    3000, p, heatmap);
+		timeBulkInsertion(3162, ratio, skew, iterations *    3000, p, heatmap);
 		timeBulkInsertion(10000, ratio, skew, iterations *    300, p, heatmap);
+		timeBulkInsertion(31622, ratio, skew, iterations *    300, p, heatmap);
 		timeBulkInsertion(100000, ratio, skew, iterations *    30, p, heatmap);
+		timeBulkInsertion(316227, ratio, skew, iterations *    30, p, heatmap);
 		timeBulkInsertion(1000000, ratio, skew, iterations *   10, p, heatmap);
+		timeBulkInsertion(3162277, ratio, skew, iterations *   10, p, heatmap);
 		timeBulkInsertion(10000000, ratio, skew, iterations *   3, p, heatmap);
-		if (ratio < 50) 
-		timeBulkInsertion(100000000, ratio, skew, iterations *  3, p, heatmap);
 	}
 	return 0;
 } 
