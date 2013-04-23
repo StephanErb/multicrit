@@ -60,8 +60,15 @@ Comparator cmp;
 struct RedBlackTree : public std::set<Label, Comparator> {
 
 	void apply_updates(const std::vector<Label>& updates) {
-		// For benchmarik purposes, we only support inserts
-		insert(updates.begin(), updates.end());
+		#ifdef ENABLE_MCSTL
+			if (mcstl::SETTINGS::num_threads == 1) {
+				insert(updates.begin(), updates.end(), mcstl::sequential_tag());
+			} else {
+				insert(updates.begin(), updates.end());
+			}
+		#else
+			insert(updates.begin(), updates.end());
+		#endif
 	}
 	void verify() {
 
