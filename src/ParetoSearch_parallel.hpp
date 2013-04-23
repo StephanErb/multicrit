@@ -153,9 +153,9 @@ public:
 			#endif
 
 			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, avg_problem_size(pq.candidate_counter, 512));
+				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_problem_size(pq.candidate_counter, 512));
 			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, auto_part, avg_problem_size(pq.candidate_counter, 512));
+				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, auto_part, min_problem_size(pq.candidate_counter, 512));
 			#endif
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -262,11 +262,6 @@ public:
 	static size_t min_problem_size(size_t total, const double max=1.0) {
 		const size_t p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
 		return std::max((total/p) / (log2(total/p + 1)+1), max);
-	}
-
-	static size_t avg_problem_size(size_t total, const size_t max=1) {
-		const size_t p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
-        return std::max((total/p), max);
 	}
 
 	class candidate_range {
