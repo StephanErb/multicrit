@@ -9,6 +9,9 @@ skew=1
 ratio=10 # r = n/k
 numelements=10000
 
+fixed_k=640
+fixed_b=32
+
 #################################################################
 # BRANCHING PARAMETER (INT)
 #################################################################
@@ -21,7 +24,7 @@ do
 	rm $out_file # clear
 	for b in 8 12 16 20 24 28 32 48 64 128
 	do
-		make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b" time_pq_btree.par > /dev/null
+		make -B CPPFLAGS="-DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par > /dev/null
 #		taskset -c 0-$((p-1)) ./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew -k $numelements >> $out_file
 	done
 done
@@ -32,7 +35,7 @@ touch $out_file
 rm $out_file # clear
 for b in 8 12 16 20 24 28 32 48 64 128
 do
-	make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b" time_pq_btree > /dev/null
+	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree > /dev/null
 #	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
 done
 
@@ -48,7 +51,7 @@ do
 	rm $out_file # clear
 	for b in 8 12 16 20 24 28 32 48 64 128
 	do
-		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par > /dev/null
+		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par > /dev/null
 		taskset -c 0-$((p-1)) ./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew -k $numelements >> $out_file
 	done
 done
@@ -59,7 +62,7 @@ touch $out_file
 rm $out_file # clear
 for b in 8 12 16 20 24 28 32 48 64 128 
 do
-	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DBRANCHING_PARAMETER_B=$b" time_pq_btree > /dev/null
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree > /dev/null
 	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
 done
 
@@ -76,7 +79,7 @@ do
 	rm $out_file # clear
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
-		make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
+		make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k -DBRANCHING_PARAMETER_B=$fixed_b" time_pq_btree.par > /dev/null
 #		taskset -c 0-$((p-1)) ./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew -k $numelements >> $out_file
 	done
 done
@@ -87,7 +90,7 @@ touch $out_file
 rm $out_file # clear
 for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 do
-	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
+	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$k -DBRANCHING_PARAMETER_B=$fixed_b" time_pq_btree > /dev/null
 #	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
 done
 
@@ -104,7 +107,7 @@ do
 	rm $out_file # clear
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
-		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
+		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k -DBRANCHING_PARAMETER_B=$fixed_b" time_pq_btree.par > /dev/null
 		taskset -c 0-$((p-1)) ./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew -k $numelements >> $out_file
 	done
 done
@@ -115,6 +118,6 @@ touch $out_file
 rm $out_file # clear
 for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 do
-	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
+	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k -DBRANCHING_PARAMETER_B=$fixed_b" time_pq_btree > /dev/null
 	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
 done
