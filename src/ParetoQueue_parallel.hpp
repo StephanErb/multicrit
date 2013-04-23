@@ -42,25 +42,34 @@ private:
 
 	vector_type* vec;
 	counter_type* counter;
-
-public:
+	size_t timestamp = 0;
 
 	size_t current = 0;
 	size_t end = 0;
 
-	void setup(vector_type& _vec, counter_type& _counter) {
-		vec = &_vec;
-		counter = &_counter;
-	}
-
-	void reset() {
+	inline void reset() {
 		current = end = 0;
 	}
 
-	void push_back(value_type&& val) {
+	inline void alloc(size_t delta) {
+		current = counter->fetch_and_add(delta);
+		end = current + delta;
+	}
+
+public:
+
+	inline void setup(vector_type& _vec, counter_type& _counter, const size_t _timestamp) {
+		vec = &_vec;
+		counter = &_counter;
+		if (timestamp != _timestamp) {
+			reset();
+		}
+		timestamp = _timestamp;
+	}
+
+	inline void push_back(value_type&& val) {
 		if (current == end) {
-			current = counter->fetch_and_add(BATCH_SIZE );
-			end = current + BATCH_SIZE;
+			alloc(BATCH_SIZE);
 			for (size_t i = current; i < end; ++i) {
 				vec->data()[i].node = std::numeric_limits<unsigned int>::max();
 			}
@@ -111,6 +120,7 @@ private:
 
  	const size_type p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
 	size_type min_problem_size;
+	size_t timestamp;
 
 public:
 
@@ -213,9 +223,10 @@ public:
 		std::cout << "#   leaf slots size [" << base_type::leafslotmin << ", " << base_type::leafslotmax << "]. Bytes: " << base_type::leafnodebytesize << std::endl;
 	}
 
-	void findParetoMinima() {
+	void findParetoMinima(const size_t _timestamp) {
 		// Adaptive cut-off; Taken from the MCSTL implementation
         min_problem_size = std::max((base_type::size()/p) / (log2(base_type::size()/p + 1)+1), base_type::maxweight(1)*1.0);
+        timestamp = _timestamp;
 
 		if (base_type::size() <= min_problem_size) {
 			findParetoMinAndDistribute(base_type::root, min_label);
@@ -309,7 +320,7 @@ public:
 		#endif
 
 		// Derive candidates 
-		tl.candidates.setup(candidates, candidate_counter);
+		tl.candidates.setup(candidates, candidate_counter, timestamp);
 		for (size_t i=pre_size; i < tl.updates.size(); ++i) {
 			const NodeLabel& min = tl.updates[i].data;
 			FORALL_EDGES(graph, min.node, eid) {

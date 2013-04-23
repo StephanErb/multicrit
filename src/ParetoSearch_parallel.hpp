@@ -126,14 +126,16 @@ public:
 		tbb::affinity_partitioner candidates_aff_part;
 		tbb::affinity_partitioner tree_aff_part;
 		const NodeID MAX_NODE = NodeID(graph.numberOfNodes()+1); 
+		size_t iter_count = 0;
 
 		while (!pq.empty()) {
+			++iter_count;
 			pq.update_counter = 0;
 			pq.candidate_counter = 0;
 			stats.report(ITERATION, pq.size());
 
 			// write updates & candidates to thread locals in pq.*
-			pq.findParetoMinima(); 
+			pq.findParetoMinima(iter_count); 
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[FIND_PARETO_MIN] += (stop-start).seconds();
@@ -141,11 +143,11 @@ public:
 			#endif
 
 			size_t candidate_counter_size_diff = 0;
-			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
+			/*for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
 				// We mark gaps so that they will be moved to the end via sorting. Then we can ignore them
 				candidate_counter_size_diff += (tl.candidates.end - tl.candidates.current);
 				tl.candidates.reset();
-			}
+			}*/
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[CLEAR_BUFFERS] += (stop-start).seconds();
@@ -185,6 +187,9 @@ public:
 				while(i != end) {
 					const size_t range_start = i;
 					const NodeID node = pq.candidates[i].node;
+					if (node == std::numeric_limits<NodeID>::max()) {
+						break;
+					}
 					auto& ls = pq.labelsets[node];
 					ls.prefetch();
 					while (i != end && pq.candidates[i].node == node) {
