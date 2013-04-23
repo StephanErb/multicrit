@@ -1,10 +1,10 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.75,0.5
+set size 0.40,0.38
 
 # Legend
-set key outside top right Right
+set key top left Left
 set key samplen 2
 set key width -4
 set key reverse

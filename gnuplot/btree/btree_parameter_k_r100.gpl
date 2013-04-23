@@ -1,10 +1,10 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.75,0.5
+set size 0.40,0.38
 
 # Legend
-set key outside top right Right
+#set key outside top right Right
 set key samplen 2
 set key width -4
 set key reverse
@@ -35,13 +35,13 @@ set xlabel "Leaf parameter k"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_parameter_k_r100.ps"
 
-set yrange [0:300]
+set yrange [0:600]
 
-plot '../../timings/btree/insert_nodewidth_label_leaf_p_1_r100' using 5:($1*1000/$4) title ' btree (label, p1)' w lp ls 3,\
-			'../../timings/btree/insert_nodewidth_label_leaf_sequ_r100' using 5:($1*1000/$4) title ' btree (label, seq)' w lp ls 1,\
-			'../../timings/btree/insert_nodewidth_label_leaf_p_2_r100' using 5:($1*1000/$4) title ' btree (label, p2)' w lp ls 4,\
-			'../../timings/btree/insert_nodewidth_label_leaf_p_4_r100' using 5:($1*1000/$4) title ' btree (label, p4)' w lp ls 5,\
-			'../../timings/btree/insert_nodewidth_label_leaf_p_8_r100' using 5:($1*1000/$4) title ' btree (label, p8)' w lp ls 6
+plot '../../timings/btree/insert_nodewidth_label_leaf_p_1_r100' using 5:($1*1000/$4) title ' btree (p1)' w lp ls 3,\
+			'../../timings/btree/insert_nodewidth_label_leaf_sequ_r100' using 5:($1*1000/$4) title ' btree (seq)' w lp ls 1,\
+			'../../timings/btree/insert_nodewidth_label_leaf_p_2_r100' using 5:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
+			'../../timings/btree/insert_nodewidth_label_leaf_p_4_r100' using 5:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
+			'../../timings/btree/insert_nodewidth_label_leaf_p_8_r100' using 5:($1*1000/$4) title ' btree (p8)' w lp ls 6
 	  		#'../../timings/btree/insert_nodewidth_int_leaf_p_1_r100' using 5:($1*1000/$4) title ' btree (int, p1)' w lp ls 3,\
 			#'../../timings/btree/insert_nodewidth_int_leaf_sequ_r100' using 5:($1*1000/$4) title ' btree (int, seq)' w lp ls 1,\
 			#'../../timings/btree/insert_nodewidth_int_leaf_p_8_r100' using 5:($1*1000/$4) title ' btree (int, p8)' w lp ls 6
