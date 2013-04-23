@@ -41,3 +41,18 @@ skew=0.01
 out_file="../timings/vec/insert_sequ_r$ratio""_s$skew"
 echo "Writing to sequential computation to $out_file"
 taskset -c 0 ./bin/time_pq_vector_label_scan -c $iter_count -r $ratio -s $skew > $out_file
+
+
+# Bulk Insertion
+ratio=0.1
+skew=1
+out_file="../timings/vec/insert_sequ_r$ratio""_s$skew"
+echo "Writing to sequential computation to $out_file"
+taskset -c 0 ./bin/time_pq_vector_label_scan -c $iter_count -r $ratio -s $skew > $out_file
+
+# Skewed Bulk Insertion
+ratio=0.1 
+skew=0.01
+out_file="../timings/vec/insert_sequ_r$ratio""_s$skew"
+echo "Writing to sequential computation to $out_file"
+taskset -c 0 ./bin/time_pq_vector_label_scan -c $iter_count -r $ratio -s $skew > $out_file
