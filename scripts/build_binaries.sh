@@ -6,6 +6,8 @@ make clean
 #########################################################
 # Pareto search
 #########################################################
+echo "Pareto Search..."
+
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_grid_instances1 > /dev/null
 mv ./bin/time_grid_instances1 ./bin/time_grid_instances1_paretosearch_ls_vec
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_grid_instances1.par > /dev/null
@@ -57,6 +59,7 @@ mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_btr
 #########################################################
 # Classic algorithm
 #########################################################
+echo "Classic label setting..."
 
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=SharedHeapLabelSettingAlgorithm -DPRIORITY_LEX" time_grid_instances1 > /dev/null
 mv ./bin/time_grid_instances1 ./bin/time_grid_instances1_lset_lex
@@ -89,6 +92,7 @@ mv ./bin/time_road_instances2 ./bin/time_road_instances2_lset_lex
 #########################################################
 # BTree algorithm
 #########################################################
+echo "Btree algorithms..."
 
 large_leaf_k=640
 small_leaf_k=64
@@ -102,7 +106,6 @@ make -B CPPFLAGS="-DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree.par > /dev/nul
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int_small.par
 make -B CPPFLAGS="-DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree > /dev/null
 mv ./bin/time_pq_btree ./bin/time_pq_btree_int_small
-
 
 make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label_large.par
@@ -118,6 +121,7 @@ mv ./bin/time_pq_btree ./bin/time_pq_btree_label_small
 #########################################################
 # Vector Pareto Queue
 #########################################################
+echo "Vector algorithms..."
 
 make -B time_pq_vector > /dev/null
 mv ./bin/time_pq_vector ./bin/time_pq_vector_int_scan
