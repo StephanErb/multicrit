@@ -129,7 +129,7 @@ struct radix_sort_body {
     The compare object must define a bool operator() function.
     @ingroup algorithms **/
 template<typename RandomAccessIterator, typename Compare, typename Partitioner>
-void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare comp, Partitioner& partitioner, const size_t grainsize) { 
+void parallel_sort(RandomAccessIterator begin, RandomAccessIterator end, const Compare comp, Partitioner& partitioner, const signed int grainsize) { 
     if( end > begin ) {
         if (end - begin < grainsize) { 
             std::sort(begin, end, comp);
