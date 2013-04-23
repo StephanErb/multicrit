@@ -10,6 +10,7 @@
 
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tick_count.h"
+#include "tbb/parallel_sort.h"
 
 #include "datastructures/BTree.hpp"
 
@@ -71,14 +72,16 @@ void bulkConstruct(Tree& tree, size_t n) {
 				updates.push_back({Operation<Label>::INSERT, dist(gen)});
 			#endif
 		}
-		std::sort(updates.begin(), updates.end(), opCmp);
+		#ifdef PARALLEL_BUILD
+			tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
+		#else
+			std::sort(updates.begin(), updates.end(), opCmp);
+		#endif
 		tree.apply_updates(updates, INSERTS_ONLY);
 		#ifndef NDEBUG
 			tree.verify();
 		#endif
-		#ifndef KEEP_CONSTRUCTED_TREE_IN_CACHE
-			flushDataCache();
-		#endif
+		assert(tree.size() == n);
 }
 
 void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p, bool heatmap) {
@@ -92,7 +95,8 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 	Tree tree;
 	for (size_t i = 0; i < iterations; ++i) {
 		tree.clear();
-
+		bulkConstruct(tree, n);
+		
 		// Prepare the updates
 		std::vector<Operation<Label>> updates;
 		updates.reserve(k);
@@ -103,11 +107,12 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 				updates.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
 			#endif
 		}
-		std::sort(updates.begin(), updates.end(), opCmp);
+		#ifdef PARALLEL_BUILD
+			tbb::parallel_sort(updates.begin(), updates.end(), opCmp);
+		#else
+			std::sort(updates.begin(), updates.end(), opCmp);
+		#endif
 		
-		if (n > 0) bulkConstruct(tree, n);
-		assert(tree.size() == n);
-
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 

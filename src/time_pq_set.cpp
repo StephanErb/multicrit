@@ -88,9 +88,7 @@ void bulkConstruct(Tree& tree, size_t n) {
 		#ifndef NDEBUG
 			tree.verify();
 		#endif
-		#ifndef KEEP_CONSTRUCTED_TREE_IN_CACHE
-			flushDataCache();
-		#endif
+		assert(tree.size() == n);
 }
 
 void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p) {
@@ -101,10 +99,10 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
-
 	Tree tree;
 	for (size_t i = 0; i < iterations; ++i) {
 		tree.clear();
+		bulkConstruct(tree, n);
 
 		// Prepare the updates
 		std::vector<Label> updates;
@@ -118,8 +116,6 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		}
 		std::sort(updates.begin(), updates.end(), cmp);
 		
-		if (n > 0) bulkConstruct(tree, n);
-
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 

@@ -210,9 +210,7 @@ void bulkConstruct(Vec& vec, size_t n) {
 		#ifndef NDEBUG
 			vec.verify();
 		#endif
-		#ifndef KEEP_CONSTRUCTED_TREE_IN_CACHE
-			flushDataCache();
-		#endif
+		assert(vec.size() == n);
 }
 
 void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, int p, bool heatmap) {
@@ -226,6 +224,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 	Vec vec;
 	for (size_t i = 0; i < iterations; ++i) {
 		vec.clear();
+		bulkConstruct(vec, n);
 
 		// Prepare the updates
 		std::vector<Operation<Label>> updates;
@@ -239,9 +238,6 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 		}
 		std::sort(updates.begin(), updates.end(), opCmp);
 		
-		if (n > 0) bulkConstruct(vec, n);
-		assert(vec.size() == n);
-
 		memory[i] = getCurrentMemorySize();
 		tbb::tick_count start = tbb::tick_count::now();
 
