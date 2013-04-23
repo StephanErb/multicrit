@@ -96,7 +96,8 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 	for (size_t i = 0; i < iterations; ++i) {
 		tree.clear();
 		bulkConstruct(tree, n);
-		
+		flushDataCache();
+
 		// Prepare the updates
 		std::vector<Operation<Label>> updates;
 		updates.reserve(k);

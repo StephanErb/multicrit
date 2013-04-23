@@ -217,7 +217,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 	std::vector<double> timings(iterations);
 	std::vector<double> memory(iterations);
 
-	size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
+	const size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
 
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
@@ -225,6 +225,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 	for (size_t i = 0; i < iterations; ++i) {
 		vec.clear();
 		bulkConstruct(vec, n);
+		flushDataCache();
 
 		// Prepare the updates
 		std::vector<Operation<Label>> updates;
