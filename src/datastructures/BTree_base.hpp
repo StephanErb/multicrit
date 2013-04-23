@@ -59,7 +59,7 @@
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
 
 #ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 16
+#define BRANCHING_PARAMETER_B 32
 #endif
 /* unused: See the build_binary script */
 #ifndef LEAF_PARAMETER_K
