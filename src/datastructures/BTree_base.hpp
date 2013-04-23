@@ -35,6 +35,8 @@
 #include <string.h>
 #include "../utility/datastructure/NullData.hpp"
 #include "../options.hpp"
+#include "../utility/datastructure/graph/GraphMacros.h"
+
 
 #include "tbb/atomic.h"
 #include "tbb/enumerable_thread_specific.h"
@@ -640,8 +642,8 @@ protected:
 
 #ifdef COMPUTE_PARETO_MIN
 
-    template<typename sequence_type>
-    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, sequence_type& minima) const {
+    template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {
         if (node->isleafnode()) {
             const leaf_node* const leaf = (leaf_node*) node;
             const width_type slotuse = leaf->slotuse;
@@ -650,7 +652,15 @@ protected:
             for (width_type i = 0; i<slotuse; ++i) {
                 if (leaf->slotkey[i].second_weight < min->second_weight ||
                         (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
-                    minima.push_back({Operation<key_type>::DELETE, leaf->slotkey[i]});
+
+                    // Generate Update that will delete the minima
+                    updates.push_back(typename upd_sequence_type::value_type(Operation<key_type>::DELETE, leaf->slotkey[i]));
+                    // Derive all candidate labels 
+                    FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
+                        const auto& edge = graph.getEdge(eid);
+                        candidates.push_back(typename cand_sequence_type::value_type(edge.target,
+                            {leaf->slotkey[i].first_weight + edge.first_weight, leaf->slotkey[i].second_weight + edge.second_weight}));
+                    }
                     min = &leaf->slotkey[i];
                 }
             }
@@ -662,7 +672,7 @@ protected:
             for (width_type i = 0; i<slotuse; ++i) {
                 if (inner->slot[i].minimum.second_weight < min->second_weight ||
                         (inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
-                    find_pareto_minima(inner->slot[i].childid, *min, minima);
+                    find_pareto_minima(inner->slot[i].childid, *min, updates, candidates, graph);
                     min = &inner->slot[i].minimum;
                 }
             }
@@ -683,6 +693,7 @@ protected:
             [](const inner_node_data& i, const inner_node_data& j) { return i.minimum.second_weight < j.minimum.second_weight; })->minimum;
     }
 #else 
+    template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
     void find_pareto_minima(const node* const, const min_key_type&, std::vector<key_type>&) const {
         std::cout << "Pareto Min Feature disabled" << std::endl;
     }

@@ -125,34 +125,26 @@ public:
 		tbb::auto_partitioner auto_part;
 		tbb::affinity_partitioner candidates_aff_part;
 		tbb::affinity_partitioner tree_aff_part;
-		const NodeID MAX_NODE = NodeID(graph.numberOfNodes()+1); 
-		size_t iter_count = 0;
 
 		while (!pq.empty()) {
-			++iter_count;
 			pq.update_counter = 0;
 			pq.candidate_counter = 0;
 			stats.report(ITERATION, pq.size());
 
 			// write updates & candidates to thread locals in pq.*
-			pq.findParetoMinima(iter_count); 
+			pq.findParetoMinima(); 
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
 				timings[FIND_PARETO_MIN] += (stop-start).seconds();
 				start = stop;
 			#endif
 
+			// Count gaps moved to the end via sorting. Then we can ignore them
 			size_t candidate_counter_size_diff = 0;
-			/*for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				// We mark gaps so that they will be moved to the end via sorting. Then we can ignore them
+			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
 				candidate_counter_size_diff += (tl.candidates.end - tl.candidates.current);
 				tl.candidates.reset();
-			}*/
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[CLEAR_BUFFERS] += (stop-start).seconds();
-				start = stop;
-			#endif
+			}
 
 			#ifdef RADIX_SORT
 				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_problem_size(pq.candidate_counter, 512));
@@ -175,6 +167,7 @@ public:
 						tl.labelset_data.spare_leaf = pq.labelsets[pq.candidates[r.begin()].node].allocate_leaf_without_count();
 					}
 				#endif
+				tl.updates.setup(pq.updates, pq.update_counter);
 				
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
@@ -187,9 +180,6 @@ public:
 				while(i != end) {
 					const size_t range_start = i;
 					const NodeID node = pq.candidates[i].node;
-					if (node == std::numeric_limits<NodeID>::max()) {
-						break;
-					}
 					auto& ls = pq.labelsets[node];
 					ls.prefetch();
 					while (i != end && pq.candidates[i].node == node) {
@@ -212,21 +202,6 @@ public:
 						start = stop;
 					#endif
 				}
-				// Move thread local data to shared data structure. Move in cache sized blocks to prevent false sharing
-				if (tl.updates.size() > BATCH_SIZE) {
-					const size_t aligned_size = ROUND_DOWN(tl.updates.size(), DCACHE_LINESIZE / sizeof(Operation<NodeLabel>) );
-					const size_t remaining = tl.updates.size() - aligned_size;
-					const size_t position = pq.update_counter.fetch_and_add(aligned_size);
-					assert(position + tl.updates.size() < pq.updates.capacity());
-					memcpy(pq.updates.data() + position, tl.updates.data()+remaining, sizeof(Operation<NodeLabel>) * aligned_size );
-					tl.updates.resize(remaining);
-
-					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-						stop = tbb::tick_count::now();
-						subtimings.write_local_to_shared += (stop-start).seconds();
-						start = stop;
-					#endif
-				}
 			}, candidates_aff_part);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();
@@ -234,19 +209,12 @@ public:
 				start = stop;
 			#endif
 
+			// Count gaps moved to the end via sorting. Then we can ignore them
+			size_t update_counter_size_diff = 0;
 			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				if (!tl.updates.empty()) {
-					const size_t position = pq.update_counter.fetch_and_add(tl.updates.size());
-					assert(position + tl.updates.size() < pq.updates.capacity());
-					memcpy(pq.updates.data() + position, tl.updates.data(), sizeof(Operation<NodeLabel>) * tl.updates.size());
-					tl.updates.clear();
-				}
+				update_counter_size_diff += (tl.updates.end - tl.updates.current);
+				tl.updates.reset();
 			}
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[CLEAR_BUFFERS] += (stop-start).seconds();
-				start = stop;
-			#endif
 
 			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, auto_part, min_problem_size(pq.update_counter, 512));
 			#ifdef GATHER_SUBCOMPNENT_TIMING
@@ -255,6 +223,7 @@ public:
 				start = stop;
 			#endif
 
+			pq.update_counter -= update_counter_size_diff;
 			pq.applyUpdates(pq.updates.data(), pq.update_counter, tree_aff_part);
 			#ifdef GATHER_SUBCOMPNENT_TIMING
 				stop = tbb::tick_count::now();

@@ -66,7 +66,8 @@ public:
 		labels.insert(++labels.begin(), data);
 	}
 
-	void findParetoMinima(std::vector<Operation<NodeLabel>>& minima) const {
+    template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+	void findParetoMinima(upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {
 		const_iterator iter = ++labels.begin(); // ignore the sentinal
 		const_iterator end = --labels.end();  // ignore the sentinal
 
@@ -75,7 +76,12 @@ public:
 			if (iter->second_weight < min->second_weight ||
 					(iter->first_weight == min->first_weight && iter->second_weight == min->second_weight)) {
 				min = iter;
-				minima.push_back({Operation<NodeLabel>::DELETE, *iter});
+				updates.push_back({Operation<NodeLabel>::DELETE, *iter});
+				FORALL_EDGES(graph, iter->node, eid) {
+                	const auto& edge = graph.getEdge(eid);
+                    candidates.push_back(typename cand_sequence_type::value_type(edge.target,
+                            {iter->first_weight + edge.first_weight, iter->second_weight + edge.second_weight}));
+                }
 			}
 			++iter;
 		}
@@ -184,8 +190,9 @@ public:
 		labels.apply_updates(upds, INSERTS_ONLY);
 	}
 
-	void findParetoMinima(std::vector<Operation<NodeLabel>>& minima) const {
-		labels.find_pareto_minima(min_label, minima);
+    template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+	void findParetoMinima(upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {
+		labels.find_pareto_minima(min_label, updates, candidates, graph);
 	}
 
 	void applyUpdates(const std::vector<Operation<NodeLabel>>& updates) {
