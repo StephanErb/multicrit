@@ -30,7 +30,7 @@
 
 
 #ifndef BATCH_SIZE
-#define BATCH_SIZE 2048
+#define BATCH_SIZE 512
 #endif
 
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
@@ -43,8 +43,6 @@ private:
 	vector_type* vec;
 	counter_type* counter;
 
-
-	size_t increments = 0;
 public:
 
 	size_t current = 0;
@@ -56,14 +54,16 @@ public:
 	}
 
 	void reset() {
-		current = end = increments = 0;
+		current = end = 0;
 	}
 
 	void push_back(value_type&& val) {
 		if (current == end) {
 			current = counter->fetch_and_add(BATCH_SIZE );
 			end = current + BATCH_SIZE;
-			++increments;
+			for (size_t i = current; i < end; ++i) {
+				vec->data()[i].node = std::numeric_limits<unsigned int>::max();
+			}
 		}
 		assert(vec->capacity() > current);
 		vec->data()[current++] = val;

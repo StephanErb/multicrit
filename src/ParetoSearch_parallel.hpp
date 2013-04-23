@@ -144,9 +144,6 @@ public:
 			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
 				// We mark gaps so that they will be moved to the end via sorting. Then we can ignore them
 				candidate_counter_size_diff += (tl.candidates.end - tl.candidates.current);
-				for (size_t i = tl.candidates.current; i < tl.candidates.end; ++i) {
-					pq.candidates[i].node = MAX_NODE;
-				}
 				tl.candidates.reset();
 			}
 			#ifdef GATHER_SUBCOMPNENT_TIMING
