@@ -87,7 +87,12 @@
 
 #define DCACHE_LINESIZE 128
 
-
+/** 
+ * Buffer size: How much buffer space to allocate when writing to shared data structures
+ */
+#ifndef BATCH_SIZE
+#define BATCH_SIZE 512
+#endif
 
 
  std::string currentConfig() {

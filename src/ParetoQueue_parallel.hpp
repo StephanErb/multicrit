@@ -28,13 +28,7 @@
 #include "tbb/task.h"
 #include "tbb/concurrent_vector.h"
 
-
-#ifndef BATCH_SIZE
-#define BATCH_SIZE 512
-#endif
-
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
-
 
 template<typename _value_type, typename vector_type, typename counter_type>
 class BufferedSharedVector {
