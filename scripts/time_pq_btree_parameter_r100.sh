@@ -10,7 +10,7 @@ ratio=100 # r = n/k
 numelements=10000
 
 fixed_k=64
-fixed_b=32
+fixed_b=16
 
 #################################################################
 # BRANCHING PARAMETER (INT)

@@ -58,12 +58,12 @@
 /// The maximum of a and b. Used in some compile-time formulas.
 #define BTREE_MAX(a,b)          ((a) < (b) ? (b) : (a))
 
+/* Unused: See the build_binary script for actual parameters */
 #ifndef BRANCHING_PARAMETER_B
-#define BRANCHING_PARAMETER_B 32
+#define BRANCHING_PARAMETER_B 8
 #endif
-/* unused: See the build_binary script */
 #ifndef LEAF_PARAMETER_K
-#define LEAF_PARAMETER_K 640 
+#define LEAF_PARAMETER_K 256 
 #endif
 
 enum OperationBatchType {INSERTS_ONLY=1, DELETES_ONLY=-1, INSERTS_AND_DELETES=2};

@@ -9,8 +9,8 @@ skew=1
 ratio=10 # r = n/k
 numelements=10000
 
-fixed_k=640
-fixed_b=32
+fixed_k=660
+fixed_b=16
 
 #################################################################
 # BRANCHING PARAMETER (INT)

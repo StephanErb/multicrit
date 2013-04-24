@@ -94,27 +94,28 @@ mv ./bin/time_road_instances2 ./bin/time_road_instances2_lset_lex
 #########################################################
 echo "Btree algorithms..."
 
-large_leaf_k=640
+large_leaf_k=660
 small_leaf_k=64
+b=16
 
-make -B CPPFLAGS="-DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
+make -B CPPFLAGS="BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int_large.par
-make -B CPPFLAGS="-DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree > /dev/null
+make -B CPPFLAGS="BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree > /dev/null
 mv ./bin/time_pq_btree ./bin/time_pq_btree_int_large
 
-make -B CPPFLAGS="-DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree.par > /dev/null
+make -B CPPFLAGS="BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree.par > /dev/null
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int_small.par
-make -B CPPFLAGS="-DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree > /dev/null
+make -B CPPFLAGS="BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree > /dev/null
 mv ./bin/time_pq_btree ./bin/time_pq_btree_int_small
 
-make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label_large.par
-make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree > /dev/null
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree > /dev/null
 mv ./bin/time_pq_btree ./bin/time_pq_btree_label_large
 
-make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree.par > /dev/null
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree.par > /dev/null
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_label_small.par
-make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree > /dev/null
+make -B CPPFLAGS="-DUSE_GRAPH_LABEL BRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$small_leaf_k" time_pq_btree > /dev/null
 mv ./bin/time_pq_btree ./bin/time_pq_btree_label_small
 
 
