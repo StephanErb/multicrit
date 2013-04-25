@@ -100,7 +100,7 @@ void timeBulkDeletion(size_t k, double ratio, double skew, size_t iterations, in
 
 		// Elements to be considered according to our skew factor
 		#ifdef USE_GRAPH_LABEL
-			Operation<Label> op = {Operation<Label>::INSERT, {MAX, MAX, MAX};
+			Operation<Label> op = {Operation<Label>::INSERT, {MAX, MAX, MAX}};
 		#else
 			Operation<Label> op = {Operation<Label>::INSERT, MAX};
 		#endif
