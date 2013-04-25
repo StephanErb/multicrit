@@ -32,12 +32,12 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set logscale x 2
 
 set title "Square Grid (q=0, m=10) of size n=300"
-set xlabel "Grid Instance"
-set ylabel "Write Buffer Size" offset 1
+set xlabel "Write Buffer Size"
+set ylabel "Runtime [s]" offset 1
 set output "batch_size_grid2_paretosearch_q0.ps"
 
 set xrange [:]
-set yrange [:]
+set yrange [0:]
 
 plot '../timings/batch_size_grid2_paretosearch_p_1_q0' using 11:4 title ' ParetoSearch (p1, btree)' ls 3 w lp,\
 	 '../timings/batch_size_grid2_paretosearch_p_2_q0' using 11:4 title ' ParetoSearch (p2, btree)' ls 4 w lp,\
