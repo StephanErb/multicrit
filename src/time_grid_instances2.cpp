@@ -89,7 +89,7 @@ int main(int argc, char ** args) {
 	#endif
 
 
-	if (n == 0 || BATCH_SIZE == 1) {
+	if (n == 0 || BATCH_SIZE == 8) {
 		std::cout << "# Class 1 Grid Instances of [Machuca 2012]" << std::endl;	
 		std::cout << "# " << currentConfig() << std::endl;
 	}
