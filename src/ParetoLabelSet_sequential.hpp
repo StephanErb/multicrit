@@ -133,8 +133,7 @@ private:
     using base::update;
     using base::get_resized_leaves_array;
     using base::print_node;
-
-
+    using base::update_leaf_in_current_tree;
 
 public:
     // *** Constructors and Destructor
@@ -162,17 +161,15 @@ public:
 
         inner_node_data fake_slot;
         fake_slot.childid = root;
+        fake_slot.weight = stats.itemcount;
         batch_type = INSERTS_ONLY;
-        generateUpdates(fake_slot, start, end, std::numeric_limits<typename Label::weight_type>::max());
+        generateUpdates(node, fake_slot, start, end, pq_updates, std::numeric_limits<typename Label::weight_type>::max());
+        stats.itemcount = fake_slot.weight;
+        root = fake_slot.childid;
 
         if (tls_data->local_updates.size() > 0) {
             assert(std::is_sorted(tls_data->local_updates.begin(), tls_data->local_updates.end(), groupByWeight));
             apply_updates(tls_data->local_updates, batch_type);
-
-            for (const auto& op : tls_data->local_updates) {
-                const auto type = op.type == Operation<Label>::INSERT ? Operation<NodeLabel>::INSERT : Operation<NodeLabel>::DELETE;
-                pq_updates.push_back({type, NodeLabel(node, op.data)});
-            }
             tls_data->local_updates.clear();
         }
     }
@@ -192,15 +189,16 @@ public:
 
 private:
 
-    template<class candidates_iter_type>
-    Label::weight_type generateUpdates(const inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, Label::weight_type min) {
+    template<class NodeID, class candidates_iter_type, class PQUpdates>
+    Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
 
         if (slot.childid->isleafnode()) {
-            return generateLeafUpdates(slot, start, end, min);
+            return generateLeafUpdates(node, slot, start, end, pq_updates, min);
         } else {
-            const inner_node* const inner = static_cast<inner_node*>(slot.childid);
+            inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const width_type slotuse = inner->slotuse;
 
+            size_t new_weight = 0;
             bool continue_check = false;
             auto sub_start = start;
             for (width_type i = 0; i < slotuse; ++i) {
@@ -214,13 +212,17 @@ private:
                     ++sub_end;
                 }
                 if (sub_start != sub_end || continue_check) {
-                    min = generateUpdates(inner->slot[i], sub_start, sub_end, min);
+                    min = generateUpdates(node, inner->slot[i], sub_start, sub_end, pq_updates, min);
                     // if the last element (router) is dominated, also check for dominance in the next leaf
                     continue_check = min <= inner->slot[i].slotkey.second_weight;
                 }
+                new_weight += inner->slot[i].weight;
+
                 sub_start = sub_end;
                 min = std::min(min, inner->slot[i].slotkey.second_weight);
-            } 
+            }
+            slot.weight = new_weight;
+
             if (sub_start != end) {
                 // Generate updates for all elements larger than the largest router key
                 for (candidates_iter_type candidate = sub_start; candidate != end; ++candidate) {
@@ -230,6 +232,7 @@ private:
                     }
                     min = new_label.second_weight;
                     tls_data->local_updates.push_back({Operation<Label>::INSERT, new_label});
+                    pq_updates.push_back({Operation<NodeLabel>::INSERT, {node, new_label}});
                 }
             }  
         } 
@@ -264,16 +267,22 @@ private:
         return false;
     }
 
-    template<class candidates_iter_type>
-    inline Label::weight_type generateLeafUpdates(const inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, Label::weight_type min) {
+    template<class NodeID, class candidates_iter_type, class PQUpdates>
+    inline Label::weight_type generateLeafUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
         const width_type slotuse = leaf->slotuse;
         width_type i = 0;
 
+        const size_t pre_upd_count = tls_data->local_updates.size();
+        size_t new_weight = slot.weight;
+
         // Delete elements by a new labels inserted into a previous leaf
         while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
             batch_type = INSERTS_AND_DELETES;
-            tls_data->local_updates.push_back({Operation<Label>::DELETE, leaf->slotkey[i++]});
+            pq_updates.push_back({Operation<NodeLabel>::DELETE, {node, leaf->slotkey[i]}});
+            tls_data->local_updates.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
+            --new_weight;
+            ++i;
         }
 
         // Iterate of candidate labels and check dominance.
@@ -294,12 +303,23 @@ private:
                     --iter;
                 }
                 tls_data->local_updates.insert(++iter, {Operation<Label>::INSERT, new_label});
+                pq_updates.push_back({Operation<NodeLabel>::INSERT, {node, new_label}});
+                ++new_weight;
 
                 while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
                     batch_type = INSERTS_AND_DELETES;
-                    tls_data->local_updates.push_back({Operation<Label>::DELETE, leaf->slotkey[i++]});
+                    tls_data->local_updates.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
+                    pq_updates.push_back({Operation<NodeLabel>::DELETE, {node, leaf->slotkey[i]}});
+                    --new_weight;
+                    ++i;
                 }
             }
+        }
+        if (new_weight > leafslotmin && new_weight < leafslotmax && pre_upd_count != tls_data->local_updates.size()) {
+            slot.weight = new_weight;
+            setOperationsAndComputeWeightDelta(tls_data->local_updates, batch_type, pre_upd_count);
+            update_leaf_in_current_tree(slot, pre_upd_count, tls_data->local_updates.size());
+            tls_data->local_updates.resize(pre_upd_count);
         }
         return min;
     }
@@ -342,7 +362,7 @@ private:
     }
 
     template<typename T>
-    inline size_type setOperationsAndComputeWeightDelta(const T& _updates, const OperationBatchType _batch_type) {
+    inline size_type setOperationsAndComputeWeightDelta(const T& _updates, const OperationBatchType _batch_type, const size_t start=0) {
         updates = _updates.data();
         batch_type = _batch_type;
         // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 
@@ -351,7 +371,7 @@ private:
             long val = 0; // exclusive prefix sum
             assert(tls_data->weightdelta.capacity() > _updates.size());
             tls_data->weightdelta[0] = val;
-            for (size_type i = 0; i < _updates.size();) {
+            for (size_type i = start; i < _updates.size();) {
                 val = val + updates[i].type;
                 tls_data->weightdelta[++i] = val;
             }
