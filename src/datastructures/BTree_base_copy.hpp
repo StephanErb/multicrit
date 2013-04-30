@@ -616,9 +616,10 @@ protected:
         BTREE_PRINT("Allocating " << num_subtrees(n, designated_leafsize) << " new  nodes for tree of size " << n << std::endl);
         const size_type leaf_count = num_subtrees(n, designated_leafsize);
 
-        tls_data->leaves.clear();
-        tls_data->leaves.resize(leaf_count, NULL);
-        return tls_data->leaves;
+        auto& ret = tls_data->leaves;
+        ret.clear();
+        ret.resize(leaf_count, NULL);
+        return ret;
     }
 
     template<class leaf_list> 

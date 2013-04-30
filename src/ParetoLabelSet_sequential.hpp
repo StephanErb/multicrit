@@ -40,7 +40,7 @@
 #endif
 
 #ifndef LS_BRANCHING_PARAMETER_B
-#define LS_BRANCHING_PARAMETER_B 16
+#define LS_BRANCHING_PARAMETER_B 32
 #endif
 
 
@@ -221,17 +221,19 @@ private:
                 sub_start = sub_end;
                 min = std::min(min, inner->slot[i].slotkey.second_weight);
             }
+            update_router(slot.slotkey, inner->slot[slotuse-1].slotkey);
             slot.weight = new_weight;
 
             if (sub_start != end) {
                 // Generate updates for all elements larger than the largest router key
+                auto& local_upds = tls_data->local_updates;
                 for (candidates_iter_type candidate = sub_start; candidate != end; ++candidate) {
                     const Label& new_label = *candidate;
                     if (new_label.second_weight >= min) {
                         continue; 
                     }
                     min = new_label.second_weight;
-                    tls_data->local_updates.push_back({Operation<Label>::INSERT, new_label});
+                    local_upds.push_back({Operation<Label>::INSERT, new_label});
                     pq_updates.push_back({Operation<NodeLabel>::INSERT, {node, new_label}});
                 }
             }  
@@ -269,18 +271,20 @@ private:
 
     template<class NodeID, class candidates_iter_type, class PQUpdates>
     inline Label::weight_type generateLeafUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
+        auto& local_upds = tls_data->local_updates;
+
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
         const width_type slotuse = leaf->slotuse;
         width_type i = 0;
 
-        const size_t pre_upd_count = tls_data->local_updates.size();
+        const size_t pre_upd_count = local_upds.size();
         size_t new_weight = slot.weight;
 
         // Delete elements by a new labels inserted into a previous leaf
         while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
             batch_type = INSERTS_AND_DELETES;
             pq_updates.push_back({Operation<NodeLabel>::DELETE, {node, leaf->slotkey[i]}});
-            tls_data->local_updates.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
+            local_upds.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
             --new_weight;
             ++i;
         }
@@ -298,28 +302,31 @@ private:
                 min = new_label.second_weight;
 
                 // Find proper insertion position. Might be required (but often isn't) if a previous dominance check was too greedy
-                auto iter = --tls_data->local_updates.end();
-                while (iter != --tls_data->local_updates.begin() && iter->data.first_weight >= new_label.first_weight) {
+                auto iter = --local_upds.end();
+                while (iter != --local_upds.begin() && iter->data.first_weight >= new_label.first_weight) {
                     --iter;
                 }
-                tls_data->local_updates.insert(++iter, {Operation<Label>::INSERT, new_label});
+                local_upds.insert(++iter, {Operation<Label>::INSERT, new_label});
                 pq_updates.push_back({Operation<NodeLabel>::INSERT, {node, new_label}});
                 ++new_weight;
 
                 while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
                     batch_type = INSERTS_AND_DELETES;
-                    tls_data->local_updates.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
+                    local_upds.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
                     pq_updates.push_back({Operation<NodeLabel>::DELETE, {node, leaf->slotkey[i]}});
                     --new_weight;
                     ++i;
                 }
             }
         }
-        if (new_weight > leafslotmin && new_weight < leafslotmax && pre_upd_count != tls_data->local_updates.size()) {
+
+        // If all updates fit into the leaf: Update directly without walking the root-to-leaf path again
+        const size_t post_upd_count = local_upds.size();
+        if (pre_upd_count !=  post_upd_count && new_weight >= leafslotmin && new_weight <= leafslotmax) {
             slot.weight = new_weight;
-            setOperationsAndComputeWeightDelta(tls_data->local_updates, batch_type, pre_upd_count);
-            update_leaf_in_current_tree(slot, pre_upd_count, tls_data->local_updates.size());
-            tls_data->local_updates.resize(pre_upd_count);
+            setOperationsAndComputeWeightDelta(local_upds, batch_type, pre_upd_count);
+            update_leaf_in_current_tree(slot, pre_upd_count, post_upd_count);
+            local_upds.resize(pre_upd_count);
         }
         return min;
     }
@@ -369,13 +376,14 @@ private:
         // computes the weight delta realized by the updates in range [begin, end)
         if (_batch_type == INSERTS_AND_DELETES) {
             long val = 0; // exclusive prefix sum
-            assert(tls_data->weightdelta.capacity() > _updates.size());
-            tls_data->weightdelta[0] = val;
+            auto& weightdelta = tls_data->weightdelta;
+            assert(weightdelta.capacity() > _updates.size());
+            weightdelta[0] = val;
             for (size_type i = start; i < _updates.size();) {
                 val = val + updates[i].type;
-                tls_data->weightdelta[++i] = val;
+                weightdelta[++i] = val;
             }
-            return size() + tls_data->weightdelta[_updates.size()];
+            return size() + weightdelta[_updates.size()];
         } else {
             // We can use the shortcut based on the 
             return size() + _updates.size() * batch_type;
