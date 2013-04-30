@@ -4,7 +4,7 @@ set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounde
 set size 0.40,0.38
 
 # Legend
-#set key outside top right Right
+set key top center Left
 set key samplen 2
 set key width -4
 set key reverse
@@ -36,13 +36,13 @@ set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_insertion_r01_s1.ps"
 
 set xrange [100:]
-set yrange [0:80]
+set yrange [0:50]
 
 plot '../../timings/set/insert_p_8_r0.1_s1' using 4:($1*1000/$4) title ' mcstl (p8)' w lp ls 2,\
 			'../../timings/btree/insert_p_1_r0.1_s1' using 4:($1*1000/$4) title ' btree (p1)' w lp ls 3,\
 			'../../timings/btree/insert_sequ_r0.1_s1' using 4:($1*1000/$4) title ' btree (seq)' w lp ls 1,\
-			'../../timings/vec/insert_sequ_r0.1_s1' using 4:($1*1000/$4) title ' vec (seq)' w lp ls 7,\
-		    '../../timings/btree/insert_p_2_r0.1_s1' using 4:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
-		    '../../timings/btree/insert_p_4_r0.1_s1' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
 			'../../timings/btree/insert_p_8_r0.1_s1' using 4:($1*1000/$4) title ' btree (p8)' w lp ls 6
+			#'../../timings/vec/insert_sequ_r0.1_s1' using 4:($1*1000/$4) title ' vec (seq)' w lp ls 7,\
+		    #'../../timings/btree/insert_p_2_r0.1_s1' using 4:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
+		    #'../../timings/btree/insert_p_4_r0.1_s1' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
 			#'../../timings/btree/insert_p_16_r0.1_s1' using 4:($1*1000/$4) title ' btree (p16)' w lp ls 7

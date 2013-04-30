@@ -36,7 +36,7 @@ set ylabel "Speedup" offset 1
 set output "btree_bulk_insertion_speedup_r01_s1.ps"
 
 set xrange [100:]
-set yrange [:10]
+set yrange [:16]
 
 plot\
  '< join -j 4 ../../timings/btree/insert_sequ_r0.1_s1 ../../timings/btree/insert_p_16_r0.1_s1' using 1:($2/$25) title ' btree (p16)' with lp ls 7,\
