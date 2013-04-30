@@ -1,9 +1,10 @@
 # Bulk Insertion
-1.34809 0 2 1 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-1.96288 0 2 10 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-29.839 0 2 100 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-71.1656 0 17 1000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-148.195 0 70 10000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-758.16 0.0483398 471 100000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-7782.65 3.13281 4371 1000000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
-59658.2 219.956 42948 10000000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+26.8677 0 3 100 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+53.7607 0 7 316 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+77.5982 0 21 1000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+102.777 0 63 3162 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+151.828 0 116 10000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+247.914 0 252 31622 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+783.899 0 583 100000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+1938.18 0 1663 316227 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
+4307.02 0.258447 4981 1000000 64 16 100 0.01 16 # time in [µs], memory [mb], peak memory [mb], k, tree_k, tree_b, ratio, skew, p
