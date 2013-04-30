@@ -53,7 +53,7 @@ public:
 	inline void reset() {
 		current = end = 0;
 	}
-	inline void push_back(const value_type& val) {
+	inline void push_back(const value_type&& val) {
 		if (current == end) {
 			alloc(BATCH_SIZE);
 			for (size_t i = current; i < end; ++i) {
@@ -88,7 +88,7 @@ public:
 	inline void reset() {
 		current = end = 0;
 	}
-	inline void push_back(const value_type& val) {
+	inline void push_back(const value_type&& val) {
 		if (current == end) {
 			alloc(BATCH_SIZE);
 			for (size_t i = current; i < end; ++i) {
