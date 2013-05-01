@@ -198,10 +198,16 @@ private:
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const width_type slotuse = inner->slotuse;
 
-            size_t new_weight = 0;
             bool continue_check = false;
             auto sub_start = start;
-            for (width_type i = 0; i < slotuse; ++i) {
+            width_type i = 0;
+
+            while (i < slotuse && key_less(inner->slot[i].slotkey, *sub_start)) {
+                min = inner->slot[i].slotkey.second_weight;
+                ++i;
+            }
+
+            while (i < slotuse && sub_start != end) {
                 // move over dominated labels
                 while (sub_start != end && sub_start->second_weight >= min) {
                     ++sub_start;
@@ -212,17 +218,18 @@ private:
                     ++sub_end;
                 }
                 if (sub_start != sub_end || continue_check) {
+                    const width_type pre_weight = inner->slot[i].weight;
                     min = generateUpdates(node, inner->slot[i], sub_start, sub_end, pq_updates, min);
+                    const signed short diff = inner->slot[i].weight - pre_weight;
+                    slot.weight += diff;
                     // if the last element (router) is dominated, also check for dominance in the next leaf
                     continue_check = min <= inner->slot[i].slotkey.second_weight;
+                    sub_start = sub_end;
                 }
-                new_weight += inner->slot[i].weight;
-
-                sub_start = sub_end;
                 min = std::min(min, inner->slot[i].slotkey.second_weight);
+                ++i;
             }
             update_router(slot.slotkey, inner->slot[slotuse-1].slotkey);
-            slot.weight = new_weight;
 
             if (sub_start != end) {
                 // Generate updates for all elements larger than the largest router key
