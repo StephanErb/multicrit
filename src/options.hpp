@@ -91,7 +91,7 @@
  * Buffer size: How much buffer space to allocate when writing to shared data structures
  */
 #ifndef BATCH_SIZE
-#define BATCH_SIZE 512
+#define BATCH_SIZE 128
 #endif
 
 
