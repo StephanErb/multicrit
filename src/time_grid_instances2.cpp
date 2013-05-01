@@ -103,10 +103,10 @@ int main(int argc, char ** args) {
 	if (n != 0) {
 		timeGrid(0, n, n, verbose, iterations, q, p, max_costs);
 	} else {
-		timeGrid(1,   20, 20, verbose, iterations, q, p, max_costs);
+		/*timeGrid(1,   20, 20, verbose, iterations, q, p, max_costs);
 		timeGrid(2,   40, 40, verbose, iterations, q, p, max_costs);
 		timeGrid(3,   60, 60, verbose, iterations, q, p, max_costs);
-		timeGrid(4,   80, 80, verbose, iterations, q, p, max_costs);
+		timeGrid(4,   80, 80, verbose, iterations, q, p, max_costs);*/
 		timeGrid(5,  100, 100, verbose, iterations, q, p, max_costs);
 		timeGrid(6,  120, 120, verbose, iterations, q, p, max_costs);
 		timeGrid(7,  140, 140, verbose, iterations, q, p, max_costs);
@@ -123,11 +123,11 @@ int main(int argc, char ** args) {
 		timeGrid(18, 360, 360, verbose, iterations, q, p, max_costs);
 		timeGrid(19, 380, 380, verbose, iterations, q, p, max_costs);
 		timeGrid(20, 400, 400, verbose, iterations, q, p, max_costs);
-		timeGrid(21, 420, 420, verbose, iterations, q, p, max_costs);
+		/*timeGrid(21, 420, 420, verbose, iterations, q, p, max_costs);
 		timeGrid(22, 440, 440, verbose, iterations, q, p, max_costs);
 		timeGrid(23, 460, 460, verbose, iterations, q, p, max_costs);
 		timeGrid(24, 480, 480, verbose, iterations, q, p, max_costs);
-		timeGrid(25, 500, 500, verbose, iterations, q, p, max_costs);		
+		timeGrid(25, 500, 500, verbose, iterations, q, p, max_costs);*/
 	}
 
 	return 0;
