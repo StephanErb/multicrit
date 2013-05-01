@@ -76,11 +76,11 @@ public:
 			if (iter->second_weight < min->second_weight ||
 					(iter->first_weight == min->first_weight && iter->second_weight == min->second_weight)) {
 				min = iter;
-				updates.push_back({Operation<NodeLabel>::DELETE, *iter});
+				updates.emplace_back(Operation<NodeLabel>::DELETE, *iter);
 				FORALL_EDGES(graph, iter->node, eid) {
                 	const auto& edge = graph.getEdge(eid);
-                    candidates.push_back(typename cand_sequence_type::value_type(edge.target,
-                            {iter->first_weight + edge.first_weight, iter->second_weight + edge.second_weight}));
+                    candidates.emplace_back(edge.target, iter->first_weight + edge.first_weight, 
+                    	                                 iter->second_weight + edge.second_weight);
                 }
 			}
 			++iter;
@@ -186,7 +186,7 @@ public:
 
 	void init(const NodeLabel& data) {
 		std::vector<Operation<NodeLabel>> upds;
-		upds.push_back({Operation<NodeLabel>::INSERT, data});
+		upds.emplace_back(Operation<NodeLabel>::INSERT, data);
 		labels.apply_updates(upds, INSERTS_ONLY);
 	}
 

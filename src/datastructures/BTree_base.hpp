@@ -73,9 +73,9 @@ struct Operation {
     enum OpType {INSERT=1, DELETE=-1};
     OpType type;
     data_type data;
-    Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-    Operation() {}
-
+    inline Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
+    inline Operation(const OpType& x, data_type&& y) : type(x), data(y) {}
+    inline Operation() {}
 };
 
 template <typename _Key, typename _MinKey>
@@ -654,12 +654,12 @@ protected:
                         (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
 
                     // Generate Update that will delete the minima
-                    updates.push_back(typename upd_sequence_type::value_type(Operation<key_type>::DELETE, leaf->slotkey[i]));
+                    updates.emplace_back(Operation<key_type>::DELETE, leaf->slotkey[i]);
                     // Derive all candidate labels 
                     FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
                         const auto& edge = graph.getEdge(eid);
-                        candidates.push_back(typename cand_sequence_type::value_type(edge.target,
-                            {leaf->slotkey[i].first_weight + edge.first_weight, leaf->slotkey[i].second_weight + edge.second_weight}));
+                        candidates.emplace_back(edge.target, leaf->slotkey[i].first_weight + edge.first_weight, 
+                                                             leaf->slotkey[i].second_weight + edge.second_weight);
                     }
                     min = &leaf->slotkey[i];
                 }

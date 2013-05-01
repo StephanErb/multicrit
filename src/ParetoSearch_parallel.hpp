@@ -158,7 +158,7 @@ public:
 			#endif
 
 			pq.candidate_counter -= candidate_counter_size_diff;
-			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 512)),
+			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 64)),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();

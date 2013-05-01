@@ -40,10 +40,13 @@ struct NodeLabel : public Label {
 	typedef utility::datastructure::NodeID NodeID;
 	NodeID node;
 
- 	NodeLabel(const NodeID& x, const Label& y)
+	inline NodeLabel(const NodeID& x, const Label::weight_type& y1, const Label::weight_type& y2)
+ 		: Label(y1, y2), node(x)
+ 	{}
+ 	inline NodeLabel(const NodeID& x, const Label& y)
  		: Label(y), node(x)
  	{}
-	NodeLabel() : Label(0,0), node(0) {}
+	inline NodeLabel() : Label(0,0), node(0) {}
 
 	friend std::ostream& operator<<(std::ostream& os, const NodeLabel& data) {
 		os << " (" << data.node << ": " << data.first_weight << "," << data.second_weight << ")";

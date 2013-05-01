@@ -53,7 +53,8 @@ public:
 	inline void reset() {
 		current = end = 0;
 	}
-	inline void push_back(const value_type&& val) {
+	template<typename ...Args>
+	inline void emplace_back(Args&& ...args) {
 		if (current == end) {
 			alloc(BATCH_SIZE);
 			for (size_t i = current; i < end; ++i) {
@@ -61,7 +62,7 @@ public:
 			}
 		}
 		assert(vec->capacity() > current);
-		vec->data()[current++] = val;
+		vec->data()[current++] = value_type(std::forward<Args>(args)...);
 	}
 };
 
@@ -88,7 +89,8 @@ public:
 	inline void reset() {
 		current = end = 0;
 	}
-	inline void push_back(const value_type&& val) {
+	template<typename ...Args>
+	inline void emplace_back(Args&& ...args) {
 		if (current == end) {
 			alloc(BATCH_SIZE);
 			for (size_t i = current; i < end; ++i) {
@@ -97,7 +99,7 @@ public:
 			}
 		}
 		assert(vec->capacity() > current);
-		vec->data()[current++] = val;
+		vec->data()[current++] = value_type(std::forward<Args>(args)...);
 	}
 };
 

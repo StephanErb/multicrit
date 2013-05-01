@@ -183,14 +183,14 @@ public:
     void init(const Label& data, ThreadLocalLSData& _data) {
         tls_data = &_data; // pupulate with current (thread local) data structures
         std::vector<Operation<Label>> upds;
-        upds.push_back({Operation<Label>::INSERT, data});
+        upds.emplace_back(Operation<Label>::INSERT, data);
         apply_updates(upds, INSERTS_ONLY);
     }
 
 private:
 
     template<class NodeID, class candidates_iter_type, class PQUpdates>
-    Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
+    inline Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
 
         if (slot.childid->isleafnode()) {
             return generateLeafUpdates(node, slot, start, end, pq_updates, min);
@@ -233,8 +233,8 @@ private:
                         continue; 
                     }
                     min = new_label.second_weight;
-                    local_upds.push_back({Operation<Label>::INSERT, new_label});
-                    pq_updates.push_back({Operation<NodeLabel>::INSERT, {node, new_label}});
+                    local_upds.emplace_back(Operation<Label>::INSERT, new_label);
+                    pq_updates.emplace_back(Operation<NodeLabel>::INSERT, NodeLabel(node, new_label));
                 }
             }  
         } 
@@ -283,8 +283,8 @@ private:
         // Delete elements by a new labels inserted into a previous leaf
         while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
             batch_type = INSERTS_AND_DELETES;
-            pq_updates.push_back({Operation<NodeLabel>::DELETE, {node, leaf->slotkey[i]}});
-            local_upds.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
+            pq_updates.emplace_back(Operation<NodeLabel>::DELETE, NodeLabel(node, leaf->slotkey[i]));
+            local_upds.emplace_back(Operation<Label>::DELETE, leaf->slotkey[i]);
             --new_weight;
             ++i;
         }
@@ -307,13 +307,13 @@ private:
                     --iter;
                 }
                 local_upds.insert(++iter, {Operation<Label>::INSERT, new_label});
-                pq_updates.push_back({Operation<NodeLabel>::INSERT, {node, new_label}});
+                pq_updates.emplace_back(Operation<NodeLabel>::INSERT, NodeLabel(node, new_label));
                 ++new_weight;
 
                 while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
                     batch_type = INSERTS_AND_DELETES;
-                    local_upds.push_back({Operation<Label>::DELETE, leaf->slotkey[i]});
-                    pq_updates.push_back({Operation<NodeLabel>::DELETE, {node, leaf->slotkey[i]}});
+                    local_upds.emplace_back(Operation<Label>::DELETE, leaf->slotkey[i]);
+                    pq_updates.emplace_back(Operation<NodeLabel>::DELETE, NodeLabel(node, leaf->slotkey[i]));
                     --new_weight;
                     ++i;
                 }
@@ -465,11 +465,11 @@ public:
             min = new_label.second_weight;
             
             // Schedule PQ updates && Find affected range
-            updates.push_back({Operation<NodeLabel>::INSERT, NodeLabel(node, new_label)});
+            updates.emplace_back(Operation<NodeLabel>::INSERT, NodeLabel(node, new_label));
             size_t insertion_pos = (size_t)(iter - labels.begin());
             size_t first_nondominated = insertion_pos; /* will point to first label where the y-coord is truly smaller */
             while (secondWeightGreaterOrEquals(labels[first_nondominated], new_label)) { 
-                updates.push_back({Operation<NodeLabel>::DELETE, NodeLabel(node, labels[first_nondominated++])});
+                updates.emplace_back(Operation<NodeLabel>::DELETE, NodeLabel(node, labels[first_nondominated++]));
             }
 
             const size_t insertion_distance = insertion_pos - previous_first_nondominated;
