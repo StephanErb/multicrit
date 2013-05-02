@@ -73,8 +73,8 @@ struct Operation {
     enum OpType {INSERT=1, DELETE=-1};
     OpType type;
     data_type data;
-    inline Operation(const OpType& x, const data_type& y) : type(x), data(y) {}
-    inline Operation(const OpType& x, data_type&& y) : type(x), data(y) {}
+    template<typename ...Args>
+    inline Operation(const OpType& x, Args&& ...args) : type(x), data(std::forward<Args>(args)...) {}
     inline Operation() {}
 };
 
