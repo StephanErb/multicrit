@@ -66,9 +66,9 @@ void bulkConstruct(std::vector<Operation<Label>>& updates, Tree& tree, size_t n)
 		updates.reserve(n);
 		for (size_t j=0; j < n; ++j) {
 			#ifdef USE_GRAPH_LABEL
-				updates.push_back({Operation<Label>::INSERT, {dist(gen), dist(gen), dist(gen)}});
+				updates.emplace_back(Operation<Label>::INSERT, dist(gen), dist(gen), dist(gen));
 			#else
-				updates.push_back({Operation<Label>::INSERT, dist(gen)});
+				updates.emplace_back(Operation<Label>::INSERT, dist(gen));
 			#endif
 		}
 		#ifdef PARALLEL_BUILD
@@ -116,9 +116,9 @@ void timeBulkDeletion(size_t k, double ratio, double skew, size_t iterations, in
 		inserts.reserve(k);
 		for (size_t j=0; j < k; ++j) {
 			#ifdef USE_GRAPH_LABEL
-				inserts.push_back({Operation<Label>::INSERT, {skewed_dist(gen), skewed_dist(gen), skewed_dist(gen)}});
+				inserts.emplace_back(Operation<Label>::INSERT, skewed_dist(gen), skewed_dist(gen), skewed_dist(gen));
 			#else
-				inserts.push_back({Operation<Label>::INSERT, skewed_dist(gen)});
+				inserts.emplace_back(Operation<Label>::INSERT, skewed_dist(gen));
 			#endif
 		}
 
