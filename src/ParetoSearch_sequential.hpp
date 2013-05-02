@@ -131,13 +131,14 @@ public:
 				start = stop;
 			#endif
 
+			const auto cand_end = candidates.end();
 			auto cand_iter = candidates.begin();
-			while (cand_iter != candidates.end()) {
+			while (cand_iter != cand_end) {
 				// find all labels belonging to the same target node
 				auto range_start = cand_iter;
 				auto& ls = labels[range_start->node];
 				ls.labels.prefetch();
-				while (cand_iter != candidates.end() && range_start->node == cand_iter->node) {
+				while (cand_iter != cand_end && range_start->node == cand_iter->node) {
 					++cand_iter;
 				}
 				std::sort(range_start, cand_iter, groupLabels);
