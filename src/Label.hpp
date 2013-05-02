@@ -16,6 +16,12 @@ struct Label {
 		: first_weight( first_weight_ ), second_weight( second_weight_ ) 
 	{}
 
+	inline uint64_t combined() const {
+		const uint32_t& mostSignificantWord = first_weight;
+		const uint32_t& leastSignificantWord = second_weight;
+		return (uint64_t) mostSignificantWord << 32 | leastSignificantWord;
+	}
+
 	bool operator==(const Label& other) const {
 		return other.first_weight == first_weight && other.second_weight == second_weight;
 	}

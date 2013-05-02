@@ -31,9 +31,7 @@ public:
 			return (uint64_t) label.first_weight + (uint64_t) label.second_weight;
 		#endif
 		#ifdef PRIORITY_LEX
-  			const uint32_t mostSignificantWord = label.first_weight;
-			const uint32_t leastSignificantWord = label.second_weight;
-  			return (uint64_t) mostSignificantWord << 32 | leastSignificantWord;
+			return label.combined();
 		#endif
 		#ifdef PRIORITY_MAX
 			return std::max(label.first_weight, label.second_weight);

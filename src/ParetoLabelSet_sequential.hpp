@@ -148,10 +148,7 @@ public:
 
     struct GroupByWeightComp {
         inline bool operator() (const Operation<Label>& i, const Operation<Label>& j) const {
-            if (i.data.first_weight == j.data.first_weight) {
-                return i.data.second_weight < j.data.second_weight;
-            }
-            return i.data.first_weight < j.data.first_weight;
+            return i.data.combined() < j.data.combined(); 
         }
     } groupByWeight;
 
@@ -557,10 +554,7 @@ private:
 
     struct GroupByWeightComp {
         inline bool operator() (const Label& i, const Label& j) const {
-            if (i.first_weight == j.first_weight) {
-                return i.second_weight < j.second_weight;
-            }
-            return i.first_weight < j.first_weight;
+            return i.combined() < j.combined(); 
         }
     } groupByWeight;
 
