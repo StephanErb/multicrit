@@ -206,8 +206,7 @@ private:
                 min = inner->slot[i].slotkey.second_weight;
                 ++i;
             }
-
-            while (i < slotuse && sub_start != end) {
+            while (i < slotuse && (sub_start != end || continue_check)) {
                 // move over dominated labels
                 while (sub_start != end && sub_start->second_weight >= min) {
                     ++sub_start;
@@ -230,20 +229,19 @@ private:
                 ++i;
             }
             update_router(slot.slotkey, inner->slot[slotuse-1].slotkey);
+            min = std::min(min, slot.slotkey.second_weight);
 
-            if (sub_start != end) {
-                // Generate updates for all elements larger than the largest router key
-                auto& local_upds = tls_data->local_updates;
-                for (candidates_iter_type candidate = sub_start; candidate != end; ++candidate) {
-                    const Label& new_label = *candidate;
-                    if (new_label.second_weight >= min) {
-                        continue; 
-                    }
-                    min = new_label.second_weight;
-                    local_upds.emplace_back(Operation<Label>::INSERT, new_label);
-                    pq_updates.emplace_back(Operation<NodeLabel>::INSERT, NodeLabel(node, new_label));
+            // Generate updates for all elements larger than the largest router key
+            auto& local_upds = tls_data->local_updates;
+            for (candidates_iter_type candidate = sub_start; candidate != end; ++candidate) {
+                const Label& new_label = *candidate;
+                if (new_label.second_weight >= min) {
+                    continue; 
                 }
-            }  
+                min = new_label.second_weight;
+                local_upds.emplace_back(Operation<Label>::INSERT, new_label);
+                pq_updates.emplace_back(Operation<NodeLabel>::INSERT, NodeLabel(node, new_label));
+            }
         } 
         return min;
     }
