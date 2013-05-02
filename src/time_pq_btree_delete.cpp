@@ -28,6 +28,10 @@
 		unsigned int y;
 		unsigned int node;
 
+		Label(unsigned int _x=0, unsigned int _y=0, unsigned int _node=0)
+			: x(_x), y(_y), node(_node)
+		{}
+		
 		friend std::ostream& operator<<(std::ostream& os, const Label& label) {
 			os << "{" << label.x << ", " << label.y  << ", " << label.node << "}";
 			return os;
