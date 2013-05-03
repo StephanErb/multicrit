@@ -93,6 +93,7 @@ public:
 
     // Exported to allow external init    
     using base::allocate_leaf_without_count;
+    using base::allocate_inner_without_count;
     using base::free_node_without_count;
     typedef typename base::node             node;
     typedef typename base::leaf_node        leaf_node;

@@ -382,6 +382,12 @@ protected:
         return n;
     }
 
+    inline inner_node* allocate_inner_without_count(level_type level) {
+        inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
+        n->initialize(level);
+        return n;
+    }
+
     inline void free_node(node *n) {
         if (n->isleafnode()) {
             leaf_node *ln = static_cast<leaf_node*>(n);

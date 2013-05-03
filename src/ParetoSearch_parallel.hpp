@@ -98,6 +98,7 @@ public:
 			for (auto& tl : pq.tls_data) {
 				if (tl.labelset_data.spare_leaf != NULL) {
 					pq.labelsets[0].free_node_without_count(tl.labelset_data.spare_leaf);
+					pq.labelsets[0].free_node_without_count(tl.labelset_data.spare_inner);
 				}
 			}
 		#endif
@@ -108,6 +109,7 @@ public:
 		#ifdef BTREE_PARETO_LABELSET
 			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
 			tl.labelset_data.spare_leaf = pq.labelsets[node].allocate_leaf_without_count();
+			tl.labelset_data.spare_inner = pq.labelsets[node].allocate_inner_without_count(0);
 			pq.labelsets[node].init(Label(0,0), tl.labelset_data);
 		#else
 			pq.labelsets[node].init(Label(0,0));
@@ -162,6 +164,7 @@ public:
 				#ifdef BTREE_PARETO_LABELSET
 					if (tl.labelset_data.spare_leaf == NULL) {
 						tl.labelset_data.spare_leaf = pq.labelsets[pq.candidates[r.begin()].node].allocate_leaf_without_count();
+						tl.labelset_data.spare_inner = pq.labelsets[pq.candidates[r.begin()].node].allocate_inner_without_count(0);
 					}
 				#endif
 				tl.updates.setup(pq.updates, pq.update_counter);

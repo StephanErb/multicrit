@@ -79,12 +79,14 @@ public:
 	{
 		#ifdef BTREE_PARETO_LABELSET
 			labelset_data.spare_leaf = labels[0].labels.allocate_leaf_without_count();
+			labelset_data.spare_inner = labels[0].labels.allocate_inner_without_count(0);
 		#endif
 	 }
 
 	~ParetoSearch() {
 		#ifdef BTREE_PARETO_LABELSET
 			labels[0].labels.free_node_without_count(labelset_data.spare_leaf);
+			labels[0].labels.free_node_without_count(labelset_data.spare_inner);
 		#endif
 	}
 

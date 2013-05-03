@@ -188,7 +188,8 @@ protected:
     struct ThreadLocalLSData {
         weightdelta_list weightdelta;
         leaf_list leaves;
-        node* spare_leaf;
+        leaf_node* spare_leaf;
+        inner_node* spare_inner;
         UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
         local_update_list local_updates;
 
@@ -305,6 +306,12 @@ protected:
         inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
         n->initialize(level);
         if (stats.gather_stats) stats.innernodes.fetch_and_increment();
+        return n;
+    }
+
+    inline inner_node* allocate_inner_without_count(level_type level) {
+        inner_node *n = new (inner_node_allocator().allocate(1)) inner_node();
+        n->initialize(level);
         return n;
     }
 
@@ -677,7 +684,9 @@ protected:
                 // Need to perform rebalancing.
                 size_type designated_treesize = designated_subtreesize(inner->level);
 
-                inner_node* result = allocate_inner(inner->level);
+                inner_node* result = tls_data->spare_inner;
+                result->initialize(inner->level);
+
                 width_type in = 0; // current slot in input tree
                 width_type out = 0;
 
@@ -723,7 +732,7 @@ protected:
                 }
                 result->slotuse = out;
                 update_router(slot.slotkey, result->slot[out-1].slotkey);
-                free_node(slot.childid);
+                tls_data->spare_inner = static_cast<inner_node*>(slot.childid);
                 slot.childid = result;
             }
         }
@@ -848,7 +857,7 @@ protected:
 
     inline void update_leaf_in_current_tree(inner_node_data& slot, const size_type upd_begin, const size_type upd_end) {
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
-        leaf_node* const result = static_cast<leaf_node*>(tls_data->spare_leaf);
+        leaf_node* const result = tls_data->spare_leaf;
 
         width_type in = 0; // existing key to read
         width_type out = 0; // position where to write
