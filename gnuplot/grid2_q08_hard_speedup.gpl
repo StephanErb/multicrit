@@ -31,19 +31,19 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "%g^{2}"
 #set logscale y 10
 
-set title "Neg. Correlated Grids (q=-0.8, c_{max}=1000)"
+set title "Correlated Grids Speedup (q=0.8, c_{max}=1000)"
 set xlabel "Grid Instance"
-set ylabel "Runtime [s]" offset 1
-set output "grid2_q-08_hard.ps"
+set ylabel "Speedup" offset 1
+set output "grid2_q08_hard_speedup.ps"
 
 set xrange [100:]
-set yrange [0:]
+set yrange [0:16]
 
-plot '../timings/grid2_lset_lex_q-0.8_hard' using 2:4 title ' LSet (lex)' ls 4 w lp,\
- 	 '../timings/grid2_paretosearch_sequ_vec_q-0.8_hard' using 2:4 title ' paPa (seq, vec)' ls 3 w lp,\
- 	 '../timings/grid2_paretosearch_sequ_btree_q-0.8_hard' using 2:4 title ' paPa (seq, btree)' ls 5 w lp,\
-	 '../timings/grid2_paretosearch_p8_vec_q-0.8_hard' using 2:4 title ' paPa (p8, vec)' ls 2 w lp,\
-	 '../timings/grid2_paretosearch_p8_btree_q-0.8_hard' using 2:4 title ' paPa (p8, btree)' ls 6 w lp
+plot\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0.8_hard ../timings/grid2_paretosearch_p16_btree_q0.8_hard' using 2:($4/$31) title ' paPa (p16)' with lp ls 7,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0.8_hard ../timings/grid2_paretosearch_p8_btree_q0.8_hard' using 2:($4/$31) title ' paPa (p8)' with lp ls 6,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0.8_hard ../timings/grid2_paretosearch_p4_btree_q0.8_hard' using 2:($4/$31) title ' paPa (p4)' with lp ls 5,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0.8_hard ../timings/grid2_paretosearch_p2_btree_q0.8_hard' using 2:($4/$31) title ' paPa (p2)' with lp ls 4,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0.8_hard ../timings/grid2_paretosearch_p1_btree_q0.8_hard' using 2:($4/$31) title ' paPa (p1)' with lp ls 3
 
-
-
+		    

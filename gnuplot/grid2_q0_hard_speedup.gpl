@@ -2,7 +2,7 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.7,0.50
+set size 0.40,0.38
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
@@ -31,19 +31,19 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "%g^{2}"
 #set logscale y 10
 
-set title "Speedup: Hard Square Grids - uncorrelated (q=0, c_{max}=1000)"
+set title "Uncorrelated Grids Speedup (q=0, c_{max}=1000)"
 set xlabel "Grid Instance"
 set ylabel "Speedup" offset 1
 set output "grid2_q0_hard_speedup.ps"
 
 set xrange [100:]
-set yrange [0:]
+set yrange [0:16]
 
 plot\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p16_btree_q0_hard' using 2:($4/$31) title ' ParetoSearch (p16, btree)' with lp ls 7,\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p8_btree_q0_hard' using 2:($4/$31) title ' ParetoSearch (p8, btree)' with lp ls 6,\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p4_btree_q0_hard' using 2:($4/$31) title ' ParetoSearch (p4, btree)' with lp ls 5,\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p2_btree_q0_hard' using 2:($4/$31) title ' ParetoSearch (p2, btree)' with lp ls 4,\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p1_btree_q0_hard' using 2:($4/$31) title ' ParetoSearch (p1, btree)' with lp ls 3
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p16_btree_q0_hard' using 2:($4/$31) title ' paPa (p16)' with lp ls 7,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p8_btree_q0_hard' using 2:($4/$31) title ' paPa (p8)' with lp ls 6,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p4_btree_q0_hard' using 2:($4/$31) title ' paPa (p4)' with lp ls 5,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p2_btree_q0_hard' using 2:($4/$31) title ' paPa (p2)' with lp ls 4,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q0_hard ../timings/grid2_paretosearch_p1_btree_q0_hard' using 2:($4/$31) title ' paPa (p1)' with lp ls 3
 
 		    

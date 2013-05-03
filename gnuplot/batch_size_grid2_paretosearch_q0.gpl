@@ -39,7 +39,7 @@ set output "batch_size_grid2_paretosearch_q0.ps"
 set xrange [:]
 set yrange [0:20]
 
-plot '../timings/batch_size_grid2_paretosearch_p_4_q0' using 11:4 title ' ParetoSearch (p4, btree)' ls 5 w lp,\
- 	 '../timings/batch_size_grid2_paretosearch_p_8_q0' using 11:4 title ' ParetoSearch (p8, btree)' ls 6 w lp,\
- 	 '../timings/batch_size_grid2_paretosearch_p_16_q0' using 11:4 title ' ParetoSearch (p16, btree)' ls 7 w lp
+plot '../timings/batch_size_grid2_paretosearch_p_4_q0' using 11:4 title ' paPa (p4)' ls 5 w lp,\
+ 	 '../timings/batch_size_grid2_paretosearch_p_8_q0' using 11:4 title ' paPa (p8)' ls 6 w lp,\
+ 	 '../timings/batch_size_grid2_paretosearch_p_16_q0' using 11:4 title ' paPa (p16)' ls 7 w lp
 	 
