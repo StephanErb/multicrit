@@ -69,7 +69,7 @@ public:
 
 			FORALL_EDGES(graph, current_node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				const Label new_label = createNewLabel(current_label, edge);
+				const Label& new_label = createNewLabel(current_label, edge);
 
 				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
 
@@ -157,11 +157,9 @@ public:
 
 			FORALL_EDGES(graph, current.node, eid) {
 				const Edge& edge = graph.getEdge(eid);
-				const Label new_label = createNewLabel(current, edge);
-
 				//std::cout << "  relax edge to " << edge.target  << ". New label (" <<  new_label.first_weight << "," << new_label.second_weight << "). ";
 
-				if (labels[edge.target].add(edge.target, new_label, heap)) {
+				if (labels[edge.target].add(edge.target, createNewLabel(current, edge), heap)) {
 					stats.report(NEW_LABEL_NONDOMINATED, edge.target, labels[edge.target].size());
 					//std::cout << "Label added." << std::endl;
 				} else {

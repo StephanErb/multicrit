@@ -368,11 +368,15 @@ public:
 template<typename label_type_slot>
 class LabelWithHandle : public label_type_slot {
 public:
-	explicit LabelWithHandle(const label_type_slot& label):
+	inline explicit LabelWithHandle(const label_type_slot& label, const size_t _handle=0):
 		label_type_slot(label.first_weight, label.second_weight),
-		handle(0)
+		handle(_handle)
 	{}
-	explicit LabelWithHandle(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const size_t handle):
+	inline explicit LabelWithHandle(label_type_slot&& label, const size_t _handle=0):
+		label_type_slot(label.first_weight, label.second_weight),
+		handle(_handle)
+	{}
+	inline explicit LabelWithHandle(const typename label_type_slot::weight_type first, const typename label_type_slot::weight_type second, const size_t handle):
 		label_type_slot(first, second),
 		handle(handle)
 	{}
@@ -515,7 +519,7 @@ public:
 
 	// Return true if the new_label is non-dominated and has been added
 	// as a temporary label to this label set. 
-	bool add(const NodeID& node, const label_type& label, heap_type_slot& heap) {
+	bool add(const NodeID& node, const label_type&& label, heap_type_slot& heap) {
 		typename B::iterator iter;
 		if (B::isDominated(labels, label, iter)) {
 			#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
@@ -525,25 +529,8 @@ public:
 			#endif
 			return false;
 		}
-		label_type_extended new_label(label);
-		typename B::iterator first_nondominated = B::y_predecessor(iter, new_label);
+		typename B::iterator first_nondominated = B::y_predecessor(iter, label);
 
-#ifdef TREE_SET
-		if (iter == first_nondominated) {
-			new_label.handle = heap.push(B::computePriority(new_label), Data(node, new_label));
-		} else {
-			// replace first dominated label and remove the rest
-			new_label.handle = iter->handle;	
-			heap.decreaseKey(iter->handle, B::computePriority(new_label));
-			heap.getUserData(iter->handle) = Data(node, new_label);
-
-			for (typename B::iterator i = ++iter; i != first_nondominated; ++i) {
-				heap.deleteNode(i->handle);
-			}
-			labels.erase(--iter, first_nondominated);
-		}
-		labels.insert(new_label);
-#else
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			const double size = labels.size()-2; // without both sentinals
 			const double position = iter - (labels.begin() + 1); // without leading sentinal 
@@ -551,21 +538,19 @@ public:
 		#endif
 		if (iter == first_nondominated) {
 			// delete range is empty, so just insert
-			new_label.handle = heap.push(B::computePriority(new_label), Data(node, new_label));
-			labels.insert(first_nondominated, new_label);
+			labels.emplace(first_nondominated, label, heap.push(B::computePriority(label), Data(node, label)));
 		} else {
 			// replace first dominated label and remove the rest
-			iter->first_weight = new_label.first_weight;
-			iter->second_weight = new_label.second_weight;
-			heap.decreaseKey(iter->handle, B::computePriority(new_label));
-			heap.getUserData(iter->handle) = Data(node, new_label);
+			iter->first_weight = label.first_weight;
+			iter->second_weight = label.second_weight;
+			heap.decreaseKey(iter->handle, B::computePriority(label));
+			heap.getUserData(iter->handle) = Data(node, label);
 
 			for (typename B::iterator i = ++iter; i != first_nondominated; ++i) {
 				heap.deleteNode(i->handle);
 			}
 			labels.erase(iter, first_nondominated);
 		}
-#endif
 		return true;
 	}
 

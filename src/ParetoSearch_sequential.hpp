@@ -231,9 +231,6 @@ private:
 		}
 	} groupOpsByWeight;
 
-	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
-		return Label(current_label.first_weight + edge.first_weight, current_label.second_weight + edge.second_weight);
-	}
 };
 
 
