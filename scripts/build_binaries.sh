@@ -40,7 +40,7 @@ make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET
 mv ./bin/time_grid_instances2.par ./bin/time_grid_instances2_paretosearch_ls_btree.par
 
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances1 > /dev/null
-mv ./bin/time_road_instances1 ./bin/time_road_instances1_paretosearch
+mv ./bin/time_road_instances1 ./bin/time_road_instances1_paretosearch_ls_btree
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances1.par > /dev/null
 mv ./bin/time_road_instances1.par ./bin/time_road_instances1_paretosearch_ls_btree.par
 
