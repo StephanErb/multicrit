@@ -32,7 +32,7 @@ set logscale x 10
 
 
 set title "Bulk Insertion Time (ratio=10, skew=1))"
-set xlabel "Inserted elements (s)"
+set xlabel "Inserted elements (k)"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_insertion_r10_s1.ps"
 

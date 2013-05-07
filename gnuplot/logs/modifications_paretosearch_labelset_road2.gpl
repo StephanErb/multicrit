@@ -23,7 +23,7 @@ set tics textcolor rgb "black"
 set style line 12 lc rgb '#808080' lt 0 lw 1
 set grid back ls 12
 
-set title "PaPaSearch on NY Road Instance (time/economic cost)" 
+set title "NY_1 Road Instance (time/economic cost)" 
 set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
 set output "modifications_paretosearch_labelset_road2.ps"

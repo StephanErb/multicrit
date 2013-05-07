@@ -30,19 +30,19 @@ set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 set format x "10^{%L}"
 set logscale x 10
 
-set title "Bulk Deletion & Insertion Time (ratio=10, skew=1))"
-set xlabel "Deleted elements (s)"
+set title "Bulk Deletion Time (ratio=10, skew=0.01)"
+set xlabel "Deleted elements (k)"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_delete_r10_s001.ps"
 
 set xrange [100:]
-set yrange [0:60]
+set yrange [0:30]
 
-plot '../../timings/btree/delete_separated_sequ_r10_s0.01' using 4:($1*1000/$4) title ' btree (seq, separated)' w lp ls 5,\
-     '../../timings/btree/delete_combined_sequ_r10_s0.01' using 4:($1*1000/$4) title ' btree (seq, combined)' w lp ls 4,\
-   	 '../../timings/btree/delete_separated_p_8_r10_s0.01' using 4:($1*1000/$4) title ' btree (p8, separated)' w lp ls 6,\
-	 '../../timings/btree/delete_combined_p_8_r10_s0.01' using 4:($1*1000/$4) title ' btree (p8, combined)' w lp ls 1	
-		    #'../../timings/btree/delete_p_2_r10_s0.01' using 4:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
-		    #'../../timings/btree/delete_p_4_r10_s0.01' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
-			#'../../timings/btree/delete_p_16_r10_s0.01' using 4:($1*1000/$4) title ' btree (p16)' w lp ls 7
+plot '../../timings/btree/delete_p_1_r10_s0.01' using 4:($1*1000/$4) title ' btree (p1)' w lp ls 3,\
+	 '../../timings/btree/delete_sequ_r10_s0.01' using 4:($1*1000/$4) title ' btree (seq)' w lp ls 1,\
+	 '../../timings/btree/delete_p_8_r10_s0.01' using 4:($1*1000/$4) title ' btree (p8)' w lp ls 6
+			#'../../timings/vec/insert_sequ_r10_s1' using 4:($1*1000/$4) title ' vec (seq)' w lp ls 7,\
+		    #'../../timings/btree/insert_p_2_r10_s1' using 4:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
+		    #'../../timings/btree/insert_p_4_r10_s1' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
+			#'../../timings/btree/insert_p_16_r10_s1' using 4:($1*1000/$4) title ' btree (p16)' w lp 
 		    

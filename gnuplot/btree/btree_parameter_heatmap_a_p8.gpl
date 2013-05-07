@@ -2,10 +2,10 @@ set encoding iso_8859_1
 set terminal postscript eps enhanced color font 'Helvetica,12 linewidth 2 rounded 
 set size 0.4,0.4
 
-set title "Sequential B-tree"
+set title "Parallel B-tree (p8)"
 set ylabel "Tree size ratio r"
 set xlabel "Leaf parameter k"
-set output "btree_parameter_heatmap_k_sequ.ps"
+set output "btree_parameter_heatmap_a_p8.ps"
 
 # define axis: remove border on top and right and set color to gray
 set style line 11 lc rgb '#808080' lt 1
@@ -20,7 +20,7 @@ set palette gray
 #set palette rgbformulae 22,13,10
 #set palette negative
 
-set cbrange [:]
+set cbrange [:0.22]
 unset cbtics
 set cblabel "fast                                  slow"
 
@@ -38,7 +38,7 @@ set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
 
 #set view map
 
-plot '../../timings/btree/insert_nodewidth_label_leaf_sequ_heatmap' matrix with image
+plot '../../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap' matrix with image
 
 
 

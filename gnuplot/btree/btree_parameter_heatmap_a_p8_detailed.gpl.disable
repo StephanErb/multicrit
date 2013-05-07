@@ -5,7 +5,7 @@ set size 0.4,0.4
 set title "Parallel B-tree (p8)"
 set ylabel "Tree size ratio r"
 set xlabel "Leaf parameter k"
-set output "btree_parameter_heatmap_k_p8_detailed.ps"
+set output "btree_parameter_heatmap_a_p8_detailed.ps"
 
 # define axis: remove border on top and right and set color to gray
 set style line 11 lc rgb '#808080' lt 1

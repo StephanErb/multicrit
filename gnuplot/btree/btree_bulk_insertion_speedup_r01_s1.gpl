@@ -31,7 +31,7 @@ set format x "10^{%L}"
 set logscale x 10
 
 set title "Bulk Insertion Speedup (ratio=0.1, skew=1)"
-set xlabel "Inserted elements (s)"
+set xlabel "Inserted elements (k)"
 set ylabel "Speedup" offset 1
 set output "btree_bulk_insertion_speedup_r01_s1.ps"
 

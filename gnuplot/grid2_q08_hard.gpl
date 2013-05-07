@@ -33,17 +33,17 @@ set format x "%g^{2}"
 
 set title "Correlated Grids (q=0.8, c_{max}=1000)"
 set xlabel "Grid Instance"
-set ylabel "Runtime [s]" offset 1
+set ylabel "Runtime [{/Symbol m}s] / n" offset 1
 set output "grid2_q08_hard.ps"
 
 set xrange [100:]
 set yrange [0:]
 
-plot '../timings/grid2_lset_lex_q0.8_hard' using 2:4 title ' LSet (lex)' ls 4 w lp,\
- 	 '../timings/grid2_paretosearch_sequ_vec_q0.8_hard' using 2:4 title ' paPa (seq, vec)' ls 3 w lp,\
- 	 '../timings/grid2_paretosearch_sequ_btree_q0.8_hard' using 2:4 title ' paPa (seq, btree)' ls 5 w lp,\
-	 '../timings/grid2_paretosearch_p8_vec_q0.8_hard' using 2:4 title ' paPa (p8, vec)' ls 2 w lp,\
-	 '../timings/grid2_paretosearch_p8_btree_q0.8_hard' using 2:4 title ' paPa (p8, btree)' ls 6 w lp
+plot '../timings/grid2_lset_lex_q0.8_hard' using 2:($4/($2*$3)*1000000) title ' LSet (lex)' ls 4 w lp,\
+ 	 '../timings/grid2_paretosearch_sequ_vec_q0.8_hard' using 2:($4/($2*$3)*1000000) title ' paPa (seq, vec)' ls 3 w lp,\
+ 	 '../timings/grid2_paretosearch_sequ_btree_q0.8_hard' using 2:($4/($2*$3)*1000000) title ' paPa (seq, btree)' ls 5 w lp,\
+	 '../timings/grid2_paretosearch_p8_vec_q0.8_hard' using 2:($4/($2*$3)*1000000) title ' paPa (p8, vec)' ls 2 w lp,\
+	 '../timings/grid2_paretosearch_p8_btree_q0.8_hard' using 2:($4/($2*$3)*1000000) title ' paPa (p8, btree)' ls 6 w lp
 
 
 

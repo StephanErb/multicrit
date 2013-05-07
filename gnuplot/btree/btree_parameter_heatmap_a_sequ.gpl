@@ -5,7 +5,7 @@ set size 0.4,0.4
 set title "Sequential B-tree"
 set ylabel "Tree size ratio r"
 set xlabel "Leaf parameter k"
-set output "btree_parameter_heatmap_k_sequ_detailed.ps"
+set output "btree_parameter_heatmap_a_sequ.ps"
 
 # define axis: remove border on top and right and set color to gray
 set style line 11 lc rgb '#808080' lt 1
@@ -20,11 +20,12 @@ set palette gray
 #set palette rgbformulae 22,13,10
 #set palette negative
 
-set cbrange [:]
+set cbrange [:0.22]
 unset cbtics
 set cblabel "fast                                  slow"
 
-set xtics ("64" 0, "512" 7, "1024" 15, "1536" 23, "2048" 31)
+#set xtics ("2^3" 0, "2^4" 1, "2^5" 2, "2^6" 3, "2^7" 4, "2^8" 5, "2^9" 6, "2^{10}" 7, "2^{11}" 8, "2^{12}" 9, "2^{13}" 10, "2^{14}" 11)
+set xtics ("2^4" 1, "2^6" 3, "2^8" 5, "2^{10}" 7, "2^{12}" 9, "2^{14}" 11)
 set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
 
 
@@ -37,7 +38,7 @@ set ytics ("0" 0, "1" 1, "10" 3, "10^2" 5, "10^3" 7, "10^4" 9)
 
 #set view map
 
-plot '../../timings/btree/insert_nodewidth_label_leaf_sequ_heatmap_detailed' matrix with image
+plot '../../timings/btree/insert_nodewidth_label_leaf_sequ_heatmap' matrix with image
 
 
 

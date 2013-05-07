@@ -22,7 +22,7 @@ set tics textcolor rgb "black"
 set style line 12 lc rgb '#808080' lt 0 lw 1
 set grid back ls 12
 
-set title "PaPaSearch on NJ Road Instance (time/distance)" 
+set title "NJ_3 Road Instance (time/distance)" 
 set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
 set output "modifications_paretosearch_labelset_road1.ps"
