@@ -55,7 +55,7 @@ void testGridExponential() {
 	LabelSettingAlgorithm algo(graph);
 	algo.run(NodeID(0));
 
-	assertTrue(algo.size(NodeID(0)) == 0, "Start node should have no labels");
+	assertTrue(algo.size(NodeID(0)) == 1, "Start node should have no labels");
 	assertTrue(algo.size(NodeID(1)) == 1, "Second node should have one labels");
 
 	unsigned int label_count = 2;
