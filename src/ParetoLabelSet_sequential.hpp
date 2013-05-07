@@ -153,15 +153,15 @@ public:
         }
     } groupByWeight;
 
-    template<class NodeID, class candidates_iter_type, class PQUpdates>
-    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, ThreadLocalLSData& _data) {
+    template<class NodeID, class candidates_iter_type, class PQUpdates, class Stats>
+    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, ThreadLocalLSData& _data, Stats& ls_stats) {
         tls_data = &_data; // pupulate with current (thread local) data structures
 
         inner_node_data fake_slot;
         fake_slot.childid = root;
         fake_slot.weight = stats.itemcount;
         batch_type = INSERTS_ONLY;
-        generateUpdates(node, fake_slot, start, end, pq_updates, std::numeric_limits<typename Label::weight_type>::max());
+        generateUpdates(node, fake_slot, start, end, pq_updates, std::numeric_limits<typename Label::weight_type>::max(), ls_stats);
         stats.itemcount = fake_slot.weight;
         root = fake_slot.childid;
 
@@ -187,11 +187,11 @@ public:
 
 private:
 
-    template<class NodeID, class candidates_iter_type, class PQUpdates>
-    inline Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
+    template<class NodeID, class candidates_iter_type, class PQUpdates, class Stats>
+    inline Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min,  Stats& stats) {
 
         if (slot.childid->isleafnode()) {
-            return generateLeafUpdates(node, slot, start, end, pq_updates, min);
+            return generateLeafUpdates(node, slot, start, end, pq_updates, min, stats);
         } else {
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const width_type slotuse = inner->slotuse;
@@ -207,6 +207,8 @@ private:
             while (i < slotuse && (sub_start != end || continue_check)) {
                 // move over dominated labels
                 while (sub_start != end && sub_start->second_weight >= min) {
+                    stats.report(LABEL_DOMINATED);
+                    stats.report(DOMINATION_SHORTCUT);
                     ++sub_start;
                 }
                 // find labels falling into the current subtree/slot
@@ -216,7 +218,7 @@ private:
                 }
                 if (sub_start != sub_end || continue_check) {
                     const width_type pre_weight = inner->slot[i].weight;
-                    min = generateUpdates(node, inner->slot[i], sub_start, sub_end, pq_updates, min);
+                    min = generateUpdates(node, inner->slot[i], sub_start, sub_end, pq_updates, min, stats);
                     const signed short diff = inner->slot[i].weight - pre_weight;
                     slot.weight += diff;
                     // if the last element (router) is dominated, also check for dominance in the next leaf
@@ -234,8 +236,11 @@ private:
             for (candidates_iter_type candidate = sub_start; candidate != end; ++candidate) {
                 const Label& new_label = *candidate;
                 if (new_label.second_weight >= min) {
+                    stats.report(LABEL_DOMINATED);
+                    stats.report(DOMINATION_SHORTCUT);
                     continue; 
                 }
+                stats.report(LABEL_NONDOMINATED);
                 min = new_label.second_weight;
                 local_upds.emplace_back(Operation<Label>::INSERT, new_label);
                 pq_updates.emplace_back(Operation<NodeLabel>::INSERT, node, new_label);
@@ -272,8 +277,8 @@ private:
         return false;
     }
 
-    template<class NodeID, class candidates_iter_type, class PQUpdates>
-    inline Label::weight_type generateLeafUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min) {
+    template<class NodeID, class candidates_iter_type, class PQUpdates, class Stats>
+    inline Label::weight_type generateLeafUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min, Stats& stats) {
         auto& local_upds = tls_data->local_updates;
 
         const leaf_node* const leaf = static_cast<leaf_node*>(slot.childid);
@@ -297,11 +302,15 @@ private:
             const Label& new_label = *candidate;
             // short cut dominated check among candidates
             if (new_label.second_weight >= min) {
+                stats.report(LABEL_DOMINATED);
+                stats.report(DOMINATION_SHORTCUT);
                 continue; 
             }
             if (isDominated(leaf, i, new_label)) {
+                stats.report(LABEL_DOMINATED);
                 min = leaf->slotkey[i].second_weight;
             } else {
+                stats.report(LABEL_NONDOMINATED);
                 min = new_label.second_weight;
 
                 // Find proper insertion position. Might be required (but often isn't) if a previous dominance check was too greedy

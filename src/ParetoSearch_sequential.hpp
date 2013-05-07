@@ -142,7 +142,7 @@ public:
 				}
 				std::sort(range_start, cand_iter, groupLabels);
 				#ifdef BTREE_PARETO_LABELSET
-					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data);
+					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data, stats);
 				#else
 					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, stats);
 				#endif

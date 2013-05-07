@@ -192,7 +192,7 @@ public:
 						start = stop;
 					#endif
 					#ifdef BTREE_PARETO_LABELSET
-						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data);
+						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data, stats);
 					#else
 						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, stats);
 					#endif
