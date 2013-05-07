@@ -1,170 +1,6 @@
 # Class 1 Grid Instances of [Machuca 2012]
 # SequentialParetoSearch_BTreeParetoQueue_VectorLabelSet_(radixsort, prefetching)
 
-# Iterations: 178
-# Created Labels: 23977
-#   initially dominated: 70.7094% (=16954)
-#     via candidate shortcut: 49.1153% (=8327)
-#   initially non-dominated: 29.2906% (=7023)
-#     finally dominated: 21.5008% (=1510)
-# LabelSet sizes: 
-#   avg: 13.7825
-#   max: 59
-# ParetoQueue sizes: 
-#   avg: 298.624
-#   max: 528
-# Pareto Optimal Elements: 
-#   avg: 35.4663
-#   max: 66
-# Pareto Queue Updates: 
-#   avg: 78.9157
-#   max: 143
-# Pareto Queue Size Delta: 
-#   avg: 7.03933
-#   max: 26
-# Label Set Updates:
-#   total: 9219
-#   leading to modifications: 42.5968%
-# Label Set Bulk Size per LS: 
-#   avg: 2.60082
-#   max: 22
-# Label Set Modifications per sucessful update: 
-#   avg: 1.78839
-#   max: 11
-# Subcomponent Timings:
-#   0.000283978 Find Pareto Min
-#   0.00123321 Group Candidates
-#   0.0012024 Update Labelsets 
-#   0.000360521 Sort Updates
-#   0.000410492 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-1 20 20 0.00354492 58 0 1.91016 1 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 735
-# Created Labels: 416533
-#   initially dominated: 70.2797% (=292738)
-#     via candidate shortcut: 53.5062% (=156633)
-#   initially non-dominated: 29.7203% (=123795)
-#     finally dominated: 16.2123% (=20070)
-# LabelSet sizes: 
-#   avg: 64.8281
-#   max: 215
-# ParetoQueue sizes: 
-#   avg: 2614.22
-#   max: 5683
-# Pareto Optimal Elements: 
-#   avg: 145.476
-#   max: 269
-# Pareto Queue Updates: 
-#   avg: 336.859
-#   max: 624
-# Pareto Queue Size Delta: 
-#   avg: 17.419
-#   max: 80
-# Label Set Updates:
-#   total: 113209
-#   leading to modifications: 48.5597%
-# Label Set Bulk Size per LS: 
-#   avg: 3.67933
-#   max: 38
-# Label Set Modifications per sucessful update: 
-#   avg: 2.25188
-#   max: 25
-# Subcomponent Timings:
-#   0.00662555 Find Pareto Min
-#   0.0142674 Group Candidates
-#   0.0251384 Update Labelsets 
-#   0.00753942 Sort Updates
-#   0.0110976 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-2 40 40 0.0646741 155 0 3.30859 3 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 1432
-# Created Labels: 1970091
-#   initially dominated: 70.3892% (=1386731)
-#     via candidate shortcut: 52.3055% (=725336)
-#   initially non-dominated: 29.6108% (=583360)
-#     finally dominated: 15.2172% (=88771)
-# LabelSet sizes: 
-#   avg: 137.386
-#   max: 422
-# ParetoQueue sizes: 
-#   avg: 8286.66
-#   max: 16970
-# Pareto Optimal Elements: 
-#   avg: 350.411
-#   max: 616
-# Pareto Queue Updates: 
-#   avg: 814.749
-#   max: 1443
-# Pareto Queue Size Delta: 
-#   avg: 27.5538
-#   max: 127
-# Label Set Updates:
-#   total: 471700
-#   leading to modifications: 52.48%
-# Label Set Bulk Size per LS: 
-#   avg: 4.17658
-#   max: 88
-# Label Set Modifications per sucessful update: 
-#   avg: 2.35655
-#   max: 73
-# Subcomponent Timings:
-#   0.0386996 Find Pareto Min
-#   0.0587038 Group Candidates
-#   0.125001 Update Labelsets 
-#   0.0402253 Sort Updates
-#   0.0625613 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-3 60 60 0.325198 376 0 8.30859 8 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 2467
-# Created Labels: 5688548
-#   initially dominated: 70.6941% (=4021467)
-#     via candidate shortcut: 53.4965% (=2151346)
-#   initially non-dominated: 29.3059% (=1667081)
-#     finally dominated: 14.2424% (=237433)
-# LabelSet sizes: 
-#   avg: 223.382
-#   max: 734
-# ParetoQueue sizes: 
-#   avg: 17677
-#   max: 36370
-# Pareto Optimal Elements: 
-#   avg: 584.697
-#   max: 971
-# Pareto Queue Updates: 
-#   avg: 1351.51
-#   max: 2330
-# Pareto Queue Size Delta: 
-#   avg: 35.9266
-#   max: 169
-# Label Set Updates:
-#   total: 1042433
-#   leading to modifications: 54.8754%
-# Label Set Bulk Size per LS: 
-#   avg: 5.45699
-#   max: 94
-# Label Set Modifications per sucessful update: 
-#   avg: 2.91428
-#   max: 50
-# Subcomponent Timings:
-#   0.133078 Find Pareto Min
-#   0.165478 Group Candidates
-#   0.404043 Update Labelsets 
-#   0.121375 Sort Updates
-#   0.218475 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-4 80 80 1.04246 736 0 19.707 19 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
 # Iterations: 3596
 # Created Labels: 11821132
 #   initially dominated: 70.4929% (=8333059)
@@ -196,179 +32,138 @@
 #   avg: 3.08125
 #   max: 74
 # Subcomponent Timings:
-#   0.310037 Find Pareto Min
-#   0.339358 Group Candidates
-#   0.931385 Update Labelsets 
-#   0.26688 Sort Updates
-#   0.510344 Update PQ 
+#   0.298648 Find Pareto Min
+#   0.320481 Group Candidates
+#   0.887614 Update Labelsets 
+#   0.248542 Sort Updates
+#   0.465799 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-5 100 100 2.35801 821 0 38.082 38 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+1 100 100 2.22115 821 0 38.0312 38 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 5384
-# Created Labels: 25460800
-#   initially dominated: 70.6121% (=17978412)
-#     via candidate shortcut: 51.6595% (=9287552)
-#   initially non-dominated: 29.3879% (=7482388)
-#     finally dominated: 14.5033% (=1085192)
+# Iterations: 5790
+# Created Labels: 29021731
+#   initially dominated: 70.0951% (=20342820)
+#     via candidate shortcut: 55.0982% (=11208522)
+#   initially non-dominated: 29.9049% (=8678911)
+#     finally dominated: 16.0139% (=1389831)
 # LabelSet sizes: 
-#   avg: 444.25
-#   max: 1378
+#   avg: 466.501
+#   max: 1898
 # ParetoQueue sizes: 
-#   avg: 54547.3
-#   max: 116377
+#   avg: 58301
+#   max: 119096
 # Pareto Optimal Elements: 
-#   avg: 1193.54
-#   max: 2050
+#   avg: 1264.31
+#   max: 2010
 # Pareto Queue Updates: 
-#   avg: 2779.49
-#   max: 4781
+#   avg: 2997.9
+#   max: 4820
 # Pareto Queue Size Delta: 
-#   avg: 51.0697
-#   max: 330
+#   avg: 54.5573
+#   max: 379
 # Label Set Updates:
-#   total: 4832637
-#   leading to modifications: 58.4949%
+#   total: 4394184
+#   leading to modifications: 58.4243%
 # Label Set Bulk Size per LS: 
-#   avg: 5.26851
-#   max: 116
+#   avg: 6.60458
+#   max: 278
 # Label Set Modifications per sucessful update: 
-#   avg: 2.6469
-#   max: 72
+#   avg: 3.3806
+#   max: 227
 # Subcomponent Timings:
-#   0.872964 Find Pareto Min
-#   0.7343 Group Candidates
-#   2.84085 Update Labelsets 
-#   0.613711 Sort Updates
-#   1.425 Update PQ 
+#   0.890359 Find Pareto Min
+#   0.755548 Group Candidates
+#   2.45942 Update Labelsets 
+#   0.62439 Sort Updates
+#   1.38821 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-6 120 120 6.48684 1210 0 78.7461 78 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+2 125 125 6.11793 1748 0 87.7734 87 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 7456
-# Created Labels: 47775734
-#   initially dominated: 70.0655% (=33474286)
-#     via candidate shortcut: 55.0559% (=18429585)
-#   initially non-dominated: 29.9345% (=14301448)
-#     finally dominated: 16.1141% (=2304544)
+# Iterations: 8054
+# Created Labels: 57389845
+#   initially dominated: 70.3701% (=40385317)
+#     via candidate shortcut: 53.505% (=21608144)
+#   initially non-dominated: 29.6299% (=17004528)
+#     finally dominated: 15.224% (=2588769)
 # LabelSet sizes: 
-#   avg: 612.087
-#   max: 2228
+#   avg: 640.7
+#   max: 2057
 # ParetoQueue sizes: 
-#   avg: 85044.9
-#   max: 176829
+#   avg: 98703.6
+#   max: 198510
 # Pareto Optimal Elements: 
-#   avg: 1614.28
-#   max: 2640
+#   avg: 1795.48
+#   max: 2912
 # Pareto Queue Updates: 
-#   avg: 3836.23
-#   max: 6389
+#   avg: 4222.63
+#   max: 6956
 # Pareto Queue Size Delta: 
-#   avg: 60.8695
-#   max: 347
+#   avg: 64.8074
+#   max: 477
 # Label Set Updates:
-#   total: 7348163
-#   leading to modifications: 60.3997%
+#   total: 8180197
+#   leading to modifications: 59.7488%
 # Label Set Bulk Size per LS: 
-#   avg: 6.50172
-#   max: 343
+#   avg: 7.0157
+#   max: 318
 # Label Set Modifications per sucessful update: 
-#   avg: 3.2223
-#   max: 260
+#   avg: 3.47914
+#   max: 174
 # Subcomponent Timings:
-#   1.83096 Find Pareto Min
-#   1.36377 Group Candidates
-#   5.16887 Update Labelsets 
-#   1.20064 Sort Updates
-#   3.01677 Update PQ 
+#   2.08115 Find Pareto Min
+#   1.48126 Group Candidates
+#   5.49034 Update Labelsets 
+#   1.26259 Sort Updates
+#   3.15244 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-7 140 140 12.581 1889 0 145.23 145 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+3 150 150 13.4678 1899 0 172.047 172 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 9027
-# Created Labels: 73727847
-#   initially dominated: 69.8437% (=51494262)
-#     via candidate shortcut: 55.816% (=28742038)
-#   initially non-dominated: 30.1563% (=22233585)
-#     finally dominated: 16.754% (=3725021)
+# Iterations: 11114
+# Created Labels: 102217024
+#   initially dominated: 69.8498% (=71398339)
+#     via candidate shortcut: 55.2419% (=39441776)
+#   initially non-dominated: 30.1502% (=30818685)
+#     finally dominated: 16.7656% (=5166934)
 # LabelSet sizes: 
-#   avg: 722.991
-#   max: 2799
+#   avg: 837.608
+#   max: 3302
 # ParetoQueue sizes: 
-#   avg: 116814
-#   max: 223147
+#   avg: 147456
+#   max: 306842
 # Pareto Optimal Elements: 
-#   avg: 2056.03
-#   max: 3212
+#   avg: 2313.57
+#   max: 3729
 # Pareto Queue Updates: 
-#   avg: 4926.02
-#   max: 7798
+#   avg: 5545.92
+#   max: 8963
 # Pareto Queue Size Delta: 
-#   avg: 72.0074
-#   max: 532
+#   avg: 76.6949
+#   max: 458
 # Label Set Updates:
-#   total: 10709778
-#   leading to modifications: 58.9568%
+#   total: 14837680
+#   leading to modifications: 62.423%
 # Label Set Bulk Size per LS: 
-#   avg: 6.88416
-#   max: 272
+#   avg: 6.88902
+#   max: 368
 # Label Set Modifications per sucessful update: 
-#   avg: 3.52124
-#   max: 209
+#   avg: 3.32739
+#   max: 314
 # Subcomponent Timings:
-#   3.07216 Find Pareto Min
-#   2.1034 Group Candidates
-#   8.78277 Update Labelsets 
-#   1.91186 Sort Updates
-#   5.08761 Update PQ 
+#   4.23374 Find Pareto Min
+#   2.64447 Group Candidates
+#   9.95434 Update Labelsets 
+#   2.36492 Sort Updates
+#   6.36547 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-8 160 160 20.9578 2627 0 216.898 216 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 11833
-# Created Labels: 118366334
-#   initially dominated: 69.894% (=82730956)
-#     via candidate shortcut: 52.9061% (=43769747)
-#   initially non-dominated: 30.106% (=35635378)
-#     finally dominated: 16.6236% (=5923865)
-# LabelSet sizes: 
-#   avg: 917.022
-#   max: 2648
-# ParetoQueue sizes: 
-#   avg: 167866
-#   max: 353019
-# Pareto Optimal Elements: 
-#   avg: 2516.38
-#   max: 4215
-# Pareto Queue Updates: 
-#   avg: 6023.05
-#   max: 10321
-# Pareto Queue Size Delta: 
-#   avg: 77.5314
-#   max: 427
-# Label Set Updates:
-#   total: 19683710
-#   leading to modifications: 62.5464%
-# Label Set Bulk Size per LS: 
-#   avg: 6.01342
-#   max: 240
-# Label Set Modifications per sucessful update: 
-#   avg: 2.89449
-#   max: 183
-# Subcomponent Timings:
-#   6.02567 Find Pareto Min
-#   3.39852 Group Candidates
-#   18.8558 Update Labelsets 
-#   3.17363 Sort Updates
-#   9.76119 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-9 180 180 41.2148 2585 0 347.406 347 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+4 175 175 25.5629 2472 0 302.363 302 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
 # Iterations: 13709
 # Created Labels: 154073586
@@ -401,179 +196,138 @@
 #   avg: 2.91556
 #   max: 225
 # Subcomponent Timings:
-#   9.15559 Find Pareto Min
-#   4.90647 Group Candidates
-#   23.8257 Update Labelsets 
-#   4.43183 Sort Updates
-#   14.7223 Update PQ 
+#   7.07797 Find Pareto Min
+#   4.09896 Group Candidates
+#   14.6756 Update Labelsets 
+#   3.63136 Sort Updates
+#   10.5131 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-10 200 200 57.0418 2771 0 455.457 455 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+5 200 200 39.9969 2771 0 455.453 455 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 16398
-# Created Labels: 225983723
-#   initially dominated: 70.011% (=158213407)
-#     via candidate shortcut: 51.6838% (=81770761)
-#   initially non-dominated: 29.989% (=67770316)
-#     finally dominated: 16.3596% (=11086945)
+# Iterations: 17521
+# Created Labels: 281614049
+#   initially dominated: 70.1873% (=197657260)
+#     via candidate shortcut: 52.5969% (=103961687)
+#   initially non-dominated: 29.8127% (=83956789)
+#     finally dominated: 15.8454% (=13303316)
 # LabelSet sizes: 
-#   avg: 1171.14
-#   max: 4556
+#   avg: 1395.62
+#   max: 5358
 # ParetoQueue sizes: 
-#   avg: 254810
-#   max: 485220
+#   avg: 314659
+#   max: 636844
 # Pareto Optimal Elements: 
-#   avg: 3462.63
-#   max: 5524
+#   avg: 4038.28
+#   max: 6401
 # Pareto Queue Updates: 
-#   avg: 8265.68
-#   max: 13452
+#   avg: 9583.56
+#   max: 15253
 # Pareto Queue Size Delta: 
-#   avg: 86.8498
-#   max: 599
+#   avg: 99.9898
+#   max: 902
 # Label Set Updates:
-#   total: 50168644
-#   leading to modifications: 54.8295%
+#   total: 39455168
+#   leading to modifications: 62.7941%
 # Label Set Bulk Size per LS: 
-#   avg: 4.50448
-#   max: 155
+#   avg: 7.13757
+#   max: 446
 # Label Set Modifications per sucessful update: 
-#   avg: 2.46373
-#   max: 112
+#   avg: 3.3887
+#   max: 330
 # Subcomponent Timings:
-#   17.9658 Find Pareto Min
-#   8.03965 Group Candidates
-#   80.6038 Update Labelsets 
-#   6.98648 Sort Updates
-#   26.624 Update PQ 
+#   14.6255 Find Pareto Min
+#   7.43294 Group Candidates
+#   55.039 Update Labelsets 
+#   6.86797 Sort Updates
+#   22.3654 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-11 220 220 140.22 3381 0 679.746 679 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+6 225 225 106.331 4889 0 814.328 814 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 21292
-# Created Labels: 358996955
-#   initially dominated: 69.6414% (=250010522)
-#     via candidate shortcut: 50.9419% (=127360063)
-#   initially non-dominated: 30.3586% (=108986433)
-#     finally dominated: 17.3811% (=18943030)
+# Iterations: 23594
+# Created Labels: 438643376
+#   initially dominated: 69.6895% (=305688184)
+#     via candidate shortcut: 52.0007% (=158960097)
+#   initially non-dominated: 30.3105% (=132955192)
+#     finally dominated: 17.2666% (=22956868)
 # LabelSet sizes: 
-#   avg: 1563.25
-#   max: 5445
+#   avg: 1759.97
+#   max: 6242
 # ParetoQueue sizes: 
-#   avg: 381820
-#   max: 773563
+#   avg: 443691
+#   max: 916073
 # Pareto Optimal Elements: 
-#   avg: 4234.39
-#   max: 6895
+#   avg: 4667.43
+#   max: 7569
 # Pareto Queue Updates: 
-#   avg: 10237.3
-#   max: 16801
+#   avg: 11270.3
+#   max: 18552
 # Pareto Queue Size Delta: 
-#   avg: 98.0464
-#   max: 499
+#   avg: 106.395
+#   max: 676
 # Label Set Updates:
-#   total: 71212795
-#   leading to modifications: 61.0738%
+#   total: 78420541
+#   leading to modifications: 64.5553%
 # Label Set Bulk Size per LS: 
-#   avg: 5.04119
-#   max: 327
+#   avg: 5.59348
+#   max: 244
 # Label Set Modifications per sucessful update: 
-#   avg: 2.50588
-#   max: 249
+#   avg: 2.6263
+#   max: 170
 # Subcomponent Timings:
-#   29.9565 Find Pareto Min
-#   10.7458 Group Candidates
-#   88.0068 Update Labelsets 
-#   10.3063 Sort Updates
-#   41.4318 Update PQ 
+#   28.5811 Find Pareto Min
+#   11.6584 Group Candidates
+#   125.76 Update Labelsets 
+#   11.1818 Sort Updates
+#   43.5797 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-12 240 240 180.447 4110 0 1036.37 1036 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+7 250 250 220.761 4878 0 1282.59 1282 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 24154
-# Created Labels: 473190562
-#   initially dominated: 69.583% (=329260019)
-#     via candidate shortcut: 54.929% (=180859342)
-#   initially non-dominated: 30.417% (=143930543)
-#     finally dominated: 17.5646% (=25280764)
+# Iterations: 24198
+# Created Labels: 487960859
+#   initially dominated: 69.8062% (=340627133)
+#     via candidate shortcut: 52.1451% (=177620402)
+#   initially non-dominated: 30.1938% (=147333726)
+#     finally dominated: 16.9591% (=24986506)
 # LabelSet sizes: 
-#   avg: 1755.17
-#   max: 5575
+#   avg: 1617.81
+#   max: 5731
 # ParetoQueue sizes: 
-#   avg: 468570
-#   max: 899764
+#   avg: 459080
+#   max: 897317
 # Pareto Optimal Elements: 
-#   avg: 4917.82
-#   max: 7893
+#   avg: 5062.34
+#   max: 7993
 # Pareto Queue Updates: 
-#   avg: 11917.7
-#   max: 19223
+#   avg: 12177.3
+#   max: 19337
 # Pareto Queue Size Delta: 
-#   avg: 109.41
-#   max: 764
+#   avg: 110.791
+#   max: 871
 # Label Set Updates:
-#   total: 76494401
-#   leading to modifications: 64.1663%
+#   total: 81167321
+#   leading to modifications: 60.1918%
 # Label Set Bulk Size per LS: 
-#   avg: 6.18595
-#   max: 272
+#   avg: 6.01179
+#   max: 465
 # Label Set Modifications per sucessful update: 
-#   avg: 2.93235
-#   max: 242
+#   avg: 3.01567
+#   max: 388
 # Subcomponent Timings:
-#   45.6819 Find Pareto Min
-#   15.8163 Group Candidates
-#   109.381 Update Labelsets 
-#   14.6616 Sort Updates
-#   64.0058 Update PQ 
+#   30.3008 Find Pareto Min
+#   13.3363 Group Candidates
+#   142.77 Update Labelsets 
+#   12.2893 Sort Updates
+#   46.4525 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-13 260 260 249.546 4374 0 1353.51 1353 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 26940
-# Created Labels: 637417328
-#   initially dominated: 70.2281% (=447645945)
-#     via candidate shortcut: 51.1825% (=229116332)
-#   initially non-dominated: 29.7719% (=189771383)
-#     finally dominated: 15.7648% (=29917152)
-# LabelSet sizes: 
-#   avg: 2038.96
-#   max: 7044
-# ParetoQueue sizes: 
-#   avg: 573619
-#   max: 1163372
-# Pareto Optimal Elements: 
-#   avg: 5939.53
-#   max: 9589
-# Pareto Queue Updates: 
-#   avg: 14088.4
-#   max: 22870
-# Pareto Queue Size Delta: 
-#   avg: 120.114
-#   max: 796
-# Label Set Updates:
-#   total: 130137911
-#   leading to modifications: 56.9902%
-# Label Set Bulk Size per LS: 
-#   avg: 4.89801
-#   max: 517
-# Label Set Modifications per sucessful update: 
-#   avg: 2.55874
-#   max: 407
-# Subcomponent Timings:
-#   63.2214 Find Pareto Min
-#   21.2771 Group Candidates
-#   295.35 Update Labelsets 
-#   19.0857 Sort Updates
-#   87.2568 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-14 280 280 486.209 6028 0 1895.66 1895 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+8 275 275 245.148 4885 0 1406.64 1406 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
 # Iterations: 30996
 # Created Labels: 856253200
@@ -606,179 +360,138 @@
 #   avg: 3.59115
 #   max: 527
 # Subcomponent Timings:
-#   97.774 Find Pareto Min
-#   30.2464 Group Candidates
-#   354.601 Update Labelsets 
-#   27.3523 Sort Updates
-#   136.533 Update PQ 
+#   66.7838 Find Pareto Min
+#   23.3532 Group Candidates
+#   286.243 Update Labelsets 
+#   21.9926 Sort Updates
+#   96.3182 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-15 300 300 646.507 7390 0 2437.63 2437 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+9 300 300 494.691 7390 0 2437.7 2437 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 34777
-# Created Labels: 994905895
-#   initially dominated: 69.9502% (=695938346)
-#     via candidate shortcut: 53.7487% (=374057528)
-#   initially non-dominated: 30.0498% (=298967549)
-#     finally dominated: 16.5848% (=49583296)
+# Iterations: 37241
+# Created Labels: 1200074415
+#   initially dominated: 69.665% (=836032126)
+#     via candidate shortcut: 55.2775% (=462137847)
+#   initially non-dominated: 30.335% (=364042289)
+#     finally dominated: 17.3726% (=63243560)
 # LabelSet sizes: 
-#   avg: 2435.39
-#   max: 10376
+#   avg: 2847.8
+#   max: 10030
 # ParetoQueue sizes: 
-#   avg: 788609
-#   max: 1568879
+#   avg: 978139
+#   max: 1846798
 # Pareto Optimal Elements: 
-#   avg: 7176.84
-#   max: 11552
+#   avg: 8082.76
+#   max: 12512
 # Pareto Queue Updates: 
-#   avg: 17193.4
-#   max: 28090
+#   avg: 19550.6
+#   max: 30616
 # Pareto Queue Size Delta: 
-#   avg: 137.304
-#   max: 881
+#   avg: 150.645
+#   max: 1667
 # Label Set Updates:
-#   total: 164124864
-#   leading to modifications: 59.7178%
+#   total: 139175784
+#   leading to modifications: 66.7259%
 # Label Set Bulk Size per LS: 
-#   avg: 6.06188
-#   max: 516
+#   avg: 8.62272
+#   max: 1181
 # Label Set Modifications per sucessful update: 
-#   avg: 3.05032
-#   max: 382
+#   avg: 3.92007
+#   max: 1093
 # Subcomponent Timings:
-#   110.918 Find Pareto Min
-#   33.3863 Group Candidates
-#   204.309 Update Labelsets 
-#   30.1096 Sort Updates
-#   149.792 Update PQ 
+#   109.708 Find Pareto Min
+#   32.888 Group Candidates
+#   395.431 Update Labelsets 
+#   31.5023 Sort Updates
+#   150.791 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-16 320 320 528.515 7449 0 2865.26 2865 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+10 325 325 720.32 8769 0 3362 3362 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 41230
-# Created Labels: 1273245414
-#   initially dominated: 69.8569% (=889449515)
-#     via candidate shortcut: 51.3037% (=456320282)
-#   initially non-dominated: 30.1431% (=383795899)
-#     finally dominated: 16.846% (=64654144)
+# Iterations: 40475
+# Created Labels: 1399251365
+#   initially dominated: 69.9095% (=978209062)
+#     via candidate shortcut: 52.7413% (=515920343)
+#   initially non-dominated: 30.0905% (=421042303)
+#     finally dominated: 16.7045% (=70333171)
 # LabelSet sizes: 
-#   avg: 2760.74
-#   max: 10292
+#   avg: 2862.93
+#   max: 9009
 # ParetoQueue sizes: 
-#   avg: 928450
-#   max: 1850475
+#   avg: 1.04731e+06
+#   max: 2141473
 # Pareto Optimal Elements: 
-#   avg: 7746.13
-#   max: 12358
+#   avg: 8670.89
+#   max: 13845
 # Pareto Queue Updates: 
-#   avg: 18617.3
-#   max: 30255
+#   avg: 20805.1
+#   max: 33650
 # Pareto Queue Size Delta: 
-#   avg: 136.196
-#   max: 993
+#   avg: 150.809
+#   max: 1347
 # Label Set Updates:
-#   total: 250860479
-#   leading to modifications: 59.3175%
+#   total: 187146205
+#   leading to modifications: 65.0722%
 # Label Set Bulk Size per LS: 
-#   avg: 5.07551
-#   max: 784
+#   avg: 7.47678
+#   max: 692
 # Label Set Modifications per sucessful update: 
-#   avg: 2.5792
-#   max: 577
+#   avg: 3.4574
+#   max: 670
 # Subcomponent Timings:
-#   155.819 Find Pareto Min
-#   44.0715 Group Candidates
-#   737.091 Update Labelsets 
-#   39.9953 Sort Updates
-#   215.6 Update PQ 
+#   130.453 Find Pareto Min
+#   38.9001 Group Candidates
+#   509.33 Update Labelsets 
+#   36.5556 Sort Updates
+#   176.256 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-17 340 340 1192.58 9502 0 3702.73 3702 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+11 350 350 891.495 8265 0 3949.87 3949 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
-# Iterations: 45124
-# Created Labels: 1616331753
-#   initially dominated: 70.0079% (=1131559216)
-#     via candidate shortcut: 52.3244% (=592081220)
-#   initially non-dominated: 29.9921% (=484772537)
-#     finally dominated: 16.4376% (=79684863)
+# Iterations: 49797
+# Created Labels: 1947736113
+#   initially dominated: 69.7801% (=1359131442)
+#     via candidate shortcut: 57.1522% (=776774080)
+#   initially non-dominated: 30.2199% (=588604671)
+#     finally dominated: 17.0724% (=100489084)
 # LabelSet sizes: 
-#   avg: 3125.68
-#   max: 11136
+#   avg: 3471.04
+#   max: 10757
 # ParetoQueue sizes: 
-#   avg: 1.10034e+06
-#   max: 2165817
+#   avg: 1.3103e+06
+#   max: 2604571
 # Pareto Optimal Elements: 
-#   avg: 8982.96
-#   max: 14236
+#   avg: 9807.76
+#   max: 15661
 # Pareto Queue Updates: 
-#   avg: 21486.2
-#   max: 34455
+#   avg: 23640.2
+#   max: 38275
 # Pareto Queue Size Delta: 
-#   avg: 147.277
-#   max: 950
+#   avg: 171.91
+#   max: 1086
 # Label Set Updates:
-#   total: 320969585
-#   leading to modifications: 58.0057%
+#   total: 219148594
+#   leading to modifications: 66.0097%
 # Label Set Bulk Size per LS: 
-#   avg: 5.03578
-#   max: 600
+#   avg: 8.88774
+#   max: 874
 # Label Set Modifications per sucessful update: 
-#   avg: 2.60378
-#   max: 483
+#   avg: 4.0689
+#   max: 796
 # Subcomponent Timings:
-#   199.89 Find Pareto Min
-#   54.8813 Group Candidates
-#   1111.59 Update Labelsets 
-#   49.7818 Sort Updates
-#   277.43 Update PQ 
+#   200.409 Find Pareto Min
+#   54.3272 Group Candidates
+#   799.357 Update Labelsets 
+#   51.0726 Sort Updates
+#   269.891 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-18 360 360 1693.57 10075 0 4669.04 4669 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 47123
-# Created Labels: 1918253796
-#   initially dominated: 70.1602% (=1345850828)
-#     via candidate shortcut: 51.7759% (=696826691)
-#   initially non-dominated: 29.8398% (=572402968)
-#     finally dominated: 16.027% (=91738961)
-# LabelSet sizes: 
-#   avg: 3328.7
-#   max: 12109
-# ParetoQueue sizes: 
-#   avg: 1.33004e+06
-#   max: 2722903
-# Pareto Optimal Elements: 
-#   avg: 10206.3
-#   max: 16227
-# Pareto Queue Updates: 
-#   avg: 24294
-#   max: 38756
-# Pareto Queue Size Delta: 
-#   avg: 163.252
-#   max: 1096
-# Label Set Updates:
-#   total: 274851621
-#   leading to modifications: 65.305%
-# Label Set Bulk Size per LS: 
-#   avg: 6.97923
-#   max: 933
-# Label Set Modifications per sucessful update: 
-#   avg: 3.18902
-#   max: 746
-# Subcomponent Timings:
-#   241.197 Find Pareto Min
-#   62.9141 Group Candidates
-#   843.24 Update Labelsets 
-#   58.7538 Sort Updates
-#   330.747 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-19 380 380 1536.87 9737 0 5390.55 5390 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+12 375 375 1375.06 9360 0 5521.3 5521 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
 
 # Iterations: 53581
 # Created Labels: 2350805937
@@ -811,217 +524,12 @@
 #   avg: 3.17016
 #   max: 500
 # Subcomponent Timings:
-#   311.16 Find Pareto Min
-#   79.6773 Group Candidates
-#   596.935 Update Labelsets 
-#   73.7854 Sort Updates
-#   430.776 Update PQ 
+#   251.509 Find Pareto Min
+#   66.2634 Group Candidates
+#   505.305 Update Labelsets 
+#   61.492 Sort Updates
+#   328.338 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-20 400 400 1492.36 11152 0 6787.61 6787 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 60560
-# Created Labels: 2850594769
-#   initially dominated: 69.6062% (=1984190267)
-#     via candidate shortcut: 53.2718% (=1057012991)
-#   initially non-dominated: 30.3938% (=866404502)
-#     finally dominated: 17.5697% (=152224778)
-# LabelSet sizes: 
-#   avg: 4048.64
-#   max: 12687
-# ParetoQueue sizes: 
-#   avg: 1.76473e+06
-#   max: 3357453
-# Pareto Optimal Elements: 
-#   avg: 11798.8
-#   max: 18215
-# Pareto Queue Updates: 
-#   avg: 28613.1
-#   max: 44795
-# Pareto Queue Size Delta: 
-#   avg: 178.171
-#   max: 1133
-# Label Set Updates:
-#   total: 449293833
-#   leading to modifications: 61.4832%
-# Label Set Bulk Size per LS: 
-#   avg: 6.34461
-#   max: 662
-# Label Set Modifications per sucessful update: 
-#   avg: 3.13642
-#   max: 509
-# Subcomponent Timings:
-#   412.902 Find Pareto Min
-#   96.568 Group Candidates
-#   946.3 Update Labelsets 
-#   91.8611 Sort Updates
-#   578.855 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-21 420 420 2126.49 11567 0 8207.95 8208 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 66017
-# Created Labels: 3475430404
-#   initially dominated: 69.8145% (=2426354789)
-#     via candidate shortcut: 55.0087% (=1334706986)
-#   initially non-dominated: 30.1855% (=1049075615)
-#     finally dominated: 17.0004% (=178347164)
-# LabelSet sizes: 
-#   avg: 4497.56
-#   max: 18547
-# ParetoQueue sizes: 
-#   avg: 1.9936e+06
-#   max: 3921826
-# Pareto Optimal Elements: 
-#   avg: 13195.3
-#   max: 20181
-# Pareto Queue Updates: 
-#   avg: 31782
-#   max: 49251
-# Pareto Queue Size Delta: 
-#   avg: 196.878
-#   max: 1971
-# Label Set Updates:
-#   total: 378296887
-#   leading to modifications: 69.1882%
-# Label Set Bulk Size per LS: 
-#   avg: 9.18704
-#   max: 1786
-# Label Set Modifications per sucessful update: 
-#   avg: 4.00813
-#   max: 1556
-# Subcomponent Timings:
-#   390.01 Find Pareto Min
-#   97.3658 Group Candidates
-#   1067.9 Update Labelsets 
-#   93.7686 Sort Updates
-#   552.156 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-22 440 440 2201.2 16342 0 9949.11 9949 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 71548
-# Created Labels: 3863534183
-#   initially dominated: 69.7119% (=2693344493)
-#     via candidate shortcut: 52.6698% (=1418579407)
-#   initially non-dominated: 30.2881% (=1170189690)
-#     finally dominated: 17.2967% (=202404081)
-# LabelSet sizes: 
-#   avg: 4573.66
-#   max: 14750
-# ParetoQueue sizes: 
-#   avg: 2.14462e+06
-#   max: 4277859
-# Pareto Optimal Elements: 
-#   avg: 13532.3
-#   max: 21291
-# Pareto Queue Updates: 
-#   avg: 32710.6
-#   max: 51830
-# Pareto Queue Size Delta: 
-#   avg: 187.848
-#   max: 1184
-# Label Set Updates:
-#   total: 724229042
-#   leading to modifications: 59.9888%
-# Label Set Bulk Size per LS: 
-#   avg: 5.33469
-#   max: 741
-# Label Set Modifications per sucessful update: 
-#   avg: 2.69346
-#   max: 632
-# Subcomponent Timings:
-#   454.685 Find Pareto Min
-#   108.772 Group Candidates
-#   2809.09 Update Labelsets 
-#   103.941 Sort Updates
-#   643.56 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-23 460 460 4120.05 13857 0 11134.5 11134 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 77232
-# Created Labels: 4637192580
-#   initially dominated: 69.6145% (=3228156890)
-#     via candidate shortcut: 53.4068% (=1724055637)
-#   initially non-dominated: 30.3855% (=1409035690)
-#     finally dominated: 17.5688% (=247550156)
-# LabelSet sizes: 
-#   avg: 5041.17
-#   max: 16194
-# ParetoQueue sizes: 
-#   avg: 2.50558e+06
-#   max: 5059760
-# Pareto Optimal Elements: 
-#   avg: 15044.9
-#   max: 23756
-# Pareto Queue Updates: 
-#   avg: 36488.4
-#   max: 58211
-# Pareto Queue Size Delta: 
-#   avg: 205.349
-#   max: 1379
-# Label Set Updates:
-#   total: 509337296
-#   leading to modifications: 71.4997%
-# Label Set Bulk Size per LS: 
-#   avg: 9.10436
-#   max: 753
-# Label Set Modifications per sucessful update: 
-#   avg: 3.86912
-#   max: 635
-# Subcomponent Timings:
-#   568.824 Find Pareto Min
-#   129.15 Group Candidates
-#   2692.31 Update Labelsets 
-#   128.012 Sort Updates
-#   809.405 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-24 480 480 4327.7 14899 0 13076.2 13076 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Iterations: 88077
-# Created Labels: 5650489516
-#   initially dominated: 69.8792% (=3948516697)
-#     via candidate shortcut: 50.5654% (=1996582787)
-#   initially non-dominated: 30.1208% (=1701972819)
-#     finally dominated: 16.8331% (=286494938)
-# LabelSet sizes: 
-#   avg: 5661.91
-#   max: 20767
-# ParetoQueue sizes: 
-#   avg: 2.82717e+06
-#   max: 5712281
-# Pareto Optimal Elements: 
-#   avg: 16076.6
-#   max: 25269
-# Pareto Queue Updates: 
-#   avg: 38647.4
-#   max: 61113
-# Pareto Queue Size Delta: 
-#   avg: 202.139
-#   max: 1645
-# Label Set Updates:
-#   total: 972213911
-#   leading to modifications: 63.393%
-# Label Set Bulk Size per LS: 
-#   avg: 5.81198
-#   max: 1122
-# Label Set Modifications per sucessful update: 
-#   avg: 2.76153
-#   max: 989
-# Subcomponent Timings:
-#   736.334 Find Pareto Min
-#   159.708 Group Candidates
-#   1843.93 Update Labelsets 
-#   154.176 Sort Updates
-#   1036.02 Update PQ 
-# Sequential BTree: 
-#  inner slots size [4, 64]
-#  leaf slots size [165, 660]
-25 500 500 3930.17 17209 0 15905 15905 0 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+13 400 400 1212.91 11152 0 6787.89 6787 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
