@@ -123,33 +123,33 @@ public:
 		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), 
 			[](const T& x, const T& y) { return x.labels.size() < y.labels.size(); })).labels.size() -2; //sentinal correction
 		out_stream << "# LabelSet sizes: " << "\n";
-		out_stream << "#   avg" << ": " << avg_set_size << "\n";
+		out_stream << "#   avg" << ": " << avg_set_size << " (of total " << final_total_label_count << ")\n";
 		out_stream << "#   max" << ": " << max_set_size << "\n";
 
 		double avg_pq_size = pq_size / (double) data[ITERATION];
 		out_stream << "# ParetoQueue sizes: " << "\n";
-		out_stream << "#   avg" << ": " << avg_pq_size << "\n";
+		out_stream << "#   avg" << ": " << avg_pq_size << " (of total " << pq_size << ")\n";
 		out_stream << "#   max" << ": " << peak_pq_size;
 
 		if (data[MINIMA_COUNT] > 0) {
 			out_stream << "\n";
 			double avg_minima_size = minima_size / (double) data[MINIMA_COUNT];
 			out_stream << "# Pareto Optimal Elements: " << "\n";
-			out_stream << "#   avg" << ": " << avg_minima_size << "\n";
+			out_stream << "#   avg" << ": " << avg_minima_size << " (of total " << minima_size << ")\n";
 			out_stream << "#   max" << ": " << peak_minima_size;
 		}
 		if (data[UPDATE_COUNT] > 0) {
 			out_stream << "\n";
 			double avg_update_size = update_size / (double) data[UPDATE_COUNT];
 			out_stream << "# Pareto Queue Updates: " << "\n";
-			out_stream << "#   avg" << ": " << avg_update_size << "\n";
+			out_stream << "#   avg" << ": " << avg_update_size << " (of total " << update_size << ")\n";
 			out_stream << "#   max" << ": " << peak_update_size;
 		}
 		if (data[PQ_SIZE_DELTA] > 0) {
 			out_stream << "\n";
 			double avg_size_delta = pq_size_delta / (double) data[PQ_SIZE_DELTA];
 			out_stream << "# Pareto Queue Size Delta: " << "\n";
-			out_stream << "#   avg" << ": " << avg_size_delta << "\n";
+			out_stream << "#   avg" << ": " << avg_size_delta << " (of total " << pq_size_delta << ")\n";
 			out_stream << "#   max" << ": " << peak_size_delta;
 		}
 		if (data[LS_MODIFICATIONS_PER_NODE] > 0) {
