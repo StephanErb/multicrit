@@ -161,7 +161,7 @@ public:
         fake_slot.childid = root;
         fake_slot.weight = stats.itemcount;
         batch_type = INSERTS_ONLY;
-        generateUpdates(node, fake_slot, start, end, pq_updates, std::numeric_limits<typename Label::weight_type>::max(), ls_stats);
+        generateUpdates(node, fake_slot, start, end, pq_updates, std::numeric_limits<typename Label::weight_type>::max(), /*continued check*/ false, ls_stats);
         stats.itemcount = fake_slot.weight;
         root = fake_slot.childid;
 
@@ -188,7 +188,7 @@ public:
 private:
 
     template<class NodeID, class candidates_iter_type, class PQUpdates, class Stats>
-    inline Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min,  Stats& stats) {
+    inline Label::weight_type generateUpdates(const NodeID node, inner_node_data& slot, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, Label::weight_type min, bool continue_check, Stats& stats) {
 
         if (slot.childid->isleafnode()) {
             return generateLeafUpdates(node, slot, start, end, pq_updates, min, stats);
@@ -196,7 +196,6 @@ private:
             inner_node* const inner = static_cast<inner_node*>(slot.childid);
             const width_type slotuse = inner->slotuse;
 
-            bool continue_check = false;
             auto sub_start = start;
             width_type i = 0;
 
@@ -218,7 +217,7 @@ private:
                 }
                 if (sub_start != sub_end || continue_check) {
                     const width_type pre_weight = inner->slot[i].weight;
-                    min = generateUpdates(node, inner->slot[i], sub_start, sub_end, pq_updates, min, stats);
+                    min = generateUpdates(node, inner->slot[i], sub_start, sub_end, pq_updates, min, continue_check, stats);
                     const signed short diff = inner->slot[i].weight - pre_weight;
                     slot.weight += diff;
                     // if the last element (router) is dominated, also check for dominance in the next leaf
@@ -229,7 +228,6 @@ private:
                 ++i;
             }
             update_router(slot.slotkey, inner->slot[slotuse-1].slotkey);
-            min = std::min(min, slot.slotkey.second_weight);
 
             // Generate updates for all elements larger than the largest router key
             auto& local_upds = tls_data->local_updates;
