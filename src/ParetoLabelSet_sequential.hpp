@@ -199,10 +199,6 @@ private:
             auto sub_start = start;
             width_type i = 0;
 
-            while (i < slotuse && key_less(inner->slot[i].slotkey, *sub_start)) {
-                min = inner->slot[i].slotkey.second_weight;
-                ++i;
-            }
             while (i < slotuse && (sub_start != end || continue_check)) {
                 // move over dominated labels
                 while (sub_start != end && sub_start->second_weight >= min) {
