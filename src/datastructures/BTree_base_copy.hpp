@@ -194,8 +194,7 @@ protected:
         local_update_list local_updates;
 
         ThreadLocalLSData() {
-            weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
-            
+            weightdelta.reserve(LARGE_ENOUGH_FOR_MOST);
             local_updates.reserve(LARGE_ENOUGH_FOR_MOST);
             leaves.reserve(LARGE_ENOUGH_FOR_MOST);
         }

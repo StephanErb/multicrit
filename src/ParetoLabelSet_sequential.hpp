@@ -165,7 +165,7 @@ public:
         stats.itemcount = fake_slot.weight;
         root = fake_slot.childid;
 
-        if (tls_data->local_updates.size() > 0) {
+        if (!tls_data->local_updates.empty()) {
             assert(std::is_sorted(tls_data->local_updates.begin(), tls_data->local_updates.end(), groupByWeight));
             apply_updates(tls_data->local_updates, batch_type);
             tls_data->local_updates.clear();
@@ -261,7 +261,6 @@ private:
             --i; // move to predecessor
             // Dominated by x-predecessor?
             if (leaf->slotkey[i].second_weight <= new_label.second_weight) {
-                ////std::cout << "  Predecessor " << std::endl;
                 iii = i;
                 return true;
             }
@@ -291,8 +290,8 @@ private:
         // Delete elements by a new labels inserted into a previous leaf
         while (i < slotuse && leaf->slotkey[i].second_weight >= min) {
             batch_type = INSERTS_AND_DELETES;
-            pq_updates.emplace_back(Operation<NodeLabel>::DELETE, node, leaf->slotkey[i]);
             local_upds.emplace_back(Operation<Label>::DELETE, leaf->slotkey[i]);
+            pq_updates.emplace_back(Operation<NodeLabel>::DELETE, node, leaf->slotkey[i]);
             --new_weight;
             ++i;
         }
@@ -318,7 +317,7 @@ private:
                 while (iter != --local_upds.begin() && iter->data.first_weight >= new_label.first_weight) {
                     --iter;
                 }
-                local_upds.insert(++iter, {Operation<Label>::INSERT, new_label});
+                local_upds.emplace(++iter, Operation<Label>::INSERT, new_label);
                 pq_updates.emplace_back(Operation<NodeLabel>::INSERT, node, new_label);
                 ++new_weight;
 
@@ -389,7 +388,7 @@ private:
         if (_batch_type == INSERTS_AND_DELETES) {
             long val = 0; // exclusive prefix sum
             auto& weightdelta = tls_data->weightdelta;
-            assert(weightdelta.capacity() > _updates.size());
+	    weightdelta.reserve(_updates.size()+1);
             weightdelta[0] = val;
             for (size_type i = start; i < _updates.size();) {
                 val = val + updates[i].type;
