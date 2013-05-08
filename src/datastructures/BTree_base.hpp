@@ -725,6 +725,7 @@ protected:
         } else {
             const size_type designated_treesize = designated_subtreesize(level);
             const width_type subtrees = num_subtrees(rank_end - rank_begin, designated_treesize);
+            BTREE_ASSERT(subtrees > 0);
 
             BTREE_PRINT((reuse_node ? "Filling" : "Creating") << " inner node on level " << level << " with " << subtrees << " subtrees of desiganted size " 
                 << designated_treesize << std::endl);
@@ -984,19 +985,24 @@ protected:
 
 
     inline leaf_node* getOrCreateLeaf(const size_type leaf_number, padded_leaf_list& leaves) {
-        if (leaves[leaf_number] == NULL) {
+	BTREE_ASSERT(leaf_number < leaves.size());
+	leaf_node* current = leaves[leaf_number];
+        if (current == NULL) {
             leaf_node* tmp = allocate_leaf();
-            if (leaves[leaf_number].compare_and_swap(tmp, NULL) == NULL) {
+	    leaf_node* res = leaves[leaf_number].compare_and_swap(tmp, NULL);
+            if (res == NULL) {
                 return tmp;
             } else {
                 // Another thread installed the value, so throw away mine.
                 free_node(tmp);
+		return res;
             }
         }
-        return leaves[leaf_number];
+        return current;
     }
 
     inline leaf_node* getOrCreateLeaf(const size_type leaf_number, leaf_list& leaves) {
+	BTREE_ASSERT(leaf_number < leaves.size());
         if (leaves[leaf_number] == NULL) {
             leaves[leaf_number] = allocate_leaf();
         }
