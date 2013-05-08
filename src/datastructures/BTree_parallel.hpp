@@ -348,9 +348,6 @@ private:
         { }
 
         tbb::task* execute() {
-            if (size == 0) {
-                return NULL;
-            }
             if (continuation_mode == 0) {
                 // Allocate & fill leaves via TreeRewriteTask
                 const size_type subtrees = num_subtrees(size, designated_leafsize);
@@ -363,7 +360,7 @@ private:
                 spawn(subtasks);
                 return &task;
 
-            } else if (continuation_mode == 1) {
+            } else if (continuation_mode == 1 && size != 0) {
                 // Reconstruct new tree from the filled leaves
                 // Keep this task alive (as a continuation) so that the leaves data structure is still available to subtasks
                 fake_slot.childid = in_node;
