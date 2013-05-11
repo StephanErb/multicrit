@@ -7,7 +7,7 @@ n=300
 q=0
 max_cost=1000
 
-out_file="../timings/grid2_paretosearch_p_n"$n"_m"$m"_q"$q
+out_file="../timings/grid2_paretosearch_p_n"$n"_m"$max_cost"_q"$q
 echo "Writing batch size computation to $out_file"
 touch $out_file
 rm $out_file # clear
@@ -17,14 +17,14 @@ do
 done
 
 
-out_file="../timings/grid2_paretosearch_sequ_n"$n"_m"$m"_q"$q
+out_file="../timings/grid2_paretosearch_sequ_n"$n"_m"$max_cost"_q"$q
 echo "Writing batch size computation to $out_file"
 touch $out_file
 rm $out_file # clear
 taskset -c 0 ./bin/time_grid_instances2_paretosearch_ls_btree -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
 
 
-out_file="../timings/grid2_lset_lex_n"$n"_m"$m"_q"$q
+out_file="../timings/grid2_lset_lex_n"$n"_m"$max_cost"_q"$q
 echo "Writing batch size computation to $out_file"
 touch $out_file
 rm $out_file # clear
