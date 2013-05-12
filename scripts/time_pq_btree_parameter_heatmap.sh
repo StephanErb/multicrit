@@ -13,7 +13,7 @@ out_file="../timings/btree/insert_nodewidth_label_leaf_sequ_heatmap"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
 rm $out_file # clear
-for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
+for r in 0 1 3 10 31 100 316 1000 3162 10000
 do
 	if [ $r -gt 300 ]
 	then
@@ -47,7 +47,7 @@ out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
 rm $out_file # clear
-for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
+for r in 0 1 3 10 31 100 316 1000 3162 10000
 do
 	if [ $r -gt 300 ]
 	then
@@ -85,7 +85,7 @@ out_file="../timings/btree/insert_nodewidth_label_leaf_sequ_heatmap_detailed"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
 rm $out_file # clear
-for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
+for r in 0 1 3 10 31 100 316 1000 3162 10000
 do
 	if [ $r -gt 300 ]
 	then
@@ -119,7 +119,7 @@ out_file="../timings/btree/insert_nodewidth_label_leaf_p_8_heatmap_detailed"
 echo "Writing node size heatmap to $out_file"
 touch $out_file
 rm $out_file # clear
-for r in 0 1 3.16 10 31.62 100 316.23 1000 3162.3 10000
+for r in 0 1 3 10 31 100 316 1000 3162 10000
 do
 	if [ $r -gt 300 ]
 	then
