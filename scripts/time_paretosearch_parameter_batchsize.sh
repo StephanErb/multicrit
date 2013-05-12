@@ -2,7 +2,7 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=1
+iter_count=3
 n=300
 q=0
 
@@ -16,7 +16,8 @@ do
 	for b in 4 8 16 32 64 128 256 512 1024 2048 4096
 	do
 		make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DBATCH_SIZE=$b" time_grid_instances2.par > /dev/null
-		taskset -c 0-$((p-1)) ./bin/time_grid_instances2.par -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
+		#taskset -c 0-$((p-1)) 
+		./bin/time_grid_instances2.par -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
 	done
 done
 
@@ -30,7 +31,8 @@ do
 	for b in 4 8 16 32 64 128 256 512 1024 2048 4096
 	do
 		make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DBATCH_SIZE=$b" time_grid_instances2.par > /dev/null
-		taskset -c 0-$((p-1)) ./bin/time_grid_instances2.par -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
+		#taskset -c 0-$((p-1))
+		./bin/time_grid_instances2.par -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
 	done
 done
 
