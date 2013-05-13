@@ -139,12 +139,14 @@ private:
 	typedef typename base_type::leaf_node leaf_node;
 	typedef typename base_type::width_type width_type;
 
-	using base_type::num_threads;
 	using base_type::min_problem_size;
 
 	const graph_slot& graph;
 
 public:
+
+	using base_type::num_threads;
+
 
 	struct GroupLabelsByWeightComp {
 		inline bool operator() (const Label& i, const Label& j) const {

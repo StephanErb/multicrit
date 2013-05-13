@@ -233,9 +233,8 @@ public:
 		}		
 	}
 
-	static size_t min_problem_size(size_t total, const double max=1.0) {
-		const size_t p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
-		return std::max((total/p) / (log2(total/p + 1)+1), max);
+	inline size_t min_problem_size(size_t total, const double max=1.0) const {
+		return std::max((total/pq.num_threads) / (log2(total/pq.num_threads + 1)+1), max);
 	}
 
 	class candidate_range {
