@@ -28,6 +28,11 @@ mv ./bin/time_road_instances2 ./bin/time_road_instances2_paretosearch_ls_vec
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_road_instances2.par > /dev/null
 mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_vec.par 
 
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_sensor_instances > /dev/null
+mv ./bin/time_sensor_instances ./bin/time_sensor_instances_paretosearch_ls_vec
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_sensor_instances.par > /dev/null
+mv ./bin/time_sensor_instances.par ./bin/time_sensor_instances_paretosearch_ls_vec.par
+
 
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_grid_instances1 > /dev/null
 mv ./bin/time_grid_instances1 ./bin/time_grid_instances1_paretosearch_ls_btree
@@ -49,11 +54,10 @@ mv ./bin/time_road_instances2 ./bin/time_road_instances2_paretosearch_ls_btree
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances2.par > /dev/null
 mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_btree.par 
 
-
-#make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_sensor_instances > /dev/null
-#mv ./bin/time_sensor_instances ./bin/time_sensor_instances_paretosearch
-#make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_sensor_instances.par > /dev/null
-#mv ./bin/time_sensor_instances.par ./bin/time_sensor_instances_paretosearch.par
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_sensor_instances > /dev/null
+mv ./bin/time_sensor_instances ./bin/time_sensor_instances_paretosearch_ls_btree
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_sensor_instances.par > /dev/null
+mv ./bin/time_sensor_instances.par ./bin/time_sensor_instances_paretosearch_ls_btree.par
 
 
 #########################################################
@@ -85,8 +89,8 @@ mv ./bin/time_road_instances1 ./bin/time_road_instances1_lset_max
 make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=SharedHeapLabelSettingAlgorithm -DPRIORITY_LEX" time_road_instances2 > /dev/null
 mv ./bin/time_road_instances2 ./bin/time_road_instances2_lset_lex
 
-#make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=SharedHeapLabelSettingAlgorithm -DPRIORITY_LEX" time_sensor_instances > /dev/null
-#mv ./bin/time_sensor_instances ./bin/time_sensor_instances_lset_lex
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=SharedHeapLabelSettingAlgorithm -DPRIORITY_LEX" time_sensor_instances > /dev/null
+mv ./bin/time_sensor_instances ./bin/time_sensor_instances_lset_lex
 
 
 #########################################################
