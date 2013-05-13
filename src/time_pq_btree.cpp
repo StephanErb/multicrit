@@ -96,7 +96,7 @@ void timeBulkInsertion(size_t k, double ratio, double skew, size_t iterations, i
 
 	boost::uniform_int<unsigned int> skewed_dist(1, std::numeric_limits<unsigned int>::max() * skew);
 
-	Tree tree;
+	Tree tree(p);
 	for (size_t i = 0; i < iterations; ++i) {
 		tree.clear();
 		bulkConstruct(tree, n);

@@ -95,7 +95,7 @@ void timeBulkDeletion(size_t k, double ratio, double skew, size_t iterations, in
 	const unsigned int MAX = std::numeric_limits<unsigned int>::max() * skew;
 	boost::uniform_int<unsigned int> skewed_dist(1, MAX);
 
-	Tree tree;
+	Tree tree(p);
 	for (size_t i = 0; i < iterations; ++i) {
 		tree.clear();
 		std::vector<Operation<Label>> elements;

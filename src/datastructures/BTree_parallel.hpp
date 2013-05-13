@@ -91,7 +91,7 @@ protected:
 
 public:
     typedef typename base::traits           traits;
-
+    typedef typename base::thread_count     thread_count;
 
     using base::leafslotmax;
     using base::leafslotmin;
@@ -147,14 +147,17 @@ protected:
     size_type min_problem_size;
     tbb::task::affinity_id subtree_affinity[innerslotmax] = {0};
 
+    const thread_count num_threads; 
+
 public:
     // *** Constructors and Destructor
 
     /// Default constructor initializing an empty B+ tree with the standard key
     /// comparison function
-    explicit inline btree(const allocator_type &alloc=allocator_type())
-        : base(alloc)
+    explicit inline btree(const thread_count _num_threads, const allocator_type &alloc=allocator_type())
+        : base(alloc), num_threads(_num_threads)
     {
+        assert(num_threads > 0);
         weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
     }
 
@@ -296,8 +299,7 @@ private:
         batch_type = _batch_type;
 
         // Adaptive cut-off; Taken from the MCSTL implementation
-        const size_type p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
-        min_problem_size = std::max((update_count/p) / (log2(update_count/p + 1)+1), 1.0);
+        min_problem_size = std::max((update_count/num_threads) / (log2(update_count/num_threads + 1)+1), 1.0);
 
         if (_batch_type == INSERTS_AND_DELETES) {
             // Compute exclusive prefix sum, so that weightdelta[end]-weightdelta[begin] 

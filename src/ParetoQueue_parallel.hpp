@@ -139,10 +139,10 @@ private:
 	typedef typename base_type::leaf_node leaf_node;
 	typedef typename base_type::width_type width_type;
 
-	const graph_slot& graph;
+	using base_type::num_threads;
+	using base_type::min_problem_size;
 
- 	const size_type p = tbb::tbb_thread::hardware_concurrency(); // works as we use taskset to set appropriate affinity masks
-	size_type min_problem_size;
+	const graph_slot& graph;
 
 public:
 
@@ -160,9 +160,6 @@ public:
 
 	typedef std::vector< Operation<NodeLabel>, tbb::cache_aligned_allocator<Operation<NodeLabel>> > OpVec; 
 	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<Label> > CandLabelVec;
-
-	typedef unsigned short thread_count;
-	const thread_count num_threads; 
 
 	struct PaddedLabelSet : public LabelSet {
 		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
@@ -203,12 +200,10 @@ public:
 
 public:
 
-	ParallelBTreeParetoQueue(const graph_slot& _graph, const thread_count _num_threads)
-		: min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()),
-			graph(_graph), num_threads(_num_threads), labelsets(_graph.numberOfNodes())
+	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads)
+		: base_type(_num_threads), min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()),
+			graph(_graph), labelsets(_graph.numberOfNodes())
 	{
-		assert(num_threads > 0);
-
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		candidates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 	}
@@ -240,7 +235,7 @@ public:
 
 	void findParetoMinima() {
 		// Adaptive cut-off; Taken from the MCSTL implementation
-        min_problem_size = std::max((base_type::size()/p) / (log2(base_type::size()/p + 1)+1), base_type::maxweight(1)*1.0);
+        min_problem_size = std::max((base_type::size()/num_threads) / (log2(base_type::size()/num_threads + 1)+1), base_type::maxweight(1)*1.0);
 
 		if (base_type::size() <= min_problem_size) {
 			findParetoMinAndDistribute(base_type::root, min_label);

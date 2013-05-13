@@ -123,8 +123,13 @@ private:
 public:
     // *** Constructors and Destructor
 
-    /// Default constructor initializing an empty B+ tree with the standard key
-    /// comparison function
+    // unused thread count variable
+    explicit inline btree(const unsigned short, const allocator_type &alloc=allocator_type())
+        : base(alloc)
+    {
+        weightdelta.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
+    }
+
     explicit inline btree(const allocator_type &alloc=allocator_type())
         : base(alloc)
     {

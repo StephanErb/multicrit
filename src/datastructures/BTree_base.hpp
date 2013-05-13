@@ -127,6 +127,8 @@ public:
     typedef unsigned short              level_type;
     typedef unsigned short              width_type;
 
+    typedef unsigned short              thread_count;
+
 public:
     // *** Static Constant Options and Values of the B+ Tree
 
