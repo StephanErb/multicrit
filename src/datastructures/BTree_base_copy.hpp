@@ -665,19 +665,21 @@ protected:
 
             bool rebalancing_needed = false;
             // Distribute operations and find out which subtrees need rebalancing
-            const width_type last = inner->slotuse-1;
+            const width_type lastslot = inner->slotuse-1;
+            const width_type slotuse = inner->slotuse;
+
             size_type subupd_begin = upd_begin;
-            for (width_type i = 0; i < last; ++i) {
+            for (width_type i = 0; i < lastslot; ++i) {
                 size_type subupd_end = find_lower(subupd_begin, upd_end, inner->slot[i].slotkey);
                 rebalancing_needed |= scheduleSubTreeUpdate(i, inner->slot[i].weight, min_weight, max_weight, subupd_begin, subupd_end, subtree_updates);
                 subupd_begin = subupd_end;
             } 
-            rebalancing_needed |= scheduleSubTreeUpdate(last, inner->slot[last].weight, min_weight, max_weight, subupd_begin, upd_end, subtree_updates);
+            rebalancing_needed |= scheduleSubTreeUpdate(lastslot, inner->slot[lastslot].weight, min_weight, max_weight, subupd_begin, upd_end, subtree_updates);
 
             // If no rewrite session is starting on this node, then just push down all updates
             if (!rebalancing_needed) {
-                updateSubTreesInRange(inner, 0, inner->slotuse, subtree_updates);
-                update_router(slot.slotkey, inner->slot[inner->slotuse-1].slotkey);
+                updateSubTreesInRange(inner, 0, slotuse, subtree_updates);
+                update_router(slot.slotkey, inner->slot[lastslot].slotkey);
             } else {
                 BTREE_PRINT("Rewrite session started for " << inner << " on level " << inner->level << std::endl);
                 // Need to perform rebalancing.
@@ -689,15 +691,16 @@ protected:
                 width_type in = 0; // current slot in input tree
                 width_type out = 0;
 
-                while (in < inner->slotuse) {
+                while (in < slotuse) {
                     width_type rebalancing_range_start = in;
                     size_type weight_of_defective_range = 0;
                     bool openrebalancing_region = false;
 
                     // Find non-empty consecutive run of subtrees that need rebalancing
-                    while (in < inner->slotuse && (subtree_updates[in].rebalancing_needed 
+                    while (in < slotuse && (subtree_updates[in].rebalancing_needed 
                             || (openrebalancing_region && weight_of_defective_range != 0 && weight_of_defective_range < designated_treesize))) {
                         openrebalancing_region = true;
+                        subtree_updates[in].rebalancing_needed = true;
                         weight_of_defective_range += subtree_updates[in].weight;
                         ++in;
                     }
@@ -720,18 +723,30 @@ protected:
                         }
                     } else {
                         BTREE_PRINT("Copying " << in << " to " << out << " " << inner->slot[in].childid << std::endl);
+                        assert(!subtree_updates[in].rebalancing_needed);
                         result->slot[out] = inner->slot[in];
                         result->slot[out].weight = subtree_updates[in].weight;
-                        if (hasUpdates(subtree_updates[in])) {
-                            update(result->slot[out], subtree_updates[in].upd_begin, subtree_updates[in].upd_end);
-                        }
+                        // reuse weight variable to store the new index of the current tree; we will update it in a second pass
+                        subtree_updates[in].weight = out;
                         ++out;
                         ++in;
                     }
                 }
                 result->slotuse = out;
-                update_router(slot.slotkey, result->slot[out-1].slotkey);
+
+                // Setup spare_inner to be used by nested rebalancing operations
                 tls_data->spare_inner = static_cast<inner_node*>(slot.childid);
+
+                // In a second pass, apply updates to subtrees not needing rebalancing on THIS level
+                // (but which may need to be updated recursively and therefore require the spare_inner)
+                for (width_type i = 0; i < slotuse; ++i) {
+                    if (!subtree_updates[i].rebalancing_needed && hasUpdates(subtree_updates[i])) {
+                        const width_type mapped_slot = subtree_updates[i].weight;
+                        update(result->slot[mapped_slot], subtree_updates[i].upd_begin, subtree_updates[i].upd_end);
+                    }
+                }
+                result->slotuse = out;
+                update_router(slot.slotkey, result->slot[result->slotuse-1].slotkey);
                 slot.childid = result;
             }
         }
