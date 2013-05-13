@@ -624,7 +624,9 @@ private:
                     // Need to perform rebalancing.
                     const size_type designated_treesize = designated_subtreesize(inner->level);
 
-                    inner_node* const result = tree->allocate_inner(inner->level);
+                    auto& spare_inner = tree->tls_data.local().spare_inner;
+                    inner_node* const result = spare_inner != NULL ? spare_inner : tree->allocate_inner_without_count(0);
+                    result->initialize(inner->level);
                     width_type in = 0; // current slot in input tree
                     width_type out = 0;
 
@@ -669,7 +671,7 @@ private:
                         }
                     }
                     result->slotuse = out;
-                    tree->free_node(slot.childid);
+                    spare_inner = static_cast<inner_node*>(slot.childid);
                     slot.childid = result;
                 }
                 c.set_ref_count(task_count);

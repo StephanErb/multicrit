@@ -685,7 +685,7 @@ protected:
                 // Need to perform rebalancing.
                 size_type designated_treesize = designated_subtreesize(inner->level);
 
-                inner_node* result = tls_data->spare_inner;
+                inner_node* const result = tls_data->spare_inner;
                 result->initialize(inner->level);
 
                 width_type in = 0; // current slot in input tree
@@ -719,7 +719,7 @@ protected:
                             inner_node_data fake_slot;
                             fake_slot.childid = result;
                             out += create_subtree_from_leaves(fake_slot, out, /*write into result node*/ true, result->level, 0, weight_of_defective_range, leaves);
-                            result = static_cast<inner_node*>(fake_slot.childid);                            
+                            BTREE_ASSERT(result == fake_slot.childid);                            
                         }
                     } else {
                         BTREE_PRINT("Copying " << in << " to " << out << " " << inner->slot[in].childid << std::endl);
