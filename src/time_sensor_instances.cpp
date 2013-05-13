@@ -10,7 +10,6 @@
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include "timing.h"
 #include "memory.h"
@@ -24,7 +23,7 @@ typedef utility::datastructure::KGraph<TempEdge> TempGraph;
 // Mersenne Twister random number genrator
 boost::mt19937 gen;
 
-static void time(const Graph& graph, std::string nodecount, std::string degree, bool verbose, int iterations, int p) {
+static void time(const Graph& graph, int nodecount, int degree, bool verbose, int iterations, int p) {
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
@@ -57,13 +56,13 @@ static void time(const Graph& graph, std::string nodecount, std::string degree, 
 		<< getPeakMemorySize()/1024 << " " << p << "  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p" << std::endl;
 }
 
-static void translate_to_biweight_graph_with_hopcount(TempGraph& temp_graph, Graph& graph) {
+static void translate_to_biweight_graph(TempGraph& temp_graph, Graph& graph) {
 	std::vector< std::pair<NodeID, Edge > > edges;
+	boost::uniform_int<> dist(1, 10000);
 	FORALL_NODES(temp_graph, node) {
 		FORALL_EDGES(temp_graph, node, eid) {
 			const TempEdge& temp_edge = temp_graph.getEdge(eid);
-			const unsigned int pot_weight = ((double) temp_edge.weight * temp_edge.weight) / 10000; // w² normalized to range 0-10000
-			edges.push_back({node, Edge(temp_edge.target, Edge::edge_data(pot_weight, /*hopcount*/ 1))});
+			edges.emplace_back(node, Edge(temp_edge.target, Edge::edge_data(temp_edge.weight, dist(gen))));
 		}
 	}
 	GraphGenerator<Graph> generator;
@@ -121,12 +120,11 @@ int main(int argc, char ** args) {
  	temp_graph.deserializeFrom<TempEdge>( input_graph_file );
  	input_graph_file.close();
  	Graph graph;
- 	translate_to_biweight_graph_with_hopcount(temp_graph, graph);
+ 	translate_to_biweight_graph(temp_graph, graph);
 
-
-	std::vector<std::string> strs;
-	boost::split(strs, graphname, boost::is_any_of("n_d"));
-
-	time(graph, strs[1], strs[3], verbose, iterations, p);
+	int n;
+	int d;
+	sscanf(graphname.c_str(), "n%d_d%d", &n, &d);
+	time(graph, n, d, verbose, iterations, p);
 	return 0;
 }
