@@ -1,197 +1,145 @@
 # Class 1 Grid Instances of [Machuca 2012]
 # ParallelParetoSearch_ParallelBTreeParetoQueue_VectorLabelSet_(radixsort, prefetching)
-#
-# Iterations: 3510
-# ParetoQueue sizes: 
-#   avg: 1960
-#   max: 4563
+
 # Subcomponent Timings:
-#   0.0195673 Find Pareto Min
-#   0.0495153 Sort Candidates
-#   0.0539711 Update Labelsets 
-#   0.0665257 Sort Updates
-#   0.0393226 Update PQ 
+#   0.0192779 Find Pareto Min
+#   0.0477113 Sort Candidates
+#   0.0270008 Update Labelsets 
+#   0.0667714 Sort Updates
+#   0.0335463 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-1 100 100 0.244976 37 0.8 9.08594 9 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 5027
-# ParetoQueue sizes: 
-#   avg: 3781
-#   max: 7676
+1 100 100 0.181093 45.8 0.8 11.8234 13 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.0481562 Find Pareto Min
-#   0.078995 Sort Candidates
-#   0.115376 Update Labelsets 
-#   0.111827 Sort Updates
-#   0.0581006 Update PQ 
+#   0.0488268 Find Pareto Min
+#   0.0810031 Sort Candidates
+#   0.0397551 Update Labelsets 
+#   0.120009 Sort Updates
+#   0.0587641 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-2 125 125 0.412471 70 0.8 15.9844 16 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 6649
-# ParetoQueue sizes: 
-#   avg: 3913
-#   max: 8036
+2 125 125 0.334104 58.7 0.8 18.8813 20 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.062138 Find Pareto Min
-#   0.100327 Sort Candidates
-#   0.138044 Update Labelsets 
-#   0.137428 Sort Updates
-#   0.0823253 Update PQ 
+#   0.062666 Find Pareto Min
+#   0.102354 Sort Candidates
+#   0.0500372 Update Labelsets 
+#   0.147789 Sort Updates
+#   0.0831485 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-3 150 150 0.520278 43 0.8 21.4805 21 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 10320
-# ParetoQueue sizes: 
-#   avg: 10877
-#   max: 22125
+3 150 150 0.536481 62.6 0.8 27.2824 28 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.155531 Find Pareto Min
-#   0.217681 Sort Candidates
-#   0.422729 Update Labelsets 
-#   0.254853 Sort Updates
-#   0.201332 Update PQ 
+#   0.158384 Find Pareto Min
+#   0.227803 Sort Candidates
+#   0.127841 Update Labelsets 
+#   0.273515 Sort Updates
+#   0.209303 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-4 175 175 1.25215 108 0.8 41.9297 42 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 12110
-# ParetoQueue sizes: 
-#   avg: 13705
-#   max: 28940
+4 175 175 0.877865 116 0.8 50.2648 52 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.191782 Find Pareto Min
-#   0.270813 Sort Candidates
-#   0.567497 Update Labelsets 
-#   0.308194 Sort Updates
-#   0.256834 Update PQ 
+#   0.199432 Find Pareto Min
+#   0.284552 Sort Candidates
+#   0.162384 Update Labelsets 
+#   0.332493 Sort Updates
+#   0.268004 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-5 200 200 1.59514 102 0.8 56.1211 56 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 16145
-# ParetoQueue sizes: 
-#   avg: 19848
-#   max: 39750
+5 200 200 1.19646 123.5 0.8 72.1832 73 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.262494 Find Pareto Min
-#   0.388798 Sort Candidates
-#   0.923641 Update Labelsets 
-#   0.422816 Sort Updates
-#   0.402755 Update PQ 
+#   0.271982 Find Pareto Min
+#   0.413443 Sort Candidates
+#   0.250708 Update Labelsets 
+#   0.456158 Sort Updates
+#   0.421222 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-6 225 225 2.40053 197 0.8 90.4805 90 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 19104
-# ParetoQueue sizes: 
-#   avg: 22836
-#   max: 50873
+6 225 225 1.78338 191.9 0.8 112.423 120 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.322165 Find Pareto Min
-#   0.491783 Sort Candidates
-#   1.28347 Update Labelsets 
-#   0.523955 Sort Updates
-#   0.511911 Update PQ 
+#   0.35023 Find Pareto Min
+#   0.527393 Sort Candidates
+#   0.327075 Update Labelsets 
+#   0.565468 Sort Updates
+#   0.542815 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-7 250 250 3.13331 204 0.8 114.949 115 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 23555
-# ParetoQueue sizes: 
-#   avg: 30132
-#   max: 68230
+7 250 250 2.32854 193.6 0.8 154.106 187 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.403345 Find Pareto Min
-#   0.647309 Sort Candidates
-#   1.71422 Update Labelsets 
-#   0.667808 Sort Updates
-#   0.724165 Update PQ 
+#   0.468422 Find Pareto Min
+#   0.693206 Sort Candidates
+#   0.471942 Update Labelsets 
+#   0.718848 Sort Updates
+#   0.774167 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-8 275 275 4.15687 322 0.8 163.738 163 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 26391
-# ParetoQueue sizes: 
-#   avg: 33468
-#   max: 70568
+8 275 275 2.95989 271.6 0.8 228.395 236 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.469411 Find Pareto Min
-#   0.766158 Sort Candidates
-#   2.10154 Update Labelsets 
-#   0.773091 Sort Updates
-#   0.858517 Update PQ 
+#   0.513463 Find Pareto Min
+#   0.822826 Sort Candidates
+#   0.563003 Update Labelsets 
+#   0.829763 Sort Updates
+#   0.912436 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-9 300 300 4.96875 314 0.8 198.777 198 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 34137
-# ParetoQueue sizes: 
-#   avg: 38573
-#   max: 93139
+9 300 300 3.8967 284.4 0.8 270.027 298 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.606725 Find Pareto Min
-#   0.961271 Sort Candidates
-#   2.71213 Update Labelsets 
-#   0.973133 Sort Updates
-#   1.17826 Update PQ 
+#   0.681091 Find Pareto Min
+#   1.02902 Sort Candidates
+#   0.697523 Update Labelsets 
+#   1.04502 Sort Updates
+#   1.261 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-10 325 325 6.43154 182 0.8 242.93 242 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 39420
-# ParetoQueue sizes: 
-#   avg: 51310
-#   max: 113824
+10 325 325 4.89765 282.4 0.8 352.33 376 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   0.788205 Find Pareto Min
-#   1.24108 Sort Candidates
-#   3.59777 Update Labelsets 
-#   1.24474 Sort Updates
-#   1.67108 Update PQ 
+#   0.876123 Find Pareto Min
+#   1.33145 Sort Candidates
+#   0.978565 Update Labelsets 
+#   1.32723 Sort Updates
+#   1.78358 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-11 350 350 8.54289 334 0.8 319.176 319 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 43884
-# ParetoQueue sizes: 
-#   avg: 73006
-#   max: 153495
+11 350 350 6.87777 370.1 0.8 520.628 539 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   1.1017 Find Pareto Min
-#   1.6771 Sort Candidates
-#   5.36576 Update Labelsets 
-#   1.51984 Sort Updates
-#   2.48975 Update PQ 
+#   1.2273 Find Pareto Min
+#   1.78429 Sort Candidates
+#   1.41249 Update Labelsets 
+#   1.62535 Sort Updates
+#   2.66823 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-12 375 375 12.1542 260 0.8 475.074 475 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-#
-# Iterations: 50306
-# ParetoQueue sizes: 
-#   avg: 81260
-#   max: 165730
+12 375 375 8.27826 377 0.8 606.636 626 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+
 # Subcomponent Timings:
-#   1.32927 Find Pareto Min
-#   1.95812 Sort Candidates
-#   6.27063 Update Labelsets 
-#   1.79524 Sort Updates
-#   3.10633 Update PQ 
+#   1.46889 Find Pareto Min
+#   2.08018 Sort Candidates
+#   1.71433 Update Labelsets 
+#   1.91544 Sort Updates
+#   3.33155 Update PQ 
 # Parallel BTree (k=660, b=16):
 #   inner slots size [4, 64]. Bytes: 2568
 #   leaf slots size [165, 660]. Bytes: 7924
-13 400 400 14.4596 480 0.8 548.848 549 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+13 400 400 10.7523 485.3 0.8 731.646 804 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size

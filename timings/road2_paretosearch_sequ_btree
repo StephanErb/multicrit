@@ -3,642 +3,222 @@
 # Nodes 264346 Edges 733846
 # Nodes 264347 Edges 730100
 
-# Iterations: 41682
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073357682587)
-# LabelSet sizes: 
-#   avg: 1331.09
-#   max: 10216
-# ParetoQueue sizes: 
-#   avg: 680226
-#   max: 1475541
-# Pareto Optimal Elements: 
-#   avg: 8454.43
-#   max: 14185
-# Pareto Queue Updates: 
-#   avg: 18638.5
-#   max: 30797
-# Pareto Queue Size Delta: 
-#   avg: 122.387
-#   max: 823
 # Subcomponent Timings:
-#   93.3372 Find Pareto Min
-#   27.5279 Group Candidates
-#   261.632 Update Labelsets 
-#   32.232 Sort Updates
-#   117.297 Update PQ 
+#   93.5272 Find Pareto Min
+#   27.514 Group Candidates
+#   264.391 Update Labelsets 
+#   31.6277 Sort Updates
+#   117.137 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-1 NY1 532.025 1089 5956.59 5956 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+1 NY1 534.196 1089 5956.59 5956 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 40835
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073360547249)
-# LabelSet sizes: 
-#   avg: 1320.25
-#   max: 9662
-# ParetoQueue sizes: 
-#   avg: 662194
-#   max: 1455928
-# Pareto Optimal Elements: 
-#   avg: 8559.64
-#   max: 17298
-# Pareto Queue Updates: 
-#   avg: 18875.9
-#   max: 37863
-# Pareto Queue Size Delta: 
-#   avg: 124.378
-#   max: 987
 # Subcomponent Timings:
-#   91.8054 Find Pareto Min
-#   27.3106 Group Candidates
-#   261.114 Update Labelsets 
-#   32.7528 Sort Updates
-#   113.018 Update PQ 
+#   92.0081 Find Pareto Min
+#   27.3084 Group Candidates
+#   254.959 Update Labelsets 
+#   32.0828 Sort Updates
+#   112.767 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-2 NY2 526.001 1469 6049.94 6050 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 519.125 1469 6049.93 6050 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 48656
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744072993778173)
-# LabelSet sizes: 
-#   avg: 2707.7
-#   max: 15999
-# ParetoQueue sizes: 
-#   avg: 1.29617e+06
-#   max: 2810234
-# Pareto Optimal Elements: 
-#   avg: 14721.8
-#   max: 28997
-# Pareto Queue Updates: 
-#   avg: 31890.7
-#   max: 61792
-# Pareto Queue Size Delta: 
-#   avg: 201.819
-#   max: 1511
 # Subcomponent Timings:
-#   215.807 Find Pareto Min
-#   51.4486 Group Candidates
-#   488.284 Update Labelsets 
-#   64.1915 Sort Updates
-#   264.75 Update PQ 
+#   216.489 Find Pareto Min
+#   51.4425 Group Candidates
+#   422.37 Update Labelsets 
+#   62.8757 Sort Updates
+#   264.019 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-3 NY3 1084.48 16 11849.5 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 1017.2 16 11849.5 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 44831
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073142708888)
-# LabelSet sizes: 
-#   avg: 2144.31
-#   max: 12197
-# ParetoQueue sizes: 
-#   avg: 1.10403e+06
-#   max: 2344487
-# Pareto Optimal Elements: 
-#   avg: 12655.8
-#   max: 25680
-# Pareto Queue Updates: 
-#   avg: 28047.5
-#   max: 56342
-# Pareto Queue Size Delta: 
-#   avg: 183.878
-#   max: 1562
 # Subcomponent Timings:
-#   155.445 Find Pareto Min
-#   43.0407 Group Candidates
-#   332.855 Update Labelsets 
-#   50.2767 Sort Updates
-#   205.851 Update PQ 
+#   155.842 Find Pareto Min
+#   43.0839 Group Candidates
+#   335.833 Update Labelsets 
+#   49.4876 Sort Updates
+#   205.631 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-4 NY4 787.469 5121 9071.86 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+4 NY4 789.877 5121 9071.86 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 36975
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073331870933)
-# LabelSet sizes: 
-#   avg: 1428.73
-#   max: 8692
-# ParetoQueue sizes: 
-#   avg: 810533
-#   max: 1799899
-# Pareto Optimal Elements: 
-#   avg: 10228.8
-#   max: 20874
-# Pareto Queue Updates: 
-#   avg: 22604.8
-#   max: 45602
-# Pareto Queue Size Delta: 
-#   avg: 133.148
-#   max: 1054
 # Subcomponent Timings:
-#   108.391 Find Pareto Min
-#   29.9554 Group Candidates
-#   280.196 Update Labelsets 
-#   35.493 Sort Updates
-#   125.682 Update PQ 
+#   109.015 Find Pareto Min
+#   29.9691 Group Candidates
+#   274.004 Update Labelsets 
+#   34.7855 Sort Updates
+#   125.565 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-5 NY5 579.717 2451 6461 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+5 NY5 573.339 2451 6460.99 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 39598
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073341159994)
-# LabelSet sizes: 
-#   avg: 1393.59
-#   max: 9085
-# ParetoQueue sizes: 
-#   avg: 867784
-#   max: 1813831
-# Pareto Optimal Elements: 
-#   avg: 9316.64
-#   max: 18457
-# Pareto Queue Updates: 
-#   avg: 20582.4
-#   max: 40263
-# Pareto Queue Size Delta: 
-#   avg: 140.983
-#   max: 1093
 # Subcomponent Timings:
-#   121.001 Find Pareto Min
-#   29.1598 Group Candidates
-#   284.467 Update Labelsets 
-#   34.9344 Sort Updates
-#   142.984 Update PQ 
+#   121.562 Find Pareto Min
+#   29.1645 Group Candidates
+#   279.808 Update Labelsets 
+#   34.2231 Sort Updates
+#   142.803 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-6 NY6 612.546 1502 6237.99 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+6 NY6 607.561 1502 6237.98 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 46036
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073238410653)
-# LabelSet sizes: 
-#   avg: 1782.28
-#   max: 12294
-# ParetoQueue sizes: 
-#   avg: 866274
-#   max: 2018999
-# Pareto Optimal Elements: 
-#   avg: 10245.7
-#   max: 19147
-# Pareto Queue Updates: 
-#   avg: 22683.3
-#   max: 42606
-# Pareto Queue Size Delta: 
-#   avg: 138.585
-#   max: 829
 # Subcomponent Timings:
-#   140.065 Find Pareto Min
-#   36.6313 Group Candidates
-#   364.738 Update Labelsets 
-#   44.0657 Sort Updates
-#   166.549 Update PQ 
+#   140.718 Find Pareto Min
+#   36.631 Group Candidates
+#   373.396 Update Labelsets 
+#   43.2036 Sort Updates
+#   166.535 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-7 NY7 752.049 274 7738.97 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+7 NY7 760.484 274 7738.96 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 45989
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744072993857912)
-# LabelSet sizes: 
-#   avg: 2707.4
-#   max: 17002
-# ParetoQueue sizes: 
-#   avg: 1.33768e+06
-#   max: 3023215
-# Pareto Optimal Elements: 
-#   avg: 15573.8
-#   max: 28177
-# Pareto Queue Updates: 
-#   avg: 33833.1
-#   max: 59811
-# Pareto Queue Size Delta: 
-#   avg: 203.625
-#   max: 1374
 # Subcomponent Timings:
-#   216.819 Find Pareto Min
-#   50.8006 Group Candidates
-#   492.456 Update Labelsets 
-#   66.1307 Sort Updates
-#   260.319 Update PQ 
+#   217.522 Find Pareto Min
+#   50.8073 Group Candidates
+#   453.375 Update Labelsets 
+#   64.7841 Sort Updates
+#   259.861 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-8 NY8 1086.53 7397 11652.3 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+8 NY8 1046.35 7397 11652.3 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 38437
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073325142797)
-# LabelSet sizes: 
-#   avg: 1454.18
-#   max: 11063
-# ParetoQueue sizes: 
-#   avg: 884814
-#   max: 1726009
-# Pareto Optimal Elements: 
-#   avg: 10014.8
-#   max: 17139
-# Pareto Queue Updates: 
-#   avg: 21856.4
-#   max: 36641
-# Pareto Queue Size Delta: 
-#   avg: 147.467
-#   max: 1014
 # Subcomponent Timings:
-#   114.705 Find Pareto Min
-#   29.4715 Group Candidates
-#   253.791 Update Labelsets 
-#   34.8104 Sort Updates
-#   140.365 Update PQ 
+#   115.005 Find Pareto Min
+#   29.4831 Group Candidates
+#   241.491 Update Labelsets 
+#   34.1157 Sort Updates
+#   139.992 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-9 NY9 573.143 919 6786.1 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+9 NY9 560.086 919 6786.09 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 41955
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073309554748)
-# LabelSet sizes: 
-#   avg: 1513.15
-#   max: 11723
-# ParetoQueue sizes: 
-#   avg: 776888
-#   max: 1670530
-# Pareto Optimal Elements: 
-#   avg: 9546.55
-#   max: 19659
-# Pareto Queue Updates: 
-#   avg: 21152.6
-#   max: 42699
-# Pareto Queue Size Delta: 
-#   avg: 133.969
-#   max: 950
 # Subcomponent Timings:
-#   111.705 Find Pareto Min
-#   31.5008 Group Candidates
-#   309.864 Update Labelsets 
-#   37.9042 Sort Updates
-#   136.357 Update PQ 
+#   112.052 Find Pareto Min
+#   31.4966 Group Candidates
+#   294.34 Update Labelsets 
+#   37.1188 Sort Updates
+#   136.041 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-10 NY10 627.331 774 6758.25 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+10 NY10 611.048 774 6758.25 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 36789
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073354182330)
-# LabelSet sizes: 
-#   avg: 1344.33
-#   max: 8288
-# ParetoQueue sizes: 
-#   avg: 883461
-#   max: 1721051
-# Pareto Optimal Elements: 
-#   avg: 9674.03
-#   max: 17646
-# Pareto Queue Updates: 
-#   avg: 21239.6
-#   max: 38185
-# Pareto Queue Size Delta: 
-#   avg: 142.129
-#   max: 998
 # Subcomponent Timings:
-#   114.164 Find Pareto Min
-#   27.8385 Group Candidates
-#   255.331 Update Labelsets 
-#   33.1053 Sort Updates
-#   134.717 Update PQ 
+#   114.381 Find Pareto Min
+#   27.8054 Group Candidates
+#   248.064 Update Labelsets 
+#   32.417 Sort Updates
+#   134.34 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-11 NY11 565.156 631 6125.07 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+11 NY11 557.008 631 6125.06 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 38995
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073343003343)
-# LabelSet sizes: 
-#   avg: 1386.62
-#   max: 9365
-# ParetoQueue sizes: 
-#   avg: 867086
-#   max: 1504599
-# Pareto Optimal Elements: 
-#   avg: 9413.44
-#   max: 16473
-# Pareto Queue Updates: 
-#   avg: 20405.4
-#   max: 35467
-# Pareto Queue Size Delta: 
-#   avg: 137.236
-#   max: 892
 # Subcomponent Timings:
-#   116.867 Find Pareto Min
-#   28.6853 Group Candidates
-#   251.754 Update Labelsets 
-#   33.0032 Sort Updates
-#   139.288 Update PQ 
+#   117.046 Find Pareto Min
+#   28.6866 Group Candidates
+#   241.079 Update Labelsets 
+#   32.3113 Sort Updates
+#   138.963 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-12 NY12 569.597 1571 6499.15 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+12 NY12 558.087 1571 6499.14 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 41091
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073319685676)
-# LabelSet sizes: 
-#   avg: 1474.83
-#   max: 8888
-# ParetoQueue sizes: 
-#   avg: 904626
-#   max: 1955080
-# Pareto Optimal Elements: 
-#   avg: 9500.73
-#   max: 18283
-# Pareto Queue Updates: 
-#   avg: 20884.3
-#   max: 39831
-# Pareto Queue Size Delta: 
-#   avg: 139.833
-#   max: 1250
 # Subcomponent Timings:
-#   129.831 Find Pareto Min
-#   30.4425 Group Candidates
-#   281.074 Update Labelsets 
-#   36.2247 Sort Updates
-#   153.977 Update PQ 
+#   130.468 Find Pareto Min
+#   30.4566 Group Candidates
+#   275.124 Update Labelsets 
+#   35.5109 Sort Updates
+#   153.853 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-13 NY13 631.549 3046 6587.32 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+13 NY13 625.413 3046 6587.32 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 47792
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073094038521)
-# LabelSet sizes: 
-#   avg: 2328.43
-#   max: 12283
-# ParetoQueue sizes: 
-#   avg: 1.23773e+06
-#   max: 2920769
-# Pareto Optimal Elements: 
-#   avg: 12890.1
-#   max: 25898
-# Pareto Queue Updates: 
-#   avg: 27750.8
-#   max: 54723
-# Pareto Queue Size Delta: 
-#   avg: 181.501
-#   max: 1405
 # Subcomponent Timings:
-#   207.381 Find Pareto Min
-#   43.6776 Group Candidates
-#   420.084 Update Labelsets 
-#   55.9267 Sort Updates
-#   245.025 Update PQ 
+#   208.377 Find Pareto Min
+#   43.7047 Group Candidates
+#   384.97 Update Labelsets 
+#   54.7339 Sort Updates
+#   244.985 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-14 NY14 972.094 2871 10306.3 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+14 NY14 936.771 2871 10306.3 11849 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 52136
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744072922342515)
-# LabelSet sizes: 
-#   avg: 2977.94
-#   max: 18797
-# ParetoQueue sizes: 
-#   avg: 1.39367e+06
-#   max: 3165003
-# Pareto Optimal Elements: 
-#   avg: 15109.3
-#   max: 29585
-# Pareto Queue Updates: 
-#   avg: 32861.5
-#   max: 63171
-# Pareto Queue Size Delta: 
-#   avg: 195.453
-#   max: 1634
 # Subcomponent Timings:
-#   254.639 Find Pareto Min
-#   56.3925 Group Candidates
-#   601.029 Update Labelsets 
-#   72.1781 Sort Updates
-#   304.099 Update PQ 
+#   255.645 Find Pareto Min
+#   56.4099 Group Candidates
+#   576.548 Update Labelsets 
+#   70.8174 Sort Updates
+#   303.78 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-15 NY15 1288.34 1 12573.5 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+15 NY15 1263.2 1 12573.5 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 39902
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073351276843)
-# LabelSet sizes: 
-#   avg: 1355.32
-#   max: 8776
-# ParetoQueue sizes: 
-#   avg: 842081
-#   max: 1739070
-# Pareto Optimal Elements: 
-#   avg: 8992.12
-#   max: 16680
-# Pareto Queue Updates: 
-#   avg: 19963.8
-#   max: 36527
-# Pareto Queue Size Delta: 
-#   avg: 140.854
-#   max: 1046
 # Subcomponent Timings:
-#   116.671 Find Pareto Min
-#   28.47 Group Candidates
-#   276.695 Update Labelsets 
-#   34.2196 Sort Updates
-#   139.406 Update PQ 
+#   117.093 Find Pareto Min
+#   28.4591 Group Candidates
+#   275.155 Update Labelsets 
+#   33.5232 Sort Updates
+#   139.259 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-16 NY16 595.461 2034 6025.29 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+16 NY16 593.489 2034 6025.29 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 38166
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073364241722)
-# LabelSet sizes: 
-#   avg: 1306.28
-#   max: 8489
-# ParetoQueue sizes: 
-#   avg: 683604
-#   max: 1333850
-# Pareto Optimal Elements: 
-#   avg: 9061.43
-#   max: 16898
-# Pareto Queue Updates: 
-#   avg: 19933.1
-#   max: 36676
-# Pareto Queue Size Delta: 
-#   avg: 119.363
-#   max: 893
 # Subcomponent Timings:
-#   90.1686 Find Pareto Min
-#   26.9834 Group Candidates
-#   258.604 Update Labelsets 
-#   32.3371 Sort Updates
-#   109.351 Update PQ 
+#   90.2827 Find Pareto Min
+#   26.9758 Group Candidates
+#   250.788 Update Labelsets 
+#   31.6692 Sort Updates
+#   109.088 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-17 NY17 517.444 1724 6088.2 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+17 NY17 508.803 1724 6088.19 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 52422
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744072963037904)
-# LabelSet sizes: 
-#   avg: 2823.99
-#   max: 16944
-# ParetoQueue sizes: 
-#   avg: 1.28938e+06
-#   max: 3145230
-# Pareto Optimal Elements: 
-#   avg: 14250.6
-#   max: 32672
-# Pareto Queue Updates: 
-#   avg: 31591.2
-#   max: 71535
-# Pareto Queue Size Delta: 
-#   avg: 192.924
-#   max: 1907
 # Subcomponent Timings:
-#   220.967 Find Pareto Min
-#   56.7584 Group Candidates
-#   490.317 Update Labelsets 
-#   67.9374 Sort Updates
-#   283.88 Update PQ 
+#   221.526 Find Pareto Min
+#   56.7743 Group Candidates
+#   485.631 Update Labelsets 
+#   66.902 Sort Updates
+#   283.768 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-18 NY18 1119.86 1276 11820.7 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+18 NY18 1114.6 1276 11820.7 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 46478
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073172293393)
-# LabelSet sizes: 
-#   avg: 2032.4
-#   max: 11310
-# ParetoQueue sizes: 
-#   avg: 999781
-#   max: 1990310
-# Pareto Optimal Elements: 
-#   avg: 11570.8
-#   max: 22570
-# Pareto Queue Updates: 
-#   avg: 25649.2
-#   max: 49455
-# Pareto Queue Size Delta: 
-#   avg: 145.057
-#   max: 958
 # Subcomponent Timings:
-#   158.137 Find Pareto Min
-#   41.2442 Group Candidates
-#   378.929 Update Labelsets 
-#   49.1432 Sort Updates
-#   195.785 Update PQ 
+#   158.824 Find Pareto Min
+#   41.242 Group Candidates
+#   385.131 Update Labelsets 
+#   48.2806 Sort Updates
+#   195.632 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-19 NY19 823.238 4224 8660.91 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+19 NY19 829.11 4224 8661.16 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
 
-# Iterations: 43984
-# Created Labels: 0
-#   initially dominated: -nan% (=0)
-#     via candidate shortcut: -nan% (=0)
-#   initially non-dominated: -nan% (=0)
-#     finally dominated: inf% (=18446744073156041642)
-# LabelSet sizes: 
-#   avg: 2093.88
-#   max: 10845
-# ParetoQueue sizes: 
-#   avg: 1.16485e+06
-#   max: 2535084
-# Pareto Optimal Elements: 
-#   avg: 12596.4
-#   max: 23615
-# Pareto Queue Updates: 
-#   avg: 27055
-#   max: 49703
-# Pareto Queue Size Delta: 
-#   avg: 170.842
-#   max: 1059
 # Subcomponent Timings:
-#   182.216 Find Pareto Min
-#   39.9074 Group Candidates
-#   394.626 Update Labelsets 
-#   49.9679 Sort Updates
-#   212.351 Update PQ 
+#   183.025 Find Pareto Min
+#   39.9002 Group Candidates
+#   367.576 Update Labelsets 
+#   48.8876 Sort Updates
+#   212.224 Update PQ 
 # Sequential BTree: 
 #  inner slots size [4, 64]
 #  leaf slots size [165, 660]
-20 NY20 879.068 3262 9375.57 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+20 NY20 851.612 3262 9375.56 12573 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
