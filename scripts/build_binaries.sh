@@ -100,7 +100,7 @@ echo "Btree algorithms..."
 
 large_leaf_k=660
 small_leaf_k=64
-b=16
+b=32
 
 make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
 mv ./bin/time_pq_btree.par ./bin/time_pq_btree_int_large.par
