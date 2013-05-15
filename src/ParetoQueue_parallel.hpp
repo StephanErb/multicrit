@@ -32,22 +32,16 @@
 
 template<typename _value_type, typename vector_type, typename counter_type>
 class BufferedSharedVector {
-private:
-	vector_type* vec;
-	counter_type* counter;
-
-	inline void alloc(size_t delta) {
-		current = counter->fetch_and_add(delta);
-		end = current + delta;
-	}
-
 public:
 	typedef _value_type value_type;
 	size_t current = 0;
 	size_t end = 0;
-
+private:
+	value_type* vec;
+	counter_type* counter;
+public:
 	inline void setup(vector_type& _vec, counter_type& _counter) {
-		vec = &_vec;
+		vec = _vec.data();
 		counter = &_counter;
 	}
 	inline void reset() {
@@ -56,34 +50,28 @@ public:
 	template<typename ...Args>
 	inline void emplace_back(Args&& ...args) {
 		if (current == end) {
-			alloc(BATCH_SIZE);
-			for (size_t i = current; i < end; ++i) {
-				vec->data()[i].node = std::numeric_limits<unsigned int>::max();
+			current = counter->fetch_and_add(BATCH_SIZE);
+			end = current + BATCH_SIZE;
+			for (unsigned short i = 0; i < BATCH_SIZE; ++i) {
+				vec[current+i].node = std::numeric_limits<unsigned int>::max();
 			}
 		}
-		assert(vec->capacity() > current);
-		vec->data()[current++] = value_type(std::forward<Args>(args)...);
+		vec[current++] = value_type(std::forward<Args>(args)...);
 	}
 };
 
 template<typename _value_type, typename vector_type, typename counter_type>
 class BufferedSharedOpVector {
-private:
-	vector_type* vec;
-	counter_type* counter;
-
-	inline void alloc(size_t delta) {
-		current = counter->fetch_and_add(delta);
-		end = current + delta;
-	}
-
 public:
 	typedef _value_type value_type;
 	size_t current = 0;
 	size_t end = 0;
-
+private:
+	value_type* vec;
+	counter_type* counter;
+public:
 	inline void setup(vector_type& _vec, counter_type& _counter) {
-		vec = &_vec;
+		vec = _vec.data();
 		counter = &_counter;
 	}
 	inline void reset() {
@@ -92,17 +80,15 @@ public:
 	template<typename ...Args>
 	inline void emplace_back(Args&& ...args) {
 		if (current == end) {
-			alloc(BATCH_SIZE);
-			for (size_t i = current; i < end; ++i) {
-				vec->data()[i].data.first_weight = std::numeric_limits<unsigned int>::max();
-				vec->data()[i].data.second_weight = std::numeric_limits<unsigned int>::max();
+			current = counter->fetch_and_add(BATCH_SIZE);
+			end = current + BATCH_SIZE;
+			for (unsigned short i = 0; i < BATCH_SIZE; ++i) {
+				vec[current+i].data.first_weight = vec[current+i].data.second_weight = std::numeric_limits<unsigned int>::max();
 			}
 		}
-		assert(vec->capacity() > current);
-		vec->data()[current++] = value_type(std::forward<Args>(args)...);
+		vec[current++] = value_type(std::forward<Args>(args)...);
 	}
 };
-
 
 template<typename type>
 struct BTreeSetOrderer {
