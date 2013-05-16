@@ -57,7 +57,7 @@
 /**
  * Keep this defined to gather runtime stats during label setting
  */
-#define GATHER_STATS
+//#define GATHER_STATS
 
 /**
  * Enable the following flag to gather how label sets and the pareto queue are modified
@@ -67,7 +67,7 @@
 /**
  * Enable the following flag to time individual substeps of the ParetoSearch algorithms
  */ 
-#define GATHER_SUBCOMPNENT_TIMING
+//#define GATHER_SUBCOMPNENT_TIMING
 //#define GATHER_SUB_SUBCOMPNENT_TIMING
 
 /**
