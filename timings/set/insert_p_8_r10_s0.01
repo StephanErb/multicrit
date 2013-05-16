@@ -1,12 +1,12 @@
 # Bulk Insertion
-66.9862 0 2 100 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-72.491 0 2 316 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-44.1667 0 3 1000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-80.1752 0 5 3162 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-183.299 1.29258 10 10000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-530.684 0.155203 28 31622 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-2239.78 3.07031 86 100000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-5176.89 12.4368 304 316227 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-142698 64.9414 828 1000000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-429749 210.516 2534 3162277 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-1.43573e+06 594.504 8859 10000000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+130.281 0 2 100 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+138.908 0 2 316 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+60.7628 0 3 1000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+111.448 0 5 3162 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+231.254 1.21063 11 10000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+588.774 0.1705 34 31622 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+2875.77 3.10784 93 100000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+5936.92 12.847 304 316227 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+210392 64.9414 828 1000000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+616657 210.516 2534 3162277 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+2.35215e+06 594.507 8861 10000000 10 0.01 8 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
