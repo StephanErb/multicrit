@@ -37,11 +37,12 @@ set ylabel "Speedup (relative)" offset 1
 set output "paretosearch_speedup.ps"
 
 set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
-set xrange [:]
-set yrange [0:14]
+set ytics ("1" 1, "2" 2, "4" 4, "6" 6, "8" 8, "10" 10)
+set xrange [:32]
+set yrange [0:10]
 
-plot '../timings/grid2_paretosearch_p_n325_m1000_q0' using 9:(477.321/$4) title 'Grid paPa' with lp ls 5,\
-     '../timings/grid2_lset_lex_n325_m1000_q0' using 9:(477.321/$4) title 'Grid LSet' with lines ls 4,\
-     '../timings/road2_paretosearch_p_NY1' using 7:(539.792/$3) title 'Road: paPa' with lp ls 6,\
-     '../timings/road2_lset_lex_NY1' using 7:(539.792/$3) title 'Road: LSet' with lines ls 3 
+plot '../timings/grid2_paretosearch_p_n325_m1000_q0' using 9:(491.258/$4) title 'Grid paPa' with lp ls 5,\
+     '../timings/grid2_lset_lex_n325_m1000_q0' using 9:(491.258/$4) title 'Grid LSet' with lines ls 4,\
+     '../timings/road2_paretosearch_p_NY1' using 7:(527.751/$3) title 'Road: paPa' with lp ls 6,\
+     '../timings/road2_lset_lex_NY1' using 7:(527.751/$3) title 'Road: LSet' with lines ls 3 
 	    
