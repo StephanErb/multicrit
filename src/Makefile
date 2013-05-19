@@ -30,13 +30,13 @@ PARALLEL = $(TESTS) $(CODE)
 DEFAULT_OPS = -Wall -Wextra $(CPPFLAGS)
 
 # Sequential
-CXXFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 
-CXXFLAGSDBG = -O3 -mtune=native -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 # -fno-inline -fno-default-inline -fno-builtin
+CXXFLAGS = -O3 -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 
+CXXFLAGSDBG = -O3 -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 # -fno-inline -fno-default-inline -fno-builtin
 CXXLIBS= -lrt -ltbb -ltbbmalloc
 
 # Parallel
-CXXPFLAGS = -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
-CXXPFLAGSDBG = -O3 -mtune=native -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1 # -fno-inline -fno-default-inline -fno-builtin 
+CXXPFLAGS = -O3 -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
+CXXPFLAGSDBG = -O3 -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1 # -fno-inline -fno-default-inline -fno-builtin 
 CXXPLIBS= -lrt -ltbb -ltbbmalloc -lpthread
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
@@ -104,4 +104,4 @@ test: all
 	cd $(BINDIR); $(foreach test,$(PARA_TESTS),./$(test);)
 
 time_pq_mcstl_set: time_pq_set
-	/software/gcc-4.2.4-64/bin/g++-4.2.4 -O3 -mtune=native -march=native -DNDEBUG $(DEFAULT_OPS) -DENABLE_MCSTL -fopenmp -I../lib/mcstl/c++ -o ./bin/time_pq_mcstl_set time_pq_set.cpp
+	/software/gcc-4.2.4-64/bin/g++-4.2.4 -O3 -march=native -DNDEBUG $(DEFAULT_OPS) -DENABLE_MCSTL -fopenmp -I../lib/mcstl/c++ -o ./bin/time_pq_mcstl_set time_pq_set.cpp
