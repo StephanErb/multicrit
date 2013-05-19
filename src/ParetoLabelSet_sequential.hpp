@@ -506,9 +506,6 @@ public:
         #ifdef PREFETCH_LABELSETS
             const size_t size = labels.size();
             __builtin_prefetch(&(labels[size * 0.5]));
-            __builtin_prefetch(&(labels[size * 0.75]));
-            __builtin_prefetch(&(labels[size * 0.25]));
-            __builtin_prefetch(&(labels[size * 1.0]));
         #endif
     }
 
