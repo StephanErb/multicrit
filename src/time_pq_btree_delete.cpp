@@ -19,6 +19,7 @@
 #include "algorithm"
 #include "limits"
 
+#include <functional>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
@@ -65,6 +66,15 @@ struct OpComparator {
 
 boost::mt19937 gen;
 
+struct rand_func : std::unary_function<unsigned, unsigned> {
+    boost::mt19937 &_state;
+    unsigned operator()(unsigned i) {
+        boost::uniform_int<> rng(0, i - 1);
+        return rng(_state);
+    }
+    rand_func(boost::mt19937 &state) : _state(state) {}
+};
+
 void bulkConstruct(std::vector<Operation<Label>>& updates, Tree& tree, size_t n) {
 		boost::uniform_int<unsigned int> dist(1, std::numeric_limits<unsigned int>::max());
 		updates.reserve(n);
@@ -87,13 +97,30 @@ void bulkConstruct(std::vector<Operation<Label>>& updates, Tree& tree, size_t n)
 		assert(tree.size() == n);
 }
 
+
+void createAndSortInsertions(std::vector<Operation<Label>>& inserts, size_t k, const unsigned int MAX) {
+		boost::uniform_int<unsigned int> skewed_dist(1, MAX);
+		inserts.reserve(inserts.size()+k);
+		for (size_t j=0; j < k; ++j) {
+			#ifdef USE_GRAPH_LABEL
+				inserts.emplace_back(Operation<Label>::INSERT, skewed_dist(gen), skewed_dist(gen), skewed_dist(gen));
+			#else
+				inserts.emplace_back(Operation<Label>::INSERT, skewed_dist(gen));
+			#endif
+		}			
+		#ifdef PARALLEL_BUILD
+			tbb::parallel_sort(inserts.begin(), inserts.end(), opCmp);
+		#else
+			std::sort(inserts.begin(), inserts.end(), opCmp);
+		#endif
+}
+
 void timeBulkDeletion(size_t k, double ratio, double skew, size_t iterations, int p, bool insert_and_delete_separated, bool insert_and_delete_combined) {
 	std::vector<double> timings(iterations);
 	std::vector<double> memory(iterations);
 
 	const size_t n = ratio * k; // See [Parallelization of bulk operations for STL dictionaries, 2008]
 	const unsigned int MAX = std::numeric_limits<unsigned int>::max() * skew;
-	boost::uniform_int<unsigned int> skewed_dist(1, MAX);
 
 	Tree tree(p);
 	for (size_t i = 0; i < iterations; ++i) {
@@ -109,31 +136,26 @@ void timeBulkDeletion(size_t k, double ratio, double skew, size_t iterations, in
 			Operation<Label> op = {Operation<Label>::INSERT, MAX};
 		#endif
 		auto skewed_range_end = std::upper_bound(elements.begin(), elements.end(), op, opCmp);
-		std::random_shuffle(elements.begin(), skewed_range_end);
+		rand_func rand_shuffle(gen);
+		std::random_shuffle(elements.begin(), skewed_range_end, rand_shuffle);
+
 		// Remap the remaing elements to be deleted
 		elements.resize(k);
 		for (auto& e : elements) {
 			e.type = Operation<Label>::DELETE;
 		}
-		// The elements to insert
-		std::vector<Operation<Label>> inserts;
-		inserts.reserve(k);
-		for (size_t j=0; j < k; ++j) {
-			#ifdef USE_GRAPH_LABEL
-				inserts.emplace_back(Operation<Label>::INSERT, skewed_dist(gen), skewed_dist(gen), skewed_dist(gen));
+		if (!insert_and_delete_combined) {
+			#ifdef PARALLEL_BUILD
+				tbb::parallel_sort(elements.begin(), elements.end(), opCmp);
 			#else
-				inserts.emplace_back(Operation<Label>::INSERT, skewed_dist(gen));
-			#endif
+				std::sort(elements.begin(), elements.end(), opCmp);
+			#endif	
 		}
 
 		if (insert_and_delete_separated) {
-			#ifdef PARALLEL_BUILD
-				tbb::parallel_sort(elements.begin(), elements.end(), opCmp);
-				tbb::parallel_sort(inserts.begin(), inserts.end(), opCmp);
-			#else
-				std::sort(elements.begin(), elements.end(), opCmp);
-				std::sort(inserts.begin(), inserts.end(), opCmp);
-			#endif
+			// The elements to insert
+			std::vector<Operation<Label>> inserts;
+			createAndSortInsertions(inserts, k, MAX);
 
 			memory[i] = getCurrentMemorySize();
 			tbb::tick_count start = tbb::tick_count::now();
@@ -148,31 +170,20 @@ void timeBulkDeletion(size_t k, double ratio, double skew, size_t iterations, in
 			memory[i] = getCurrentMemorySize() - memory[i];
 
 		} else if (insert_and_delete_combined) {
-
-			elements.insert(elements.end(), inserts.begin(), inserts.end());
-			#ifdef PARALLEL_BUILD
-				tbb::parallel_sort(elements.begin(), elements.end(), opCmp);
-			#else
-				std::sort(elements.begin(), elements.end(), opCmp);
-			#endif
+			createAndSortInsertions(elements, k, MAX);
 
 			memory[i] = getCurrentMemorySize();
 			tbb::tick_count start = tbb::tick_count::now();
 
 			tree.apply_updates(elements, INSERTS_AND_DELETES);
+
 			assert(tree.size() == n-k+k);
 
 			tbb::tick_count stop = tbb::tick_count::now();
 			timings[i] = (stop-start).seconds() * 1000.0 * 1000.0;
 			memory[i] = getCurrentMemorySize() - memory[i];
 
-		} else { // Just delete
-			#ifdef PARALLEL_BUILD
-				tbb::parallel_sort(elements.begin(), elements.end(), opCmp);
-			#else
-				std::sort(elements.begin(), elements.end(), opCmp);
-			#endif
-			
+		} else { // Just delete		
 			memory[i] = getCurrentMemorySize();
 			tbb::tick_count start = tbb::tick_count::now();
 
