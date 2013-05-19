@@ -663,18 +663,19 @@ protected:
 
             const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (leaf->slotkey[i].second_weight < min->second_weight ||
-                        (leaf->slotkey[i].first_weight == min->first_weight && leaf->slotkey[i].second_weight == min->second_weight)) {
+                const auto& l = leaf->slotkey[i]; 
+                if (l.second_weight < min->second_weight ||
+                        (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
 
                     // Generate Update that will delete the minima
-                    updates.emplace_back(Operation<key_type>::DELETE, leaf->slotkey[i]);
+                    updates.emplace_back(Operation<key_type>::DELETE, l);
                     // Derive all candidate labels 
-                    FORALL_EDGES(graph, leaf->slotkey[i].node, eid) {
+                    FORALL_EDGES(graph, l.node, eid) {
                         const auto& edge = graph.getEdge(eid);
-                        candidates.emplace_back(edge.target, leaf->slotkey[i].first_weight + edge.first_weight, 
-                                                             leaf->slotkey[i].second_weight + edge.second_weight);
+                        candidates.emplace_back(edge.target, l.first_weight + edge.first_weight, 
+                                                             l.second_weight + edge.second_weight);
                     }
-                    min = &leaf->slotkey[i];
+                    min = &l;
                 }
             }
         } else {
@@ -683,10 +684,10 @@ protected:
 
             const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
-                if (inner->slot[i].minimum.second_weight < min->second_weight ||
-                        (inner->slot[i].minimum.first_weight == min->first_weight && inner->slot[i].minimum.second_weight == min->second_weight)) {
+                const auto& l = inner->slot[i].minimum; 
+                if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
                     find_pareto_minima(inner->slot[i].childid, *min, updates, candidates, graph);
-                    min = &inner->slot[i].minimum;
+                    min = &l;
                 }
             }
         }
