@@ -83,7 +83,6 @@ private:
 	} groupLabels;
 
 
-
 public:
 	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
 		pq(graph_, num_threads),
@@ -91,7 +90,13 @@ public:
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
 		#endif
-	{ }
+	{ 
+		#ifdef BTREE_PARETO_LABELSET
+			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
+			tl.labelset_data.spare_leaf = pq.labelsets[node].allocate_leaf_without_count();
+			tl.labelset_data.spare_inner = pq.labelsets[node].allocate_inner_without_count(0);
+		#endif
+	}
 
 	~ParetoSearch() {
 		#ifdef BTREE_PARETO_LABELSET
@@ -108,14 +113,10 @@ public:
 		pq.init(NodeLabel(node, Label(0,0)));
 		#ifdef BTREE_PARETO_LABELSET
 			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-			tl.labelset_data.spare_leaf = pq.labelsets[node].allocate_leaf_without_count();
-			tl.labelset_data.spare_inner = pq.labelsets[node].allocate_inner_without_count(0);
 			pq.labelsets[node].init(Label(0,0), tl.labelset_data);
 		#else
 			pq.labelsets[node].init(Label(0,0));
 		#endif
-
-
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
 			tbb::tick_count stop = tbb::tick_count::now();
@@ -123,7 +124,7 @@ public:
 
 		tbb::auto_partitioner auto_part;
 		tbb::affinity_partitioner candidates_aff_part;
-		tbb::affinity_partitioner tree_aff_part;
+		tbb::auto_partitioner tree_aff_part;
 
 		while (!pq.empty()) {
 			pq.update_counter = 0;

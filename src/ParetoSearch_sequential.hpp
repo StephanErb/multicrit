@@ -50,6 +50,10 @@ private:
 	};
 	std::vector<LabelSetStruct> labels;
 
+	std::vector<Operation<NodeLabel> > updates;
+	std::vector<NodeID> affected_nodes;
+	std::vector<NodeLabel> candidates;
+
 	const graph_slot& graph;
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
@@ -81,6 +85,8 @@ public:
 			labelset_data.spare_leaf = labels[0].labels.allocate_leaf_without_count();
 			labelset_data.spare_inner = labels[0].labels.allocate_inner_without_count(0);
 		#endif
+		updates.reserve(LARGE_ENOUGH_FOR_MOST);
+		candidates.reserve(LARGE_ENOUGH_FOR_MOST);
 	 }
 
 	~ParetoSearch() {
@@ -91,9 +97,6 @@ public:
 	}
 
 	void run(const NodeID node) {
-		std::vector<Operation<NodeLabel> > updates;
-		std::vector<NodeID> affected_nodes;
-		std::vector<NodeLabel> candidates;
 		pq.init(NodeLabel(node, Label(0,0)));
 		#ifdef BTREE_PARETO_LABELSET
 			labels[node].labels.init(Label(0,0), labelset_data);
@@ -175,7 +178,6 @@ public:
 
 			updates.clear();
 			candidates.clear();
-			affected_nodes.clear();
 		}		
 	}
 	
