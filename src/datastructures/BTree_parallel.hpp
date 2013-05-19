@@ -37,7 +37,7 @@
 #include "../tbb/cache_aligned_blocked_range.hpp"
 
 
-#define TREE_CREATION_PAR_CUTOFF_LEVEL 2
+#define TREE_PAR_CUTOFF_LEVEL 1
 
 
 /** 
@@ -398,7 +398,7 @@ private:
         { }
 
         tbb::task* execute() {
-            if (level <= TREE_CREATION_PAR_CUTOFF_LEVEL) {
+            if (level <= TREE_PAR_CUTOFF_LEVEL) {
                 tree->create_subtree_from_leaves(slot, old_slotuse, reuse_node, level, rank_begin, rank_end, leaves);
                 return NULL;
             } else {
@@ -481,8 +481,14 @@ private:
 
             if (upd.weight == 0) {
                 BTREE_PRINT("Deleting subtree " << source_node << std::endl);
-                tree->clear_recursive(source_node);
-                return NULL; 
+                if (source_node->level <= TREE_PAR_CUTOFF_LEVEL) {
+                    tree->clear_recursive(source_node);
+                    return NULL;
+                } else {
+                    auto& c = *new(allocate_continuation()) tbb::empty_task(); // our parent will wait for this one
+                    c.set_ref_count(1);
+                    return new(c.allocate_child()) TreeDeletionTask(source_node, tree);
+                }
             } else if (upd.upd_end - upd.upd_begin < tree->min_problem_size) {
                 tree->rewrite(source_node, rank, upd.upd_begin, upd.upd_end, leaves);
                 return NULL;
@@ -553,6 +559,39 @@ private:
             return hi;
         }
     };
+
+
+    class TreeDeletionTask: public tbb::task {
+
+        node* to_delete;
+        btree* const tree;
+
+    public:
+        inline TreeDeletionTask(node* _to_delete, btree* const _tree)
+            : to_delete(_to_delete), tree(_tree)
+        {}
+
+        tbb::task* execute() {
+            if (to_delete->level <= TREE_PAR_CUTOFF_LEVEL) {
+                tree->clear_recursive(to_delete);
+                return NULL;
+            } else {
+                tbb::task_list tasks;
+                auto& c = *new(allocate_continuation()) tbb::empty_task(); // our parent will wait for this one
+
+                inner_node* const inner = static_cast<inner_node*>(to_delete);
+                for (width_type i = 0; i < inner->slotuse; ++i) {
+                    tasks.push_back(*new(c.allocate_child()) TreeDeletionTask(inner->slot[i].childid, tree));
+                }
+                c.set_ref_count(inner->slotuse);
+                tree->free_node(inner);
+                auto& task = tasks.pop_front();
+                spawn(tasks);
+                return &task;
+            }
+        }
+    };
+
 
     /**
      * Task that applys the given updates to the given nodes. Will restructure subtrees if needed. 
