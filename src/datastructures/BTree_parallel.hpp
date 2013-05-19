@@ -273,16 +273,19 @@ private:
         template<typename Tag>
         void operator() (const cache_aligned_blocked_range<size_type>& r, Tag) {
             // Mixed insertions and deletions. Need to perform full prefix sum.
+            const auto end = r.end();
+            const auto begin = r.begin();
             if (Tag::is_final_scan()) {
                 TOut temp = sum;
-                for(size_type i=r.begin(); i<r.end(); ++i) {
+
+                for(size_type i=begin; i<end; ++i) {
                     temp += in[i].type;
                     out[i] = temp;
                 }
                 sum = temp;                
             } else {
                 TOut temp = sum;
-                for(size_type i=r.begin(); i<r.end(); ++i) {
+                for(size_type i=begin; i<end; ++i) {
                     temp += in[i].type;
                 }
                 sum = temp;                
