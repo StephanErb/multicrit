@@ -93,8 +93,8 @@ public:
 	{ 
 		#ifdef BTREE_PARETO_LABELSET
 			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-			tl.labelset_data.spare_leaf = pq.labelsets[node].allocate_leaf_without_count();
-			tl.labelset_data.spare_inner = pq.labelsets[node].allocate_inner_without_count(0);
+			tl.labelset_data.spare_leaf = pq.labelsets[0].allocate_leaf_without_count();
+			tl.labelset_data.spare_inner = pq.labelsets[0].allocate_inner_without_count(0);
 		#endif
 	}
 
