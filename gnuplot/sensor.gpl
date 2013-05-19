@@ -39,7 +39,7 @@ set output "sensor.ps"
 set xrange [5:50]
 set yrange [0:16]
 
-plot '../timings/sensor_lset_lex_n100000' using 2:($3*1000/$)) title 'LSet (lex)' ls 4 w lp,\
+plot '../timings/sensor_lset_lex_n100000' using 2:($3*1000/$1) title 'LSet (lex)' ls 4 w lp,\
  	 '../timings/sensor_paretosearch_sequ_vec_n100000' using 2:($3*1000/$1) title 'paPa (seq, vec)' ls 3 w lp,\
  	 '../timings/sensor_paretosearch_sequ_btree_n100000' using 2:($3*1000/$1) title 'paPa (seq, btree)' ls 5 w lp,\
 	 '../timings/sensor_paretosearch_p8_vec_n100000' using 2:($3*1000/$1) title 'paPa (p8, vec)' ls 2 w lp,\

@@ -2,18 +2,16 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-#set size 0.40,0.38
-set size 0.50,0.48
-
+set size 0.7,0.52
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
 set grid back ls 12
 
 # Legend
-set key top left Left
-set key samplen 2
-set key width -4
+set key outside right Left
+set key samplen 1
+#set key width -4
 set key reverse
 
 # define axis: remove border on top and right and set color to gray
@@ -30,20 +28,23 @@ set style line 5 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
 set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
 
-#set format x "%g^{2}"
-#set logscale x 2
-
-set title "Parallel Pareto Search Speedup"
+set title "Parallel Pareto Search Components"
 set xlabel "Thread count"
-set ylabel "Speedup" offset 1
-set output "paretosearch_speedup.ps"
+set ylabel "Runtime in %" offset 1
+set output "paretosearch_components.ps"
 
-set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
-set ytics ("1" 1, "2" 2, "3" 3, "4" 4, "5" 5, "6" 6, "7" 7, "8" 8, "9" 9, "10" 10)
-set xrange [:32]
-set yrange [0:10]
+set boxwidth 0.5 
+set style data histogram
+set style histogram rowstacked
+set style fill solid 0.8 border lt -1
 
-plot '< join ../timings/grid2_paretosearch_p_n400_m1000_q0 ../timings/grid2_lset_lex_n400_m1000_q0' using 9:($31/$4) title 'Grid 400^2' with lp ls 6,\
-     '< join ../timings/grid2_paretosearch_p_n300_m1000_q0 ../timings/grid2_lset_lex_n300_m1000_q0 ' using 9:($31/$4) title 'Grid 300^2' with lp ls 3,\
-     '< join ../timings/grid2_paretosearch_p_n200_m1000_q0 ../timings/grid2_lset_lex_n200_m1000_q0 ' using 9:($31/$4) title 'Grid 200^2' with lp ls 4 
-	    
+set xrange [-0.5:3.5]
+set yrange [0:100]
+
+plot "../timings/paretosearch_components_sequ_btree" using (100*$7/$2):xtic(1) t "Update Pareto queue" ls 6,\
+	 '' using (100*$6/$2) t "Sort updates" ls 4,\
+	 '' using (100*$5/$2) t "Update Label sets" ls 3,\
+	 '' using (100*$4/$2) t "Sort candidates" ls 2,\
+     '' using (100*$3/$2) t "Find Pareto minima" ls 1
+
+
