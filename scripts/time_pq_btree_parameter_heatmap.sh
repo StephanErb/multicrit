@@ -29,7 +29,8 @@ do
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
-		current=$(taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $r -s $skew -k $numelements -h)
+		# taskset -c 0 
+		current=$(./bin/time_pq_btree -c $iter_count -r $r -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
 	done
@@ -63,7 +64,8 @@ do
 	for k in 8 16 32 64 128 256 512 1024 2048 4096 8192 16384
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
-		current=$(taskset -c 0-7 ./bin/time_pq_btree.par -c $iter_count -r $r -p 8 -s $skew -k $numelements -h)
+		#taskset -c 0-7 
+		current=$(./bin/time_pq_btree.par -c $iter_count -r $r -p 8 -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
 	done
@@ -101,7 +103,8 @@ do
 	for k in `seq 64 64 2048`
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree > /dev/null
-		current=$(taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $r -s $skew -k $numelements -h)
+		# taskset -c 0 
+		current=$(./bin/time_pq_btree -c $iter_count -r $r -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
 	done
@@ -135,7 +138,8 @@ do
 	for k in `seq 64 64 2048`
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$k" time_pq_btree.par > /dev/null
-		current=$(taskset -c 0-7 ./bin/time_pq_btree.par -c $iter_count -r $r -p 8 -s $skew -k $numelements -h)
+		# taskset -c 0-7 
+		current=$(./bin/time_pq_btree.par -c $iter_count -r $r -p 8 -s $skew -k $numelements -h)
 		row+=($current)
 		sum=$(echo $sum + $current | bc)
 	done
