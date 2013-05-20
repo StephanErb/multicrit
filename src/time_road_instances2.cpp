@@ -185,12 +185,14 @@ int main(int argc, char ** args) {
 		start_stream >> start;
 		end_stream >> end;
 		if (specific_instance_number == 0 || specific_instance_number == total_instance) {
-			time(graph, NodeID(start), NodeID(end), total_instance++, instance++, graphname, verbose, iterations, p);
+			time(graph, NodeID(start), NodeID(end), total_instance, instance, graphname, verbose, iterations, p);
 
 			if (specific_instance_number != 0) {
 				break;
 			}
 		}
+		total_instance++;
+		instance++;
 	}
 	problems_in.close();
 	return 0;
