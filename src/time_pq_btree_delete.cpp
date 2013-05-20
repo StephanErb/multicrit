@@ -243,16 +243,16 @@ int main(int argc, char ** args) {
 		p = 0;
 #endif
 	std::cout << "# Bulk Deletion" << std::endl;
-	timeBulkDeletion(100, ratio, skew, iterations *     3000, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(316, ratio, skew, iterations *     3000, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(1000, ratio, skew, iterations *    3000, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(3162, ratio, skew, iterations *    3000, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(10000, ratio, skew, iterations *    300, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(31622, ratio, skew, iterations *    300, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(100000, ratio, skew, iterations *    30, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(316227, ratio, skew, iterations *    30, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(1000000, ratio, skew, iterations *   10, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(3162277, ratio, skew, iterations *   10, p, insert_and_delete_separated, insert_and_delete_combined);
-	timeBulkDeletion(10000000, ratio, skew, iterations *   3, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(100, ratio, skew, iterations *     10000, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(316, ratio, skew, iterations *     10000, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(1000, ratio, skew, iterations *    10000, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(3162, ratio, skew, iterations *    10000, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(10000, ratio, skew, iterations *    1000, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(31622, ratio, skew, iterations *    1000, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(100000, ratio, skew, iterations *    100, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(316227, ratio, skew, iterations *    100, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(1000000, ratio, skew, iterations *   50, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(3162277, ratio, skew, iterations *   50, p, insert_and_delete_separated, insert_and_delete_combined);
+	timeBulkDeletion(10000000, ratio, skew, iterations *  50, p, insert_and_delete_separated, insert_and_delete_combined);
 	return 0;
 } 
