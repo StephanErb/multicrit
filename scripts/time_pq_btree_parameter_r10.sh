@@ -22,7 +22,7 @@ do
 #	echo "Writing node size computation to $out_file"
 	touch $out_file
 	rm $out_file # clear
-	for b in 8 12 16 20 24 28 32 48 64 128
+	for b in 8 12 16 20 26 32 40 48 64 128
 	do
 		make -B CPPFLAGS="-DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par > /dev/null
 #		taskset -c 0-$((p-1)) ./bin/time_pq_btree.par -c $iter_count -p $p -r $ratio -s $skew -k $numelements >> $out_file
@@ -33,7 +33,7 @@ out_file="../timings/btree/insert_nodewidth_int_inner_sequ_r$ratio"
 #echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
-for b in 8 12 16 20 24 28 32 48 64 128
+for b in 8 12 16 20 26 32 40 48 64 128
 do
 	make -B CPPFLAGS="-DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree > /dev/null
 #	taskset -c 0 ./bin/time_pq_btree -c $iter_count -r $ratio -s $skew -k $numelements >> $out_file
@@ -49,7 +49,7 @@ do
 	echo "Writing node size computation to $out_file"
 	touch $out_file
 	rm $out_file # clear
-	for b in 8 12 16 20 24 28 32 48 64 128
+	for b in 8 12 16 20 26 32 40 48 64 128
 	do
 		make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree.par > /dev/null
 		#taskset -c 0-$((p-1)) 
@@ -61,7 +61,7 @@ out_file="../timings/btree/insert_nodewidth_label_inner_sequ_r$ratio"
 echo "Writing node size computation to $out_file"
 touch $out_file
 rm $out_file # clear
-for b in 8 12 16 20 24 28 32 48 64 128 
+for b in 8 12 16 20 26 32 40 48 64 128
 do
 	make -B CPPFLAGS="-DUSE_GRAPH_LABEL -DLEAF_PARAMETER_K=$fixed_k -DBRANCHING_PARAMETER_B=$b" time_pq_btree > /dev/null
 	#taskset -c 0 
