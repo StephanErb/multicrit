@@ -4,10 +4,10 @@ cd ../src/
 # Difficult road instance ops: Size of 1 Million. Insert of size about 10000. So ratio is 10
 
 # Test configuration. Change these
-iter_count=1000
+iter_count=100
 skew=1
 ratio=100 # r = n/k
-numelements=10000
+numelements=100000
 
 fixed_k=64
 fixed_b=32

@@ -2,9 +2,9 @@
 cd ../src/
 
 # Test configuration. Change these
-iter_count=1000
+iter_count=100
 skew=1
-numelements=10000
+numelements=100000
 
 #################################################################
 # BRANCHING PARAMETER (LABEL)
