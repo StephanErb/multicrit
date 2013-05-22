@@ -4,7 +4,7 @@ set size 0.4,0.4
 
 set title "Sequential B-tree"
 set ylabel "Tree size ratio r"
-set xlabel "Leaf parameter k"
+set xlabel "Leaf parameter a"
 set output "btree_parameter_heatmap_a_sequ.ps"
 
 # define axis: remove border on top and right and set color to gray
@@ -20,7 +20,7 @@ set palette gray
 #set palette rgbformulae 22,13,10
 #set palette negative
 
-set cbrange [:0.22]
+set cbrange [0.01:0.25]
 unset cbtics
 set cblabel "fast                                  slow"
 
