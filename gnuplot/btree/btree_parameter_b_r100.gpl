@@ -38,11 +38,11 @@ set output "btree_parameter_b_r100.ps"
 
 set yrange [0:]
 
-plot '../../timings/btree/insert_nodewidth_label_inner_p_1_r100' using 6:($1*1000/$4) title ' btree (p1)' w lp ls 3,\
-			'../../timings/btree/insert_nodewidth_label_inner_sequ_r100' using 6:($1*1000/$4) title ' btree (seq)' w lp ls 1,\
-			'../../timings/btree/insert_nodewidth_label_inner_p_2_r100' using 6:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
-			'../../timings/btree/insert_nodewidth_label_inner_p_4_r100' using 6:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
-			'../../timings/btree/insert_nodewidth_label_inner_p_8_r100' using 6:($1*1000/$4) title ' btree (p8)' w lp ls 6
-	  		#'../../timings/btree/insert_nodewidth_int_inner_p_1_r100' using 6:($1*1000/$4) title ' btree (int, p1)' w lp ls 3,\
-			#'../../timings/btree/insert_nodewidth_int_inner_sequ_r100' using 6:($1*1000/$4) title ' btree (int, seq)' w lp ls 1,\
-			#'../../timings/btree/insert_nodewidth_int_inner_p_8_r100' using 6:($1*1000/$4) title ' btree (int, p8)' w lp ls 6
+plot '../../timings/btree/insert_nodewidth_label_inner_p_1_r100' using 6:($1*1000/$4) title 'btree (p1)' w lp ls 3,\
+			'../../timings/btree/insert_nodewidth_label_inner_sequ_r100' using 6:($1*1000/$4) title 'btree (seq)' w lp ls 1,\
+			'../../timings/btree/insert_nodewidth_label_inner_p_2_r100' using 6:($1*1000/$4) title 'btree (p2)' w lp ls 4,\
+			'../../timings/btree/insert_nodewidth_label_inner_p_4_r100' using 6:($1*1000/$4) title 'btree (p4)' w lp ls 5,\
+			'../../timings/btree/insert_nodewidth_label_inner_p_8_r100' using 6:($1*1000/$4) title 'btree (p8)' w lp ls 6
+	  		#'../../timings/btree/insert_nodewidth_int_inner_p_1_r100' using 6:($1*1000/$4) title 'btree (int, p1)' w lp ls 3,\
+			#'../../timings/btree/insert_nodewidth_int_inner_sequ_r100' using 6:($1*1000/$4) title 'btree (int, seq)' w lp ls 1,\
+			#'../../timings/btree/insert_nodewidth_int_inner_p_8_r100' using 6:($1*1000/$4) title 'btree (int, p8)' w lp ls 6

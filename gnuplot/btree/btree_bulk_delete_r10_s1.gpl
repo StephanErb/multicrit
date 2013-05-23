@@ -38,10 +38,10 @@ set output "btree_bulk_delete_r10_s1.ps"
 set xrange [100:]
 set yrange [:80]
 
-plot '../../timings/btree/delete_p_1_r10_s1' using 4:($1*1000/$4) title ' btree (p1)' w lp ls 3,\
-	 '../../timings/btree/delete_sequ_r10_s1' using 4:($1*1000/$4) title ' btree (seq)' w lp ls 1,\
-	 '../../timings/btree/delete_p_8_r10_s1' using 4:($1*1000/$4) title ' btree (p8)' w lp ls 6
+plot '../../timings/btree/delete_sequ_r10_s1' using 4:($1*1000/$4) title 'btree (seq)' w lp ls 1,\
+	 '../../timings/btree/delete_p_8_r10_s1' using 4:($1*1000/$4) title 'btree (p8)' w lp ls 6
 			#'../../timings/vec/insert_sequ_r10_s1' using 4:($1*1000/$4) title ' vec (seq)' w lp ls 7,\
-		    #'../../timings/btree/insert_p_2_r10_s1' using 4:($1*1000/$4) title ' btree (p2)' w lp ls 4,\
-		    #'../../timings/btree/insert_p_4_r10_s1' using 4:($1*1000/$4) title ' btree (p4)' w lp ls 5,\
-			#'../../timings/btree/insert_p_16_r10_s1' using 4:($1*1000/$4) title ' btree (p16)' w lp 
+		    #'../../timings/btree/insert_p_2_r10_s1' using 4:($1*1000/$4) title 'btree (p2)' w lp ls 4,\
+		    #'../../timings/btree/insert_p_4_r10_s1' using 4:($1*1000/$4) title 'btree (p4)' w lp ls 5,\
+			#'../../timings/btree/insert_p_16_r10_s1' using 4:($1*1000/$4) title 'btree (p16)' w lp 
+			#'../../timings/btree/delete_p_1_r10_s1' using 4:($1*1000/$4) title 'btree (p1)' w lp ls 3,\

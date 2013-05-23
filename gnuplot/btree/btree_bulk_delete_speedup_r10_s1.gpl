@@ -39,9 +39,9 @@ set xrange [100:]
 set yrange [:10]
 
 plot\
- '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_16_r10_s1' using 1:($2/$25) title ' btree (p16)' with lp ls 7,\
- '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_8_r10_s1' using 1:($2/$25) title ' btree (p8)' with lp ls 6,\
- '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_4_r10_s1' using 1:($2/$25) title ' btree (p4)' with lp ls 5,\
- '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_2_r10_s1' using 1:($2/$25) title ' btree (p2)' with lp ls 4,\
- '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_1_r10_s1' using 1:($2/$25) title ' btree (p1)' with lp ls 3
+ '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_16_r10_s1' using 1:($2/$25) title 'btree (p16)' with lp ls 7,\
+ '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_8_r10_s1' using 1:($2/$25) title 'btree (p8)' with lp ls 6,\
+ '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_4_r10_s1' using 1:($2/$25) title 'btree (p4)' with lp ls 5,\
+ '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_2_r10_s1' using 1:($2/$25) title 'btree (p2)' with lp ls 4,\
+ '< join -j 4 ../../timings/btree/delete_sequ_r10_s1 ../../timings/btree/delete_p_1_r10_s1' using 1:($2/$25) title 'btree (p1)' with lp ls 3
 	    
