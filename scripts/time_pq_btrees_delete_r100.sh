@@ -1,8 +1,9 @@
 #!/bin/bash
 cd ../src/
 
-ratio=10
+ratio=100
 iter_count=1
+
 
 ##################
 # Plain delete
