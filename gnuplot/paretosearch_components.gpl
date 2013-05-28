@@ -20,13 +20,15 @@ set border 3 back ls 11
 set tics nomirror
 set tics textcolor rgb "black"
 
-set style line 1 linecolor rgbcolor "black" linewidth 2 pointsize 0.8 pt 64 lt 1 # (sequ)
-set style line 2 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 65 lt 1 # (competitor) 
-set style line 3 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1
-set style line 4 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 5 lt 1
-set style line 5 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 7 lt 1 # (competitor)
+set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
+set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
+set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
-set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 6 lt 1
+set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 8 linecolor rgbcolor "black" linewidth 2 pointsize 1.2 pt 9 lt 1 
+
 
 set title "Parallel Pareto Search Components"
 set xlabel "Thread count"
@@ -41,10 +43,9 @@ set style fill solid 0.8 border lt -1
 set xrange [-0.5:3.5]
 set yrange [0:100]
 
-plot "../timings/paretosearch_components_sequ_btree" using (100*$7/$2):xtic(1) t "Update Pareto queue" ls 6,\
-	 '' using (100*$6/$2) t "Sort updates" ls 4,\
-	 '' using (100*$5/$2) t "Update Label sets" ls 3,\
-	 '' using (100*$4/$2) t "Sort candidates" ls 2,\
-     '' using (100*$3/$2) t "Find Pareto minima" ls 1
-
+plot "../timings/paretosearch_components_sequ_btree" using (100*$8/$3):xtic(2):xticlabel(1) t "Update Pareto queue" ls 8,\
+	 '' using (100*$7/$3) t "Sort updates" ls 6,\
+	 '' using (100*$6/$3) t "Update label sets" ls 2,\
+	 '' using (100*$5/$3) t "Sort candidates" ls 1,\
+     '' using (100*$4/$3) t "Find Pareto minima" ls 4
 
