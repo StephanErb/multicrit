@@ -36,7 +36,8 @@
 
 
 #ifndef LS_LEAF_PARAMETER_K
-#define LS_LEAF_PARAMETER_K 64
+// use 63 instead of 64 because then leaf nodes fit exactly into x cache lines. 
+#define LS_LEAF_PARAMETER_K 63 
 #endif
 
 #ifndef LS_BRANCHING_PARAMETER_B
