@@ -39,11 +39,11 @@ set output "grid2_q-08_hard.ps"
 set xrange [100:]
 set yrange [0:]
 
-plot '../timings/grid2_lset_lex_q-0.8_hard' using 2:($4/($2*$3)*1000) title ' LSet (lex)' ls 2 w lp,\
- 	 '../timings/grid2_paretosearch_sequ_btree_q-0.8_hard' using 2:($4/($2*$3)*1000) title ' paPa (seq, btree)' ls 1 w lp,\
-	 '../timings/grid2_paretosearch_p8_btree_q-0.8_hard' using 2:($4/($2*$3)*1000) title ' paPa (p8, btree)' ls 6 w lp
- 	 #'../timings/grid2_paretosearch_sequ_vec_q-0.8_hard' using 2:($4/($2*$3)*1000) title ' paPa (seq, vec)' ls 3 w lp,\
-	 #'../timings/grid2_paretosearch_p8_vec_q-0.8_hard' using 2:($4/($2*$3)*1000) title ' paPa (p8, vec)' ls 2 w lp,\
+plot '../timings/grid2_lset_lex_q-0.8_hard' using 2:($4/($2*$3)*1000) title 'LSetClassic' ls 2 w lp,\
+ 	 '../timings/grid2_paretosearch_sequ_btree_q-0.8_hard' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq)' ls 1 w lp,\
+	 '../timings/grid2_paretosearch_p8_btree_q-0.8_hard' using 2:($4/($2*$3)*1000) title 'paPaSearch (p8)' ls 6 w lp
+ 	 #'../timings/grid2_paretosearch_sequ_vec_q-0.8_hard' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq, vec)' ls 3 w lp,\
+	 #'../timings/grid2_paretosearch_p8_vec_q-0.8_hard' using 2:($4/($2*$3)*1000) title 'paPaSearch (p8, vec)' ls 2 w lp,\
 
 
 

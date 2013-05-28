@@ -40,7 +40,7 @@ set xrange [100:]
 set yrange [0:1]
 
 plot\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_vec_q-0.8 ../timings/grid2_paretosearch_p8_vec_q-0.8' using 2:($4/$31/8) title ' paPa (p8, vec)' with lp ls 3,\
-'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q-0.8 ../timings/grid2_paretosearch_p8_btree_q-0.8' using 2:($4/$31/8) title ' paPa (p8, btree)' with lp ls 5
+'< join -j 1 ../timings/grid2_paretosearch_sequ_vec_q-0.8 ../timings/grid2_paretosearch_p8_vec_q-0.8' using 2:($4/$31/8) title 'paPaSearch (p8, vec)' with lp ls 3,\
+'< join -j 1 ../timings/grid2_paretosearch_sequ_btree_q-0.8 ../timings/grid2_paretosearch_p8_btree_q-0.8' using 2:($4/$31/8) title 'paPaSearch (p8, btree)' with lp ls 5
 
 		    

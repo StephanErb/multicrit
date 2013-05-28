@@ -39,11 +39,11 @@ set output "sensor.ps"
 set xrange [5:50]
 set yrange [0:16]
 
-plot '../timings/sensor_lset_lex_n100000' using 2:($3*1000/$1) title 'LSet (lex)' ls 2 w lp,\
- 	 '../timings/sensor_paretosearch_sequ_btree_n100000' using 2:($3*1000/$1) title 'paPa (seq, btree)' ls 1 w lp,\
-	 '../timings/sensor_paretosearch_p8_btree_n100000' using 2:($3*1000/$1) title 'paPa (p8, btree)' ls 6 w lp
-# 	 '../timings/sensor_paretosearch_sequ_vec_n100000' using 2:($3*1000/$1) title 'paPa (seq, vec)' ls 3 w lp,\
-#	 '../timings/sensor_paretosearch_p8_vec_n100000' using 2:($3*1000/$1) title 'paPa (p8, vec)' ls 2 w lp,\
+plot '../timings/sensor_paretosearch_sequ_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (seq)' ls 1 w lp,\
+	 '../timings/sensor_lset_lex_n100000' using 2:($3*1000/$1) title 'LSetClassic' ls 2 w lp,\
+	 '../timings/sensor_paretosearch_p8_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8,)' ls 6 w lp
+# 	 '../timings/sensor_paretosearch_sequ_vec_n100000' using 2:($3*1000/$1) title 'paPaSearch (seq)' ls 3 w lp,\
+#	 '../timings/sensor_paretosearch_p8_vec_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8)' ls 2 w lp,\
 
 
 
