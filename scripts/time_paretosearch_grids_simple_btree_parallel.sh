@@ -10,6 +10,6 @@ do
 		out_file="../timings/grid2_paretosearch_p"$p"_btree_q"$q
 		echo "Writing to "$out_file
 		#taskset -c 0-$((p-1)) 
-		./bin/time_grid_instances2_paretosearch_ls_btree.par -v -p $p -c $iter_count -q $q -m $max_costs > $out_file
+		./bin/time_grid_instances2_paretosearch_ls_btree.par -p $p -c $iter_count -q $q -m $max_costs > $out_file
 	done
 done

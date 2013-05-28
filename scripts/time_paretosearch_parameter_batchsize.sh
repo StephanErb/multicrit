@@ -7,7 +7,7 @@ n=300
 q=0
 
 max_cost=10
-for p in 16 8 4 
+for p in 32 16 8 4 
 do
 	out_file="../timings/batch_size_grid2_paretosearch_p_$p""_q"$q
 	echo "Writing batch size computation to $out_file"
@@ -22,7 +22,7 @@ do
 done
 
 max_cost=1000
-for p in 16 8 4 
+for p in 32 16 8 4 
 do
 	out_file="../timings/batch_size_grid2_paretosearch_p_$p""_q"$q"_hard"
 	echo "Writing batch size computation to $out_file"

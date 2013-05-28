@@ -28,17 +28,17 @@ done
 out_file="../timings/road1_paretosearch_sequ_vec"
 echo "Writing to sequential computation to $out_file"
 #taskset -c 0
-./bin/time_road_instances1_paretosearch_ls_vec -c $iter_count -d ../instances/ -g DC -n 1  > $out_file
+./bin/time_road_instances1_paretosearch_ls_vec -v -c $iter_count -d ../instances/ -g DC -n 1  > $out_file
 #taskset -c 0
-./bin/time_road_instances1_paretosearch_ls_vec -c $iter_count -d ../instances/ -g RI -n 10 >> $out_file
+./bin/time_road_instances1_paretosearch_ls_vec -v -c $iter_count -d ../instances/ -g RI -n 10 >> $out_file
 #taskset -c 0
-./bin/time_road_instances1_paretosearch_ls_vec -c $iter_count -d ../instances/ -g NJ -n 19 >> $out_file
+./bin/time_road_instances1_paretosearch_ls_vec -v -c $iter_count -d ../instances/ -g NJ -n 19 >> $out_file
 
 out_file="../timings/road1_paretosearch_sequ_btree"
 echo "Writing to sequential computation to $out_file"
 #taskset -c 0
-./bin/time_road_instances1_paretosearch_ls_btree -c $iter_count -d ../instances/ -g DC -n 1  > $out_file
+./bin/time_road_instances1_paretosearch_ls_btree -v -c $iter_count -d ../instances/ -g DC -n 1  > $out_file
 #taskset -c 0
-./bin/time_road_instances1_paretosearch_ls_btree -c $iter_count -d ../instances/ -g RI -n 10 >> $out_file
+./bin/time_road_instances1_paretosearch_ls_btree -v -c $iter_count -d ../instances/ -g RI -n 10 >> $out_file
 #taskset -c 0
-./bin/time_road_instances1_paretosearch_ls_btree -c $iter_count -d ../instances/ -g NJ -n 19 >> $out_file
+./bin/time_road_instances1_paretosearch_ls_btree -v -c $iter_count -d ../instances/ -g NJ -n 19 >> $out_file

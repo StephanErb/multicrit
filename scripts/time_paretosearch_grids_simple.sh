@@ -19,7 +19,7 @@ do
 
 	echo "Parallel - Computing Grid Instance "$q
 	#taskset -c 0-$((p-1))
-	./bin/time_grid_instances2_paretosearch_ls_vec.par -v -p $p -c $iter_count -q $q -m $max_costs > "../timings/grid2_paretosearch_p"$p"_vec_q"$q
+	./bin/time_grid_instances2_paretosearch_ls_vec.par -p $p -c $iter_count -q $q -m $max_costs > "../timings/grid2_paretosearch_p"$p"_vec_q"$q
 done
 
 

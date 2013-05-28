@@ -1,8 +1,8 @@
 #!/bin/bash
 cd ../src/
-p=8
-iter_count=1
-n=1000
+
+iter_count=3
+n=100000
 
 out_file="../timings/sensor_lset_lex_n"$n
 echo $out_file

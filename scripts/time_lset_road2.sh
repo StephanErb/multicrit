@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../src/
 
-iter_count=1
+iter_count=3
 
 out_file="../timings/road2_lset_lex"
 echo "Writing to sequential computation to $out_file"
