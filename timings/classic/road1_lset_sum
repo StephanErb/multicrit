@@ -1,39 +1,36 @@
 # SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Sum
 # Map: ../instances/DC1
 # Nodes 9559 Edges 39377
-# Nodes 9560 Edges 39377
-1 DC1 0.0579662 2 5.34082 5 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-2 DC2 0.0780269 6 5.99512 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-3 DC3 0.0920635 3 6.79362 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-4 DC4 0.062467 2 5.50684 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-5 DC5 0.0525303 1 5.21452 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-6 DC6 0.0379296 7 4.69531 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-7 DC7 0.0738255 2 6.15397 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-8 DC8 0.033784 1 4.46745 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-9 DC9 0.120875 6 7.79232 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+1 DC1 0.0530962 2 5.44727 5 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+2 DC2 0.0716809 6 6.05469 6 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+3 DC3 0.0847465 3 6.84831 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+4 DC4 0.0570385 2 5.6709 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+5 DC5 0.0477943 1 5.27539 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+6 DC6 0.0341865 7 4.75 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+7 DC7 0.0672004 2 6.13477 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+8 DC8 0.0305673 1 4.4987 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+9 DC9 0.111817 6 7.84342 8 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
 # SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Sum
 # Map: ../instances/RI1
 # Nodes 53658 Edges 192084
-# Nodes 53659 Edges 192084
-10 RI1 0.257363 3 20.2699 20 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-11 RI2 0.605296 15 31.4089 31 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-12 RI3 0.188203 2 15.4961 31 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-13 RI4 0.429359 17 23.6045 31 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-14 RI5 0.807852 16 33.6501 33 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-15 RI6 0.680385 3 30.7653 33 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-16 RI7 0.658107 3 33.1576 33 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-17 RI8 0.475364 4 27.2891 33 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-18 RI9 0.89506 22 40.1133 40 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+10 RI1 0.238902 3 18.9476 19 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+11 RI2 0.575153 15 30.1885 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+12 RI3 0.177182 2 16 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+13 RI4 0.406539 17 22.2415 30 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+14 RI5 0.766058 16 32.5514 32 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+15 RI6 0.641862 3 29.6973 32 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+16 RI7 0.623305 3 32.1628 32 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+17 RI8 0.444452 4 26.0547 32 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+18 RI9 0.844564 22 39.1367 39 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
 # SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Sum
 # Map: ../instances/NJ1
 # Nodes 330386 Edges 1202458
-# Nodes 330387 Edges 1202458
-19 NJ1 3.41762 2 108.146 108 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-20 NJ2 6.18447 6 148.619 148 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-21 NJ3 5.24451 21 132.751 148 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-22 NJ4 4.74999 5 136.283 148 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-23 NJ5 2.85366 7 99.6771 148 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-24 NJ6 16.0413 12 261.648 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-25 NJ7 2.96472 6 103.875 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-26 NJ8 2.59207 13 99.4258 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
-27 NJ9 8.34095 24 175.672 261 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+19 NJ1 3.27056 2 111.569 111 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+20 NJ2 5.91155 6 151.823 152 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+21 NJ3 5.05667 21 135.86 152 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+22 NJ4 4.51602 5 139.74 152 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+23 NJ5 2.727 7 103.206 152 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+24 NJ6 15.4326 12 263.827 263 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+25 NJ7 2.83095 6 107.531 263 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+26 NJ8 2.49379 13 103.406 263 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+27 NJ9 8.01617 24 178.621 263 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
