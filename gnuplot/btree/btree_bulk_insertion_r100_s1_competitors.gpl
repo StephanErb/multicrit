@@ -19,13 +19,13 @@ set tics textcolor rgb "black"
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
 set grid back ls 12
 
-set style line 1 linecolor rgbcolor "black" linewidth 2 pointsize 0.8 pt 64 lt 1 # (sequ)
-set style line 2 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 65 lt 1 # (competitor) 
-set style line 3 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1
-set style line 4 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 5 lt 1
-set style line 5 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 7 lt 1 # (competitor)
+set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
+set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
+set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
-set style line 7 linecolor rgbcolor "#696969" linewidth 2 pointsize 1 pt 7 lt 1
+set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
 
 set format x "10^{%L}"
 set logscale x 10
@@ -38,6 +38,6 @@ set output "btree_bulk_insertion_r100_s1_competitors.ps"
 set xrange [100:]
 set yrange [0:]
 
-plot '../../timings/set/insert_sequ_r100_s1' using 4:($1*1000/$4) title 'set (seq)' w lp ls 7,\
+plot '../../timings/set/insert_sequ_r100_s1' using 4:($1*1000/$4) title 'set (seq)' w lp ls 3,\
      '../../timings/set/insert_p_1_r100_s1' using 4:($1*1000/$4) title 'mcstl (p1)' w lp ls 2,\
 	 '../../timings/btree/insert_sequ_r100_s1' using 4:($1*1000/$4) title 'btree (seq)' w lp ls 1
