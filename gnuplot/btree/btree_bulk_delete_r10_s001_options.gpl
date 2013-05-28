@@ -4,7 +4,7 @@ set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounde
 set size 0.40,0.38
 
 # Legend
-set key top right Left
+set key top left Left
 set key samplen 2
 set key width -4
 set key reverse
@@ -36,7 +36,7 @@ set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_delete_r10_s001_options.ps"
 
 set xrange [100:]
-set yrange [0:50]
+set yrange [0:35]
 
 plot '../../timings/btree/delete_separated_sequ_r10_s0.01' using 4:($1*1000/$4) title 'btree (seq, separated)' w lp ls 5,\
      '../../timings/btree/delete_combined_sequ_r10_s0.01' using 4:($1*1000/$4) title 'btree (seq, combined)' w lp ls 4
