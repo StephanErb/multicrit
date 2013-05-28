@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../src/
 
-iter_count=1
+iter_count=10
 ratio=10
 
 # Bulk Insertion

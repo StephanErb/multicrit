@@ -178,17 +178,17 @@ int main(int argc, char ** args) {
 		} else {
 			std::cout << "# Bulk Construction" << std::endl;
 		}
-		timeBulkInsertion(100, ratio, skew, iterations *     10000, p);
-		timeBulkInsertion(316, ratio, skew, iterations *     10000, p);
-		timeBulkInsertion(1000, ratio, skew, iterations *    10000, p);
-		timeBulkInsertion(3162, ratio, skew, iterations *    10000, p);
-		timeBulkInsertion(10000, ratio, skew, iterations *    1000, p);
-		timeBulkInsertion(31622, ratio, skew, iterations *    1000, p);
-		timeBulkInsertion(100000, ratio, skew, iterations *    100, p);
-		timeBulkInsertion(316227, ratio, skew, iterations *    100, p);
-		timeBulkInsertion(1000000, ratio, skew, iterations *   50, p);
-		timeBulkInsertion(3162277, ratio, skew, iterations *   50, p);
-		timeBulkInsertion(10000000, ratio, skew, iterations *  50, p);
+		timeBulkInsertion(100, ratio, skew, iterations *     1000, p);
+		timeBulkInsertion(316, ratio, skew, iterations *     1000, p);
+		timeBulkInsertion(1000, ratio, skew, iterations *    1000, p);
+		timeBulkInsertion(3162, ratio, skew, iterations *    1000, p);
+		timeBulkInsertion(10000, ratio, skew, iterations *    100, p);
+		timeBulkInsertion(31622, ratio, skew, iterations *    100, p);
+		timeBulkInsertion(100000, ratio, skew, iterations *    10, p);
+		timeBulkInsertion(316227, ratio, skew, iterations *    10, p);
+		timeBulkInsertion(1000000, ratio, skew, iterations *   5, p);
+		timeBulkInsertion(3162277, ratio, skew, iterations *   5, p);
+		timeBulkInsertion(10000000, ratio, skew, iterations *  5, p);
 	}
 	return 0;
 } 

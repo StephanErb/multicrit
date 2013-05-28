@@ -2,7 +2,7 @@
 cd ../src/
 
 # Bulk Construction
-iter_count=10
+iter_count=100
 ratio=0
 skew=1
 for p in 1 2 4 8 16

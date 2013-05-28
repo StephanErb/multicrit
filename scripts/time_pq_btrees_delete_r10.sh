@@ -2,7 +2,7 @@
 cd ../src/
 
 ratio=10
-iter_count=1
+iter_count=10
 
 ##################
 # Plain delete

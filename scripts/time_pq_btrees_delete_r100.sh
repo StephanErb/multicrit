@@ -2,7 +2,7 @@
 cd ../src/
 
 ratio=100
-iter_count=1
+iter_count=2
 
 
 ##################
