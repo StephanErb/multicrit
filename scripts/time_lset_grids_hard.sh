@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ../src/
-iter_count=5
+iter_count=10
 max_costs=1000
 
 for q in 0.8 0 -0.8

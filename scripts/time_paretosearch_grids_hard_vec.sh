@@ -1,9 +1,8 @@
 #!/bin/bash
 cd ../src/
 p=8
-iter_count=5
+iter_count=10
 max_costs=1000
-
 
 for q in 0 0.8 -0.8
 do
