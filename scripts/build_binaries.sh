@@ -99,7 +99,7 @@ mv ./bin/time_sensor_instances ./bin/time_sensor_instances_lset_lex
 echo "Btree algorithms..."
 
 large_leaf_k=660
-small_leaf_k=64
+small_leaf_k=63 # 64 -1 to prevent small overlap into next cache line -> reduce memory consumption
 b=32
 
 make -B CPPFLAGS="-DBRANCHING_PARAMETER_B=$b -DLEAF_PARAMETER_K=$large_leaf_k" time_pq_btree.par > /dev/null
