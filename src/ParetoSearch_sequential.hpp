@@ -206,6 +206,12 @@ public:
 		pq.printStatistics();
 	}
 
+	void printComponentTimings() const {
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			std::cout << "sequ" << " " << 0 << " " << timings[FIND_PARETO_MIN] << " " << timings[CANDIDATE_SORT] << " " << timings[UPDATE_LABELSETS] << " " << timings[UPDATES_SORT] << " " << timings[PQ_UPDATE];
+		#endif
+	}
+
 	size_t size(NodeID node) const { return labels[node].labels.size(); }
 	std::vector<Label>::iterator begin(NodeID node) { return labels[node].labels.begin(); }
 	std::vector<Label>::const_iterator begin(NodeID node) const { return labels[node].labels.begin(); }

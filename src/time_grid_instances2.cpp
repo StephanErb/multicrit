@@ -17,7 +17,7 @@
 #define BATCH_SIZE 0 
 #endif
 
-void timeGrid(int num, int height, int width, bool verbose, int iterations, double q, int p, int max_costs) {
+void timeGrid(int num, int height, int width, bool verbose, int iterations, double q, int p, int max_costs, bool subcomponent_timings) {
 	GraphGenerator<Graph> generator;
 	double timings[iterations];
 	double label_count[iterations];
@@ -43,6 +43,11 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 		if (verbose && i == 0) {
 			algo.printStatistics();
 		}
+		if (subcomponent_timings) {
+			algo.printComponentTimings();
+			std::cout << " " << timings[i] << std::endl;
+			std::cout << " # ";
+		}
 	}
 	std::cout << num << " " << height << " " << width << " " << pruned_average(timings, iterations, 0) << " "
 		<< pruned_average(label_count, iterations, 0) << " " << q << " " << pruned_average(memory, iterations, 0)/1024 << " " 
@@ -56,9 +61,10 @@ int main(int argc, char ** args) {
 	int p = tbb::task_scheduler_init::default_num_threads();
 	int max_costs = 10;
 	int n = 0;
+	bool subcomponent_timings = false;
 
 	int c;
-	while( (c = getopt( argc, args, "c:q:p:m:n:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:q:p:m:n:vs") ) != -1  ){
 		switch(c){
 		case 'c':
 			iterations = atoi(optarg);
@@ -74,6 +80,9 @@ int main(int argc, char ** args) {
 			break;
 		case 'p':
 			p = atoi(optarg);
+			break;
+		case 's':
+			subcomponent_timings = true;
 			break;
 		case 'v':
 			verbose = true;
@@ -101,27 +110,27 @@ int main(int argc, char ** args) {
 
 
 	if (n != 0) {
-		timeGrid(0, n, n, verbose, iterations, q, p, max_costs);
+		timeGrid(0, n, n, verbose, iterations, q, p, max_costs, subcomponent_timings);
 	} else {
-		timeGrid(1,  100, 100, verbose, iterations, q, p, max_costs);
-		timeGrid(2,  125, 125, verbose, iterations, q, p, max_costs);
-		timeGrid(3,  150, 150, verbose, iterations, q, p, max_costs);
-		timeGrid(4,  175, 175, verbose, iterations, q, p, max_costs);
-		timeGrid(5,  200, 200, verbose, iterations, q, p, max_costs);
-		timeGrid(6,  225, 225, verbose, iterations, q, p, max_costs);
-		timeGrid(7,  250, 250, verbose, iterations, q, p, max_costs);
-		timeGrid(8,  275, 275, verbose, iterations, q, p, max_costs);
-		timeGrid(9,  300, 300, verbose, iterations, q, p, max_costs);
+		timeGrid(1,  100, 100, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(2,  125, 125, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(3,  150, 150, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(4,  175, 175, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(5,  200, 200, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(6,  225, 225, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(7,  250, 250, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(8,  275, 275, verbose, iterations, q, p, max_costs, subcomponent_timings);
+		timeGrid(9,  300, 300, verbose, iterations, q, p, max_costs, subcomponent_timings);
 		if (q > -0.4 || max_costs < 100) {
-			timeGrid(10,  325, 325, verbose, iterations, q, p, max_costs);
-			timeGrid(11, 350, 350, verbose, iterations, q, p, max_costs);
-			timeGrid(12, 375, 375, verbose, iterations, q, p, max_costs);
-			timeGrid(13, 400, 400, verbose, iterations, q, p, max_costs);
+			timeGrid(10,  325, 325, verbose, iterations, q, p, max_costs, subcomponent_timings);
+			timeGrid(11, 350, 350, verbose, iterations, q, p, max_costs, subcomponent_timings);
+			timeGrid(12, 375, 375, verbose, iterations, q, p, max_costs, subcomponent_timings);
+			timeGrid(13, 400, 400, verbose, iterations, q, p, max_costs, subcomponent_timings);
 			if (q > 0.4 || max_costs < 100) {
-				timeGrid(14, 425, 425, verbose, iterations, q, p, max_costs);
-				timeGrid(15, 450, 450, verbose, iterations, q, p, max_costs);
-				timeGrid(16, 475, 475, verbose, iterations, q, p, max_costs);
-				timeGrid(17, 500, 500, verbose, iterations, q, p, max_costs);
+				timeGrid(14, 425, 425, verbose, iterations, q, p, max_costs, subcomponent_timings);
+				timeGrid(15, 450, 450, verbose, iterations, q, p, max_costs, subcomponent_timings);
+				timeGrid(16, 475, 475, verbose, iterations, q, p, max_costs, subcomponent_timings);
+				timeGrid(17, 500, 500, verbose, iterations, q, p, max_costs, subcomponent_timings);
 			}
 		}
 	}
