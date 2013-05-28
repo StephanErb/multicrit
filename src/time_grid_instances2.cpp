@@ -117,7 +117,7 @@ int main(int argc, char ** args) {
 			timeGrid(11, 350, 350, verbose, iterations, q, p, max_costs);
 			timeGrid(12, 375, 375, verbose, iterations, q, p, max_costs);
 			timeGrid(13, 400, 400, verbose, iterations, q, p, max_costs);
-			if (max_costs < 100) {
+			if (q > 0.4 || max_costs < 100) {
 				timeGrid(14, 425, 425, verbose, iterations, q, p, max_costs);
 				timeGrid(15, 450, 450, verbose, iterations, q, p, max_costs);
 				timeGrid(16, 475, 475, verbose, iterations, q, p, max_costs);
