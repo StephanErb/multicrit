@@ -1,0 +1,54 @@
+
+set encoding iso_8859_1
+
+set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
+#set size 0.40,0.38
+set size 0.70,0.48
+
+
+# define grid
+set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
+set grid back ls 12
+
+# Legend
+set key outside top right Left
+set key samplen 2
+set key width -4
+set key reverse
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 7 lt 1 # (competitor)
+set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
+set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
+set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
+set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
+set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 8 linecolor rgbcolor "black" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 9 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1 pt 9 lt 2 
+
+
+
+#set format x "%g^{2}"
+#set logscale x 2
+
+set title "Parallel Pareto Search Component Efficiency"
+set xlabel "Thread count"
+set ylabel "Efficiency" offset 1
+set output "paretosearch_components_speedup.ps"
+
+set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
+set xrange [:16]
+set yrange [0:]
+
+plot '< join -j 1 ../timings/paretosearch_components_p_n400_m1000_q0 ../timings/paretosearch_components_sequ_n400_m1000_q0' using 4:(($18/$8)/$4) title 'Update label sets' with lp ls 2,\
+	 '< join -j 1 ../timings/paretosearch_components_p_n400_m1000_q0 ../timings/paretosearch_components_sequ_n400_m1000_q0' using 4:(($16/$6)/$4) title 'Find Pareto minima' with lp ls 4,\
+	 '< join -j 1 ../timings/paretosearch_components_p_n400_m1000_q0 ../timings/paretosearch_components_sequ_n400_m1000_q0' using 4:(($20/$10)/$4) title 'Update Pareto queue' with lp ls 8,\
+	 '< join -j 1 ../timings/paretosearch_components_p_n400_m1000_q0 ../timings/paretosearch_components_sequ_n400_m1000_q0' using 4:(($21/$11)/$4) title 'Total' with lp ls 9,\
+	 '< join -j 1 ../timings/paretosearch_components_p_n400_m1000_q0 ../timings/paretosearch_components_sequ_n400_m1000_q0' using 4:(($17/$7)/$4) title 'Sort candidates' with lp ls 1,\
+	 '< join -j 1 ../timings/paretosearch_components_p_n400_m1000_q0 ../timings/paretosearch_components_sequ_n400_m1000_q0' using 4:(($19/$9)/$4) title 'Sort updates' with lp ls 6

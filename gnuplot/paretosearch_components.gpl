@@ -43,9 +43,9 @@ set style fill solid 0.8 border lt -1
 set xrange [-0.5:4.5]
 set yrange [0:100]
 
-plot '< cat ../timings/paretosearch_components_sequ_n400_m1000_q0 ../timings/paretosearch_components_p_n400_m1000_q0' using (100*$7/$8):xtic(2):xticlabel(1) t "Update Pareto queue" ls 8,\
-	 '' using (100*$6/$8) t "Sort updates" ls 6,\
-	 '' using (100*$5/$8) t "Update label sets" ls 2,\
-	 '' using (100*$4/$8) t "Sort candidates" ls 1,\
-     '' using (100*$3/$8) t "Find Pareto minima" ls 4
+plot '< cat ../timings/paretosearch_components_sequ_n400_m1000_q0 ../timings/paretosearch_components_p_n400_m1000_q0' using (100*$10/$11):xtic(2):xticlabel(1) t "Update Pareto queue" ls 8,\
+	 '' using (100*$9/$11) t "Sort updates" ls 6,\
+	 '' using (100*$8/$11) t "Update label sets" ls 2,\
+	 '' using (100*$7/$11) t "Sort candidates" ls 1,\
+     '' using (100*$6/$11) t "Find Pareto minima" ls 4
 

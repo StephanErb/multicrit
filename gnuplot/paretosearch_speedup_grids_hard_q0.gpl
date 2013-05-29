@@ -2,7 +2,9 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.40,0.38
+#set size 0.40,0.38
+set size 0.50,0.48
+
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
@@ -29,21 +31,19 @@ set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
 set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
 
 #set format x "%g^{2}"
-#set logscale y 10
+#set logscale x 2
 
-set title "Sensor Network (n=100000)"
-set xlabel "Node degree"
-set ylabel "Runtime [ms] / n" offset 1
-set output "sensor.ps"
+set title "Parallel Pareto Search Speedup"
+set xlabel "Thread count"
+set ylabel "Speedup" offset 1
+set output "paretosearch_speedup_grids_hard_q0.ps"
 
-set xrange [5:50]
+set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
+set ytics ("1" 1, "2" 2, "3" 3, "4" 4, "5" 5, "6" 6, "7" 7, "8" 8, "9" 9, "10" 10)
+set xrange [:32]
 set yrange [0:10]
 
-plot '../timings/sensor_paretosearch_sequ_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (seq)' ls 1 w lp,\
-	 '../timings/sensor_lset_lex_n100000' using 2:($3*1000/$1) title 'LSetClassic' ls 2 w lp,\
-	 '../timings/sensor_paretosearch_p8_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8,)' ls 6 w lp
-# 	 '../timings/sensor_paretosearch_sequ_vec_n100000' using 2:($3*1000/$1) title 'paPaSearch (seq)' ls 3 w lp,\
-#	 '../timings/sensor_paretosearch_p8_vec_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8)' ls 2 w lp,\
-
-
-
+plot '< join -j 1 ../timings/grid2_paretosearch_p_n400_m1000_q0 ../timings/grid2_paretosearch_sequ_n400_m1000_q0' using 9:($31/$4) title 'Grid 500^2' with lp ls 7,\
+	 '< join -j 1 ../timings/grid2_paretosearch_p_n300_m1000_q0 ../timings/grid2_paretosearch_sequ_n300_m1000_q0' using 9:($31/$4) title 'Grid 400^2' with lp ls 6,\
+     '< join -j 1 ../timings/grid2_paretosearch_p_n200_m1000_q0 ../timings/grid2_paretosearch_sequ_n200_m1000_q0' using 9:($31/$4) title 'Grid 300^2' with lp ls 5,\
+     '< join -j 1 ../timings/grid2_paretosearch_p_n100_m1000_q0 ../timings/grid2_paretosearch_sequ_n100_m1000_q0' using 9:($31/$4) title 'Grid 200^2' with lp ls 4
