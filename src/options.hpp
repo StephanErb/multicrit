@@ -74,7 +74,7 @@
  * Pareto Search Option
  */
 #define PREFETCH_LABELSETS
-#define RADIX_SORT
+//#define RADIX_SORT
 
 /**
  * A suitable size for dynamic but pre-allocated data structures where we want
