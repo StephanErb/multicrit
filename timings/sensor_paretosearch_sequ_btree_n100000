@@ -1,0 +1,55 @@
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d5 
+# Nodes 91494 Edges 471556
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+100000 5 349.849 1684.8 4036.58 5375 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d10 
+# Nodes 99998 Edges 1000420
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+100000 10 536.205 1768.4 3546.63 4412 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d15 
+# Nodes 99998 Edges 1500384
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+100000 15 555.93 1534.7 3144.43 3681 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d20 
+# Nodes 100000 Edges 2001578
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+100000 20 547.533 1336.3 2783 3837 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d25 
+# Nodes 100000 Edges 2504798
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+100000 25 530.327 885.4 2509.04 3135 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+100000 30 565.754 1127.8 2479.69 3247 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
+# Map: n100000_d35 
+# Nodes 100000 Edges 3504994
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]

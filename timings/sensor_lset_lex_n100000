@@ -1,0 +1,34 @@
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d5 
+# Nodes 91494 Edges 471556
+
+100000 5 317.891 1684.8 4386.19 5820 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d10 
+# Nodes 99998 Edges 1000420
+
+100000 10 456.058 1768.4 3902.53 4919 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d15 
+# Nodes 99998 Edges 1500384
+
+100000 15 524.865 1534.7 3462.22 4118 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d20 
+# Nodes 100000 Edges 2001578
+
+100000 20 540.894 1336.3 3013.33 4372 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d25 
+# Nodes 100000 Edges 2504798
+
+100000 25 537.684 885.4 2630.15 3353 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+
+100000 30 614.451 1127.8 2626.69 3569 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d35 
+# Nodes 100000 Edges 3504994
+

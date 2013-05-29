@@ -1,47 +1,11 @@
 # Class 1 Grid Instances of [Machuca 2012]
 # SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(radixsort, prefetching)
-
+#
 # Sequential BTree: 
 #  inner slots size [8, 128]
 #  leaf slots size [165, 660]
-1 100 100 18.8708 8088 -0.8 365.889 380 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
+1 100 100 19.8569 8257.8 -0.8 388.246 431 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+#
 # Sequential BTree: 
 #  inner slots size [8, 128]
 #  leaf slots size [165, 660]
-2 125 125 52.4428 12525.3 -0.8 858.346 924 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-3 150 150 116.589 16470 -0.8 1645.52 1677 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-4 175 175 263.145 21111.7 -0.8 2971.36 3102 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-5 200 200 504.911 27519.7 -0.8 5123.69 5137 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-6 225 225 801.475 31623.3 -0.8 7468.74 7712 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-7 250 250 1357.91 39713 -0.8 11258.9 11396 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-8 275 275 2109.06 49113.7 -0.8 16403.3 17276 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
-
-# Sequential BTree: 
-#  inner slots size [8, 128]
-#  leaf slots size [165, 660]
-9 300 300 2863.01 52407 -0.8 21486.1 22140 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
