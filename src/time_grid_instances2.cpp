@@ -44,6 +44,7 @@ void timeGrid(int num, int height, int width, bool verbose, int iterations, doub
 			algo.printStatistics();
 		}
 		if (subcomponent_timings) {
+			std::cout << num << " " << height << " " << width << " ";
 			algo.printComponentTimings();
 			std::cout << " " << timings[i] << std::endl;
 			std::cout << " # ";
