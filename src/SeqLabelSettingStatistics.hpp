@@ -85,7 +85,7 @@ public:
 
 	std::string toString() {
 		std::ostringstream out_stream;
-		out_stream << "";
+		out_stream << "#";
 		return out_stream.str();
 	}
 };
