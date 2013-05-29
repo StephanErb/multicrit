@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../src/
 
-iter_count=3
+iter_count=10
 n=100000
 
 out_file="../timings/sensor_lset_lex_n"$n
