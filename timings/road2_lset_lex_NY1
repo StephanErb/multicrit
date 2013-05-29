@@ -1,5 +1,0 @@
-# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
-# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
-# Nodes 264346 Edges 733846
-# Nodes 264347 Edges 730100
-1 NY1 407.611 1089 7029.68 7029 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
