@@ -31,13 +31,13 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 set format x "%g^{2}"
 #set logscale y 10
 
-set title "Label Sets on Grid (q=-0.8, c_{max}=10)"
+set title "Label Sets on Grid (q=0, c_{max}=10)"
 set xlabel "Grid Instance"
 set ylabel "Runtime [ms] / n" offset 1
-set output "grid2_ls_compare_q-08.ps"
+set output "grid2_ls_compare_q0.ps"
 
 set xrange [100:]
 set yrange [0:]
 
-plot '../timings/grid2_paretosearch_sequ_vec_q-0.8' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq, vec)' ls 3 w lp,\
- 	 '../timings/grid2_paretosearch_sequ_btree_q-0.8' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq, btree)' ls 5 w lp
+plot '../timings/grid2_paretosearch_sequ_vec_q0' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq, vec)' ls 3 w lp,\
+ 	 '../timings/grid2_paretosearch_sequ_btree_q0' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq, btree)' ls 5 w lp

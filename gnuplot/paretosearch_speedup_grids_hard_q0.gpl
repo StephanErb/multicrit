@@ -33,15 +33,15 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 #set format x "%g^{2}"
 #set logscale x 2
 
-set title "Parallel Pareto Search Speedup"
+set title "Speedup for Grids (q=0, c_{max}=1000)"
 set xlabel "Thread count"
 set ylabel "Speedup" offset 1
 set output "paretosearch_speedup_grids_hard_q0.ps"
 
 set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
-set ytics ("1" 1, "2" 2, "3" 3, "4" 4, "5" 5, "6" 6, "7" 7, "8" 8, "9" 9, "10" 10)
+set ytics ("1" 1, "2" 2, "3" 3, "4" 4, "5" 5, "6" 6, "7" 7, "8" 8, "9" 9, "10" 10, "11" 11, "12" 12)
 set xrange [:32]
-set yrange [0:10]
+set yrange [0:9]
 
 plot '< join -j 1 ../timings/grid2_paretosearch_p_n400_m1000_q0 ../timings/grid2_paretosearch_sequ_n400_m1000_q0' using 9:($31/$4) title 'Grid 500^2' with lp ls 7,\
 	 '< join -j 1 ../timings/grid2_paretosearch_p_n300_m1000_q0 ../timings/grid2_paretosearch_sequ_n300_m1000_q0' using 9:($31/$4) title 'Grid 400^2' with lp ls 6,\
