@@ -1,0 +1,11 @@
+# Class 1 Grid Instances of [Machuca 2012]
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+1 100 100 16.735 8257.8 -0.8 562.054 618 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+2 125 125 51.6792 12504.1 -0.8 1321.91 1435 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+3 150 150 124.398 16032.1 -0.8 2460.06 2668 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+4 175 175 281.675 21500.4 -0.8 4483.23 5129 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+5 200 200 551.709 27485.2 -0.8 7497.78 7855 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+6 225 225 908.091 31152.8 -0.8 10863.7 11287 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+7 250 250 1597.38 40303.9 -0.8 16663.2 18424 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+8 275 275 2356.19 47111.4 -0.8 23786 25624 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+9 300 300 3445.5 53725.3 -0.8 32596.8 34829 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
