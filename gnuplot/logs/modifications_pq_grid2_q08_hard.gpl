@@ -23,7 +23,7 @@ set tics textcolor rgb "black"
 set style line 12 lc rgb '#808080' lt 0 lw 1
 set grid back ls 12
 
-set title "ParetoQueue on Grid 200^2 (q=0.8, c_{max}=1000)"
+set title "Grid 200^2 (q=0.8, c_{max}=1000)"
 set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [thousand]"
 set output "modifications_pq_grid2_q08_hard.ps"

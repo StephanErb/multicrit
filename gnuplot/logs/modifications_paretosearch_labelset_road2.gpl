@@ -8,7 +8,7 @@ set style data histograms
 set style fill solid 0.8 solid noborder
 set boxwidth 1.1
 
-set key top left Left
+set key top right Left
 set key samplen 1
 
 set xtics ("0" 0, "0.2" 20, "0.4" 40, "0.6" 60, "0.8" 80, "1" 100)
@@ -23,7 +23,7 @@ set tics textcolor rgb "black"
 set style line 12 lc rgb '#808080' lt 0 lw 1
 set grid back ls 12
 
-set title "NY_1 Road Instance (time/economic cost)" 
+set title "NY_2 Road Instance (time/economic cost)" 
 set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
 set output "modifications_paretosearch_labelset_road2.ps"
