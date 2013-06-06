@@ -31,7 +31,7 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 set format x "%g^{2}"
 #set logscale y 10
 
-set title "Label Sets on Hard Grid (q=0, c_{max}=1000)"
+set title "Label Sets on Grid (q=0, c_{max}=1000)"
 set xlabel "Grid Instance"
 set ylabel "Runtime [ms] / n" offset 1
 set output "grid2_ls_compare_q0_hard.ps"
