@@ -1,13 +1,12 @@
-# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
-2 NY2 62.0518 1469 7556.45 7779 32  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 62.0399 1469 7896.62 8355 28  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 62.4401 1469 7956.89 8486 24  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 63.0002 1469 8448.18 10192 20  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 63.9925 1469 7590.08 7828 16  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 73.3492 1469 8039.24 8632 12  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 81.2486 1469 8054.71 8810 10  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 92.3958 1469 8122.23 8666 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 115.688 1469 8496.11 9217 6  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 154.409 1469 8851.91 10107 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 277.761 1469 7373.94 7396 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
-2 NY2 551.181 1469 7354.38 7354 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 62.0518 1469 7556.45 7779 32  
+2 NY2 62.0399 1469 7896.62 8355 28  
+2 NY2 62.4401 1469 7956.89 8486 24  
+2 NY2 63.0002 1469 8448.18 10192 20  
+2 NY2 63.9925 1469 7590.08 7828 16  
+2 NY2 73.3492 1469 8039.24 8632 12  
+2 NY2 81.2486 1469 8054.71 8810 10  
+2 NY2 92.3958 1469 8122.23 8666 8  
+2 NY2 115.688 1469 8496.11 9217 6  
+2 NY2 154.409 1469 8851.91 10107 4  
+2 NY2 277.761 1469 7373.94 7396 2  
+2 NY2 551.181 1469 7354.38 7354 1  
