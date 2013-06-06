@@ -685,6 +685,7 @@ protected:
             const min_key_type* min = &prefix_minima;
             for (width_type i = 0; i<slotuse; ++i) {
                 const auto& l = inner->slot[i].minimum; 
+
                 if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
                     find_pareto_minima(inner->slot[i].childid, *min, updates, candidates, graph);
                     min = &l;
@@ -910,6 +911,7 @@ protected:
                     }
                 }
                 result->slotuse = out;
+                set_min_element(slot, result);
                 update_router(slot.slotkey, result->slot[result->slotuse-1].slotkey);
                 slot.childid = result;
             }
