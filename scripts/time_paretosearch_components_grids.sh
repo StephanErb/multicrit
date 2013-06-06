@@ -23,6 +23,6 @@ do
 		echo "Writing speedup computation to $out_file"
 		touch $out_file
 		rm $out_file # clear
-		./bin/time_grid_instances2_paretosearch_ls_btree_with_subtime -s -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
+		./bin/time_grid_instances2_paretosearch_ls_btree_with_subtime -s -n $n -c $iter_count -m $max_cost -q $q >> $out_file
 	done
 done

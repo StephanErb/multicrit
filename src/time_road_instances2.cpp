@@ -19,7 +19,7 @@ typedef utility::datastructure::DirectedIntegerWeightedEdge TempEdge;
 typedef utility::datastructure::KGraph<TempEdge> TempGraph;
 
 
-static void time(const Graph& graph, NodeID start_node, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations, int p) {
+static void time(const Graph& graph, NodeID start_node, NodeID end, int total_num, int num, std::string label, bool verbose, int iterations, int p, bool subcomponent_timings) {
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
@@ -40,6 +40,12 @@ static void time(const Graph& graph, NodeID start_node, NodeID end, int total_nu
 		label_count[i] = algo.size(end);
 		if (verbose && i == 0) {
 			algo.printStatistics();
+		}
+		if (subcomponent_timings) {
+			std::cout << total_num << " " << label << num << " ";
+			algo.printComponentTimings();
+			std::cout << " " << timings[i] << std::endl;
+			std::cout << " # ";
 		}
 	}
 	std::cout << total_num << " " << label << num << " " << pruned_average(timings, iterations, 0) << " " 
@@ -117,6 +123,7 @@ int main(int argc, char ** args) {
 	int total_instance = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
 	int road_instance_number = 0;
+	bool subcomponent_timings = false;
 
 	std::string graphname;
 	std::string directory;
@@ -125,7 +132,7 @@ int main(int argc, char ** args) {
 	std::ifstream problems_in;
 
 	int c;
-	while( (c = getopt( argc, args, "c:g:d:n:p:r:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:g:d:n:p:r:vs") ) != -1  ){
 		switch(c){
 		case 'd':
 			directory = optarg;
@@ -144,6 +151,9 @@ int main(int argc, char ** args) {
 			break;
 		case 'p':
 			p = atoi(optarg);
+			break;
+		case 's':
+			subcomponent_timings = true;
 			break;
 		case 'v':
 			verbose = true;
@@ -185,7 +195,7 @@ int main(int argc, char ** args) {
 		start_stream >> start;
 		end_stream >> end;
 		if (road_instance_number == 0 || road_instance_number == total_instance) {
-			time(graph, NodeID(start), NodeID(end), total_instance, instance, graphname, verbose, iterations, p);
+			time(graph, NodeID(start), NodeID(end), total_instance, instance, graphname, verbose, iterations, p, subcomponent_timings);
 
 			if (road_instance_number != 0) {
 				break;
