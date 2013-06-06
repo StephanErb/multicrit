@@ -3,13 +3,6 @@ cd ../src/
 
 # Test configuration. Change these
 iter_count=3
-max_cost=1000
-
-
-for roadinstance in 2 3 
-do
-
-	out_file="../timings/road2_paretosearch_p_NY"$roadinstance
 
 for roadinstance in 2 3 
 do
