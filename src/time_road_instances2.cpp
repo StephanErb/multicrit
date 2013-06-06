@@ -116,7 +116,7 @@ int main(int argc, char ** args) {
 	int iterations = 1;
 	int total_instance = 1;
 	int p = tbb::task_scheduler_init::default_num_threads();
-	int specific_instance_number = 0;
+	int road_instance_number = 0;
 
 	std::string graphname;
 	std::string directory;
@@ -125,7 +125,7 @@ int main(int argc, char ** args) {
 	std::ifstream problems_in;
 
 	int c;
-	while( (c = getopt( argc, args, "c:g:d:n:p:s:v") ) != -1  ){
+	while( (c = getopt( argc, args, "c:g:d:n:p:r:v") ) != -1  ){
 		switch(c){
 		case 'd':
 			directory = optarg;
@@ -139,8 +139,8 @@ int main(int argc, char ** args) {
 		case 'c':
 			iterations = atoi(optarg);
 			break;
-		case 's':
-			specific_instance_number = atoi(optarg);
+		case 'r':
+			road_instance_number = atoi(optarg);
 			break;
 		case 'p':
 			p = atoi(optarg);
@@ -184,10 +184,10 @@ int main(int argc, char ** args) {
 
 		start_stream >> start;
 		end_stream >> end;
-		if (specific_instance_number == 0 || specific_instance_number == total_instance) {
+		if (road_instance_number == 0 || road_instance_number == total_instance) {
 			time(graph, NodeID(start), NodeID(end), total_instance, instance, graphname, verbose, iterations, p);
 
-			if (specific_instance_number != 0) {
+			if (road_instance_number != 0) {
 				break;
 			}
 		}
