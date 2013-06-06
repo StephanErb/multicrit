@@ -8,7 +8,7 @@ max_cost=10
 
 for q in 0 -0.8
 do
-	for n in 100 200 300 400 500 600
+	for n in 100 200 300 400 500
 	do
 		out_file="../timings/grid2_paretosearch_p_n"$n"_m"$max_cost"_q"$q
 		echo "Writing speedup computation to $out_file"
