@@ -12,7 +12,7 @@ do
 	echo "Writing correlation computation to $out_file"
 	touch $out_file
 	rm $out_file # clear
-	for q in 1 0.8 0.6 0.4 0.2 0 -0.2 -0.4 -0.6 -0.8 -1
+	for q in 0.8 0.6 0.4 0.2 0 -0.2 -0.4 -0.6 -0.8
 	do
 		./bin/time_grid_instances2_paretosearch_ls_btree.par -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
 	done
@@ -21,7 +21,7 @@ do
 	echo "Writing correlation computation to $out_file"
 	touch $out_file
 	rm $out_file # clear
-	for q in 1 0.8 0.6 0.4 0.2 0 -0.2 -0.4 -0.6 -0.8 -1
+	for q in 0.8 0.6 0.4 0.2 0 -0.2 -0.4 -0.6 -0.8
 	do
 		./bin/time_grid_instances2_paretosearch_ls_btree -n $n -c $iter_count -m $max_cost -q $q >> $out_file
 	done
@@ -30,7 +30,7 @@ do
 	echo "Writing speedup computation to $out_file"
 	touch $out_file
 	rm $out_file # clear
-	for q in 1 0.8 0.6 0.4 0.2 0 -0.2 -0.4 -0.6 -0.8 -1
+	for q in 0.8 0.6 0.4 0.2 0 -0.2 -0.4 -0.6 -0.8
 	do
 		./bin/time_grid_instances2_lset_lex -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file
 	done
