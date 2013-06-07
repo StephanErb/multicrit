@@ -1,13 +1,53 @@
-3 NY3 126.816 16 14637.1 14960 32  
-3 NY3 126.875 16 15341 15952 28  
-3 NY3 125.614 16 14807.5 15285 24  
-3 NY3 125.9 16 15036.2 15493 20  
-3 NY3 126.87 16 15514.5 16688 16  
-3 NY3 140.727 16 15927.5 16917 14  
-3 NY3 146.144 16 16144.8 17257 12  
-3 NY3 159.829 16 15519.4 16463 10  
-3 NY3 183.381 16 15380.6 16217 8  
-3 NY3 231.936 16 16708.6 18383 6  
-3 NY3 311.211 16 17372.8 18921 4  
-3 NY3 544.311 16 14371.5 14391 2  
-3 NY3 1062.01 16 14282.4 14282 1  
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Parallel BTree (k=660, b=32):
+#   inner slots size [8, 128]. Bytes: 5128
+#   leaf slots size [165, 660]. Bytes: 7924
+3 NY3 125.726 16 14650.8 14947 32  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Parallel BTree (k=660, b=32):
+#   inner slots size [8, 128]. Bytes: 5128
+#   leaf slots size [165, 660]. Bytes: 7924
+3 NY3 126.386 16 15391.3 16130 28  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Parallel BTree (k=660, b=32):
+#   inner slots size [8, 128]. Bytes: 5128
+#   leaf slots size [165, 660]. Bytes: 7924
+3 NY3 126.501 16 14727.1 15032 24  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Parallel BTree (k=660, b=32):
+#   inner slots size [8, 128]. Bytes: 5128
+#   leaf slots size [165, 660]. Bytes: 7924
+3 NY3 126.875 16 15360.5 16069 20  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Parallel BTree (k=660, b=32):
+#   inner slots size [8, 128]. Bytes: 5128
+#   leaf slots size [165, 660]. Bytes: 7924
+3 NY3 127.322 16 15379.8 16213 16  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Parallel BTree (k=660, b=32):
+#   inner slots size [8, 128]. Bytes: 5128
+#   leaf slots size [165, 660]. Bytes: 7924

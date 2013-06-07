@@ -1,12 +1,13 @@
-2 NY2 62.0518 1469 7556.45 7779 32  
-2 NY2 62.0399 1469 7896.62 8355 28  
-2 NY2 62.4401 1469 7956.89 8486 24  
-2 NY2 63.0002 1469 8448.18 10192 20  
-2 NY2 63.9925 1469 7590.08 7828 16  
-2 NY2 73.3492 1469 8039.24 8632 12  
-2 NY2 81.2486 1469 8054.71 8810 10  
-2 NY2 92.3958 1469 8122.23 8666 8  
-2 NY2 115.688 1469 8496.11 9217 6  
-2 NY2 154.409 1469 8851.91 10107 4  
-2 NY2 277.761 1469 7373.94 7396 2  
-2 NY2 551.181 1469 7354.38 7354 1  
+2 NY2 61.4553 1469 7534.86 7735 32  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 62.4212 1469 7820.87 8203 28  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 62.6105 1469 7708.9 8034 24  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 63.5205 1469 7702.73 7980 20  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 64.0599 1469 7633.34 7857 16  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 69.2108 1469 8166.89 8770 14  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 73.4515 1469 7907.57 8391 12  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 81.4088 1469 8079.23 8746 10  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 92.2259 1469 8235.85 8879 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 115.551 1469 8395.99 9146 6  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 150.604 1469 8269.05 9576 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 264.792 1469 7351.74 7364 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 539.282 1469 7314.09 7314 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
