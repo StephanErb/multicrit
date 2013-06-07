@@ -13,7 +13,7 @@ do
 		echo "Writing speedup computation to $out_file"
 		touch $out_file
 		rm $out_file # clear
-		for p in 32 28 24 20 16 14 12 10 8 6 4 2 1  
+		for p in 1 2 4 6 8 10 12 14 16 20 24 28 32 
 		do
 			# taskset -c 0-$((p-1))
 			./bin/time_grid_instances2_paretosearch_ls_btree_with_subtime.par -s -n $n -c $iter_count -p $p -m $max_cost -q $q >> $out_file

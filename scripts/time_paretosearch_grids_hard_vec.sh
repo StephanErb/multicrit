@@ -4,7 +4,7 @@ p=8
 iter_count=10
 max_costs=1000
 
-for q in 0 0.8 -0.8
+for q in 0
 do
 	echo "Sequential - Computing Grid Instance "$q
 	#taskset -c 0 
