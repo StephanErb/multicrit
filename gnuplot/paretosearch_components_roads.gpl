@@ -1,0 +1,53 @@
+
+set encoding iso_8859_1
+
+set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
+set size 0.7,0.52
+
+# define grid
+set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
+set grid back ls 12
+
+# Legend
+set key outside right Left
+set key samplen 1
+#set key width -4
+set key reverse
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (competitor)
+set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
+set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
+set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
+set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
+set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 8 linecolor rgbcolor "black" linewidth 2 pointsize 1.2 pt 9 lt 3 
+set style line 9 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1 pt 9 lt 1 
+
+
+set title "paPaSearch Components on Road NY_2 (time/ economic cost)"
+set xlabel "Thread count"
+set ylabel "Runtime in %" offset 1
+set output "paretosearch_components_roads.ps"
+
+set boxwidth 0.5 
+set style data histogram
+set style histogram rowstacked
+set style fill solid 0.8 border lt -1
+
+
+set xrange [-0.5:]
+set yrange [0:100]
+
+plot '< cat ../timings/paretosearch_components_sequ_NY2 ../timings/paretosearch_components_p_NY2' using (100*$9/$10):xtic(4):xticlabel(3) t "Update Pareto queue" ls 4,\
+     '' using (100*$5/$10) t "Find Pareto minima" ls 5,\
+   	 '' using (100*$7/$10) t "Update label sets" ls 2,\
+	 '' using (100*$8/$10) t "Sort updates" ls 7,\
+	 '' using (100*$6/$10) t "Sort candidates" ls 6
+

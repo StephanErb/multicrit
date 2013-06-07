@@ -1,0 +1,54 @@
+
+set encoding iso_8859_1
+
+set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
+#set size 0.40,0.38
+set size 0.70,0.48
+
+
+# define grid
+set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
+set grid back ls 12
+
+# Legend
+set key outside top right Left
+set key samplen 2
+set key width -4
+set key reverse
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (competitor)
+set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
+set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
+set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
+set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
+set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 8 linecolor rgbcolor "black" linewidth 2 pointsize 1.2 pt 9 lt 3 
+set style line 9 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1 pt 9 lt 1 
+
+
+
+#set format x "%g^{2}"
+#set logscale x 2
+
+set title "paPaSearch Components Speedup Road NY_2 (time/ economic cost)"
+set xlabel "Thread count"
+set ylabel "Speedup" offset 1
+set output "paretosearch_components_speedup_roads.ps"
+
+set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
+set xrange [:32]
+set yrange [0:]
+
+plot '< join -j 1 ../timings/paretosearch_components_p_NY2 ../timings/paretosearch_components_sequ_NY2' using 4:(($16/$7)/1) title 'Update label sets' with lp ls 2,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY2 ../timings/paretosearch_components_sequ_NY2' using 4:(($14/$5)/1) title 'Find Pareto minima' with lp ls 5,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY2 ../timings/paretosearch_components_sequ_NY2' using 4:(($18/$9)/1) title 'Update Pareto queue' with lp ls 4,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY2 ../timings/paretosearch_components_sequ_NY2' using 4:(($19/$10)/1) title 'Total' with lp ls 8,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY2 ../timings/paretosearch_components_sequ_NY2' using 4:(($15/$6)/1) title 'Sort candidates' with lp ls 6,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY2 ../timings/paretosearch_components_sequ_NY2' using 4:(($17/$8)/1) title 'Sort updates' with lp ls 7

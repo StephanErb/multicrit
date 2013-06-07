@@ -21,19 +21,20 @@ set tics nomirror
 set tics textcolor rgb "black"
 
 set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
-set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 7 lt 1 # (competitor)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (competitor)
 set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
 set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
 set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
 set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
-set style line 8 linecolor rgbcolor "black" linewidth 2 pointsize 1.2 pt 9 lt 1 
+set style line 8 linecolor rgbcolor "black" linewidth 2 pointsize 1.2 pt 9 lt 3 
+set style line 9 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1 pt 9 lt 1 
 
 
-set title "Parallel Pareto Search Components"
+set title "paPaSearch Components on Grid (n=400^2, q=0, c_{max}=1000)"
 set xlabel "Thread count"
 set ylabel "Runtime in %" offset 1
-set output "paretosearch_components.ps"
+set output "paretosearch_components_grids.ps"
 
 set boxwidth 0.5 
 set style data histogram
@@ -44,9 +45,10 @@ set style fill solid 0.8 border lt -1
 set xrange [-0.5:]
 set yrange [0:100]
 
-plot '< cat ../timings/paretosearch_components_sequ_n400_m1000_q0 ../timings/paretosearch_components_p_n400_m1000_q0' using (100*$10/$11):xtic(5):xticlabel(4) t "Update Pareto queue" ls 8,\
-	 '' using (100*$9/$11) t "Sort updates" ls 6,\
-	 '' using (100*$8/$11) t "Update label sets" ls 2,\
-	 '' using (100*$7/$11) t "Sort candidates" ls 1,\
-     '' using (100*$6/$11) t "Find Pareto minima" ls 4
+plot '< cat  ../timings/paretosearch_components_p_n400_m1000_q0' using (100*$10/$11):xtic(5):xticlabel(4) t "Update Pareto queue" ls 4,\
+	 '' using (100*$6/$11) t "Find Pareto minima" ls 5,\
+ 	 '' using (100*$8/$11) t "Update label sets" ls 2,\
+	 '' using (100*$9/$11) t "Sort updates" ls 7,\
+	 '' using (100*$7/$11) t "Sort candidates" ls 6
+     
 
