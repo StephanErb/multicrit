@@ -33,7 +33,7 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 #set format x "%g^{2}"
 #set logscale x 2
 
-set title "Speedup for Road Instances"
+set title "Speedup for NY Road Instances (time/economic cost)"
 set xlabel "Thread count"
 set ylabel "Speedup" offset 1
 set output "paretosearch_speedup_roads.ps"
@@ -43,5 +43,7 @@ set ytics ("1" 1, "2" 2, "3" 3, "4" 4, "5" 5, "6" 6, "7" 7, "8" 8, "9" 9, "10" 1
 set xrange [:32]
 set yrange [0:10]
 
-plot '< join -j 1 ../timings/road2_paretosearch_p_NY2 ../timings/road2_paretosearch_sequ_NY2' using 7:($23/$3) title 'NY_2 (time/economic cost)' with lp ls 6,\
-	 '< join -j 1 ../timings/road2_paretosearch_p_NY3 ../timings/road2_paretosearch_sequ_NY3' using 7:($23/$3) title 'NY_3 (time/economic cost)' with lp ls 5
+min(a,b)=a>b?b:a
+
+plot '< join -j 1 ../timings/road2_paretosearch_p_NY2 ../timings/road2_paretosearch_sequ_NY2 | join - ../timings/road2_lset_lex_NY2' using 7:(min($23,$43)/$3) title 'NY_2 (time/economic cost)' with lp ls 6,\
+	 '< join -j 1 ../timings/road2_paretosearch_p_NY3 ../timings/road2_paretosearch_sequ_NY3 | join - ../timings/road2_lset_lex_NY3' using 7:(min($23,$43)/$3) title 'NY_3 (time/economic cost)' with lp ls 5
