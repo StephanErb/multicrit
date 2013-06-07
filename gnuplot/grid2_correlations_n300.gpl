@@ -1,0 +1,48 @@
+
+set encoding iso_8859_1
+
+set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
+set size 0.40,0.38
+
+# define grid
+set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
+set grid back ls 12
+
+# Legend
+set key bottom right Left
+set key samplen 2
+set key width -4
+set key reverse
+
+# define axis: remove border on top and right and set color to gray
+set style line 11 lc rgb '#808080' lt 1
+set border 3 back ls 11
+set tics nomirror
+set tics textcolor rgb "black"
+
+set style line 1 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 0.9 pt 5 lt 1 # (sequ)
+set style line 2 linecolor rgbcolor "#9AC0CD" linewidth 2 pointsize 1 pt 7 lt 1 # (competitor)
+set style line 3 linecolor rgbcolor "#696969" linewidth 2 pointsize 0.9 pt 5 lt 1 
+set style line 4 linecolor rgbcolor "#104E8B" linewidth 2 pointsize 0.9 pt 6 lt 1
+set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1 
+set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
+set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
+
+set logscale y 10
+
+set title "Grid Correlations (n=300^2, c_{max}=10)"
+set xlabel "Correlation q"
+set ylabel "Runtime [ms] / n" offset 1
+set output "grid2_correlations_n300.ps"
+
+set xrange [0.8:-0.8]
+set yrange [:]
+
+plot '../timings/grid2_paretosearch_correlation_sequ_n300_m10' using 6:($4/($2*$3)*1000) title 'paPaSearch (seq)' ls 1 w lp,\
+	 '../timings/grid2_lset_lex_correlation_n300_m10' using 6:($4/($2*$3)*1000) title 'LSetClassic' ls 2 w lp,\
+ 	 '../timings/grid2_paretosearch_correlation_p8_n300_m10' using 6:($4/($2*$3)*1000) title 'paPaSearch (p8)' ls 6 w lp
+# 	 '../timings/grid2_paretosearch_sequ_vec_q0' using 2:($4/($2*$3)*1000) title 'paPaSearch (seq, vec)' ls 3 w lp,\
+#	 '../timings/grid2_paretosearch_p8_vec_q0' using 2:($4/($2*$3)*1000) title 'paPaSearch (p8, vec)' ls 2 w lp,\
+
+
+
