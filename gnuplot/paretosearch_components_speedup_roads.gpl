@@ -3,7 +3,7 @@ set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
 #set size 0.40,0.38
-set size 0.70,0.48
+set size 0.75,0.53
 
 
 # define grid
@@ -46,9 +46,9 @@ set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
 set xrange [:32]
 set yrange [0:]
 
-plot '< join -j 1 ../timings/paretosearch_components_p_NY3 ../timings/paretosearch_components_sequ_NY3' using 4:(($16/$7)/1) title 'Update label sets' with lp ls 2,\
-	 '< join -j 1 ../timings/paretosearch_components_p_NY3 ../timings/paretosearch_components_sequ_NY3' using 4:(($14/$5)/1) title 'Find Pareto minima' with lp ls 5,\
-	 '< join -j 1 ../timings/paretosearch_components_p_NY3 ../timings/paretosearch_components_sequ_NY3' using 4:(($18/$9)/1) title 'Update Pareto queue' with lp ls 4,\
-	 '< join -j 1 ../timings/paretosearch_components_p_NY3 ../timings/paretosearch_components_sequ_NY3' using 4:(($19/$10)/1) title 'Total' with lp ls 8,\
-	 '< join -j 1 ../timings/paretosearch_components_p_NY3 ../timings/paretosearch_components_sequ_NY3' using 4:(($15/$6)/1) title 'Sort candidates' with lp ls 6,\
-	 '< join -j 1 ../timings/paretosearch_components_p_NY3 ../timings/paretosearch_components_sequ_NY3' using 4:(($17/$8)/1) title 'Sort updates' with lp ls 7
+plot '< join -j 1 ../timings/paretosearch_components_p_NY3_noc ../timings/paretosearch_components_sequ_NY3' using 4:(($16/$7)/1) title 'Update label sets' with lp ls 2,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY3_noc ../timings/paretosearch_components_sequ_NY3' using 4:(($14/$5)/1) title 'Find Pareto minima' with lp ls 5,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY3_noc ../timings/paretosearch_components_sequ_NY3' using 4:(($18/$9)/1) title 'Update Pareto queue' with lp ls 4,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY3_noc ../timings/paretosearch_components_sequ_NY3' using 4:(($19/$10)/1) title 'Total' with lp ls 8,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY3_noc ../timings/paretosearch_components_sequ_NY3' using 4:(($15/$6)/1) title 'Sort candidates' with lp ls 6,\
+	 '< join -j 1 ../timings/paretosearch_components_p_NY3_noc ../timings/paretosearch_components_sequ_NY3' using 4:(($17/$8)/1) title 'Sort updates' with lp ls 7

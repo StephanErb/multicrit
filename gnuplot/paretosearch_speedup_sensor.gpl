@@ -45,6 +45,6 @@ set yrange [0:9]
 
 min(a,b)=a>b?b:a
 
-plot '< join -j 1 ../timings/sensor_paretosearch_p_d50 ../timings/sensor_paretosearch_sequ_d50 | join - ../timings/sensor_lset_lex_d50' using 7:(min($25,$47)/$3) title 'Degree d=50' with lp ls 6,\
-'< join -j 1 ../timings/sensor_paretosearch_p_d10 ../timings/sensor_paretosearch_sequ_d10 | join - ../timings/sensor_lset_lex_d10' using 7:(min($25,$47)/$3) title 'Degree d=10' with lp ls 5
+plot '< join -j 1 ../timings/sensor_paretosearch_p_d50_noc ../timings/sensor_paretosearch_sequ_d50 | join - ../timings/sensor_lset_lex_d50' using 7:(min($25,$47)/$3) title 'Degree d=50' with lp ls 6,\
+'< join -j 1 ../timings/sensor_paretosearch_p_d10_noc ../timings/sensor_paretosearch_sequ_d10 | join - ../timings/sensor_lset_lex_d10' using 7:(min($25,$47)/$3) title 'Degree d=10' with lp ls 5
 	 

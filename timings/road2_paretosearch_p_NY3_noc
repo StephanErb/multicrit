@@ -1,0 +1,13 @@
+3 NY3 125.429 16 14658.5 14996 32  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 123.303 16 15265.1 15990 28  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 122.013 16 15304.5 16064 24  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 123.59 16 15979.5 16904 20  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 128.001 16 15367.5 16717 16  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 135.987 16 16018.2 17596 14  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 143.911 16 16121.7 17105 12  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 159.619 16 15438.1 16235 10  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 178.741 16 16180.7 17964 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 225.711 16 15805.8 16591 6  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 303.608 16 18880.5 21563 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 560.114 16 14311.2 14376 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 1033.31 16 14223.3 14223 1  # time in [s], target node label count, memory [mb], peak memory [mb], p

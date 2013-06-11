@@ -1,0 +1,13 @@
+100000 10 72.0907 1592 5283.98 5306 32  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 70.7691 1592 5362.3 5470 28  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 71.9819 1592 5502.39 5703 24  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 72.9708 1592 5490.84 5796 20  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 71.5224 1592 5473.45 5690 16  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 76.1183 1592 5609.49 6118 14  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 80.2285 1592 5516.8 5944 12  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 88.3293 1592 5412.08 5456 10  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 97.6489 1592 5568.29 5853 8  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 121.746 1592 5793.35 6629 6  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 159.778 1592 6183.57 7421 4  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 285.236 1592 5289.58 5320 2  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+100000 10 563.872 1592 4166.75 5285 1  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p

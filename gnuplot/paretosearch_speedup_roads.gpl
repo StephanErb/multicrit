@@ -45,6 +45,6 @@ set yrange [0:9]
 
 min(a,b)=a>b?b:a
 
-plot '< join -j 1 ../timings/road2_paretosearch_p_NY3 ../timings/road2_paretosearch_sequ_NY3 | join - ../timings/road2_lset_lex_NY3' using 7:(min($23,$43)/$3) title 'Instance NY_3' with lp ls 6,\
-'< join -j 1 ../timings/road2_paretosearch_p_NY2 ../timings/road2_paretosearch_sequ_NY2 | join - ../timings/road2_lset_lex_NY2' using 7:(min($23,$43)/$3) title 'Instance NY_2' with lp ls 5
+plot '< join -j 1 ../timings/road2_paretosearch_p_NY3_noc ../timings/road2_paretosearch_sequ_NY3 | join - ../timings/road2_lset_lex_NY3' using 7:(min($23,$43)/$3) title 'Instance NY_3' with lp ls 6,\
+'< join -j 1 ../timings/road2_paretosearch_p_NY2_noc ../timings/road2_paretosearch_sequ_NY2 | join - ../timings/road2_lset_lex_NY2' using 7:(min($23,$43)/$3) title 'Instance NY_2' with lp ls 5
 	 
