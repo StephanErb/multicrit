@@ -9,9 +9,9 @@ set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
 set grid back ls 12
 
 # Legend
-set key top left Left
+set key bottom right Left
 set key samplen 2
-set key width -4
+set key width -1
 set key reverse
 
 # define axis: remove border on top and right and set color to gray
@@ -37,13 +37,11 @@ set ylabel "Number of Pareto optima" offset -0.5
 set output "grid2_num_optima_hard.ps"
 
 set xrange [0.8:-0.8]
-set yrange [:]
+set yrange [:100000]
 
-plot '../timings/grid2_lset_lex_correlation_n100_m1000' using 6:5 title 'Grid 300^2' ls 1 w lp,\
-	 '../timings/grid2_paretosearch_correlation_p8_n300_m10' using 6:5 title 'paPaSearch (p8)' ls 6 w lp
-#	 '../timings/grid2_lset_lex_q0' using 2:($4/($2*$3)*1000) title 'LSetClassic' ls 2 w lp,\
-# 	 '../timings/grid2_paretosearch_sequ_vec_q0' using 2:5 title 'paPaSearch (seq, vec)' ls 3 w lp,\
-#	 '../timings/grid2_paretosearch_p8_vec_q0' using 2:5 title 'paPaSearch (p8, vec)' ls 2 w lp,\
+plot '../timings/grid2_lset_lex_correlation_n300_m1000' using 6:5 title 'Grid 300^2' ls 5 w lp,\
+	 '../timings/grid2_lset_lex_correlation_n200_m1000' using 6:5 title 'Grid 200^2' ls 4 w lp,\
+	 '../timings/grid2_lset_lex_correlation_n100_m1000' using 6:5 title 'Grid 100^2' ls 3 w lp
 
 
 

@@ -2,16 +2,17 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.40,0.38
+#set size 0.40,0.38
+set size 0.70,0.48
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
 set grid back ls 12
 
 # Legend
-set key top left Left
+set key outside right Left
 set key samplen 2
-set key width -4
+set key width -2
 set key reverse
 
 # define axis: remove border on top and right and set color to gray
@@ -37,11 +38,11 @@ set ylabel "Runtime [ms] / n" offset 1
 set output "sensor.ps"
 
 set xrange [5:50]
-set yrange [0:10]
+set yrange [0:8]
 
 plot '../timings/sensor_paretosearch_sequ_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (seq)' ls 1 w lp,\
 	 '../timings/sensor_lset_lex_n100000' using 2:($3*1000/$1) title 'LSetClassic' ls 2 w lp,\
-	 '../timings/sensor_paretosearch_p8_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8,)' ls 6 w lp
+	 '../timings/sensor_paretosearch_p8_btree_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8)' ls 6 w lp
 # 	 '../timings/sensor_paretosearch_sequ_vec_n100000' using 2:($3*1000/$1) title 'paPaSearch (seq)' ls 3 w lp,\
 #	 '../timings/sensor_paretosearch_p8_vec_n100000' using 2:($3*1000/$1) title 'paPaSearch (p8)' ls 2 w lp,\
 

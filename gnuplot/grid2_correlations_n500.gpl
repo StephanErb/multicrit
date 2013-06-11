@@ -9,9 +9,9 @@ set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
 set grid back ls 12
 
 # Legend
-set key top left Left
+set key bottom right Left
 set key samplen 2
-set key width -4
+set key width -3
 set key reverse
 
 # define axis: remove border on top and right and set color to gray
@@ -28,19 +28,19 @@ set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
 set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
 
-#set format x "2^{%L}"
-set logscale x 2
+set logscale y 10
 
-set title "Paramter Tuning for Grid (n=300^2, q=0, c_{max}=10)"
-set xlabel "Bucket Size"
-set ylabel "Runtime [s]" offset 1
-set output "batch_size_grid2_paretosearch_q0.ps"
+set title "Grid Correlations (n=500^2, c_{max}=10)"
+set xlabel "Correlation q"
+set ylabel "Runtime [ms] / n" offset 1
+set output "grid2_correlations_n500.ps"
 
-set xrange [:]
-set yrange [0:20]
+set xrange [0.8:-0.8]
+set yrange [:]
 
-plot '../timings/batch_size_grid2_paretosearch_p_4_q0' using 11:4 title 'paPaSearch (p4)' ls 5 w lp,\
- 	 '../timings/batch_size_grid2_paretosearch_p_8_q0' using 11:4 title 'paPaSearch (p8)' ls 6 w lp,\
- 	 '../timings/batch_size_grid2_paretosearch_p_16_q0' using 11:4 title 'paPaSearch (p16)' ls 7 w lp
+plot '../timings/grid2_paretosearch_correlation_sequ_n500_m10' using 6:($4/($2*$3)*1000) title 'paPaSearch (seq)' ls 1 w lp,\
+	 '../timings/grid2_lset_lex_correlation_n500_m10' using 6:($4/($2*$3)*1000) title 'LSetClassic' ls 2 w lp,\
+ 	 '../timings/grid2_paretosearch_correlation_p8_n500_m10' using 6:($4/($2*$3)*1000) title 'paPaSearch (p8)' ls 6 w lp
 
-	 
+
+

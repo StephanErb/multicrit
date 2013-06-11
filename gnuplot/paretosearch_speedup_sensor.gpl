@@ -3,15 +3,17 @@ set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
 set size 0.40,0.38
+#set size 0.50,0.48
+
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
 set grid back ls 12
 
 # Legend
-set key top left Left
+set key bottom right Left
 set key samplen 2
-set key width -4
+set key width 0
 set key reverse
 
 # define axis: remove border on top and right and set color to gray
@@ -28,19 +30,21 @@ set style line 5 linecolor rgbcolor "#4F94CD" linewidth 2 pointsize 1 pt 7 lt 1
 set style line 6 linecolor rgbcolor "#CD2626" linewidth 2 pointsize 1 pt 66 lt 1
 set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 1 
 
-#set format x "2^{%L}"
-set logscale x 2
+#set format x "%g^{2}"
+#set logscale x 2
 
-set title "Paramter Tuning for Grid (n=300^2, q=0, c_{max}=10)"
-set xlabel "Bucket Size"
-set ylabel "Runtime [s]" offset 1
-set output "batch_size_grid2_paretosearch_q0.ps"
+set title "Speedup for Sensor Networks (n=100000)"
+set xlabel "Thread count"
+set ylabel "Absolute Speedup" offset 0
+set output "paretosearch_speedup_sensor.ps"
 
-set xrange [:]
-set yrange [0:20]
+set xtics ("1" 1, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48, "64" 64)
+set ytics ("1" 1, "2" 2, "3" 3, "4" 4, "5" 5, "6" 6, "7" 7, "8" 8, "9" 9, "10" 10)
+set xrange [:32]
+set yrange [0:9]
 
-plot '../timings/batch_size_grid2_paretosearch_p_4_q0' using 11:4 title 'paPaSearch (p4)' ls 5 w lp,\
- 	 '../timings/batch_size_grid2_paretosearch_p_8_q0' using 11:4 title 'paPaSearch (p8)' ls 6 w lp,\
- 	 '../timings/batch_size_grid2_paretosearch_p_16_q0' using 11:4 title 'paPaSearch (p16)' ls 7 w lp
+min(a,b)=a>b?b:a
 
+plot '< join -j 1 ../timings/sensor_paretosearch_p_d50 ../timings/sensor_paretosearch_sequ_d50 | join - ../timings/sensor_lset_lex_d50' using 7:(min($25,$47)/$3) title 'Degree d=50' with lp ls 6,\
+'< join -j 1 ../timings/sensor_paretosearch_p_d10 ../timings/sensor_paretosearch_sequ_d10 | join - ../timings/sensor_lset_lex_d10' using 7:(min($25,$47)/$3) title 'Degree d=10' with lp ls 5
 	 

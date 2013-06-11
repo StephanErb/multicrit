@@ -31,7 +31,7 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 #set format x "2^{%L}"
 set logscale x 2
 
-set title "Grid (q=0, m=1000) of size n=300^2"
+set title "Parameter Tuning for Grid (n=300^2, q=0, c_{max}=1000)"
 set xlabel "Bucket Size"
 set ylabel "Runtime [s]" offset 1
 set output "batch_size_grid2_paretosearch_q0_hard.ps"

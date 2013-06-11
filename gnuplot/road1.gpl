@@ -2,7 +2,7 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.7,0.52
+set size 0.7,0.44
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
@@ -31,8 +31,8 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 set format x "10^{%L}"
 set logscale y 10
 
-set title "Road Instances - highly correlated "
-set xlabel "Road Instance (time/distance)"
+set title "Road Instances (time/distance)"
+set xlabel "Road Instance"
 set ylabel "Runtime [s]" offset 1
 set output "road1.ps"
 

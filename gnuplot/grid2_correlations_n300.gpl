@@ -11,7 +11,7 @@ set grid back ls 12
 # Legend
 set key bottom right Left
 set key samplen 2
-set key width -4
+set key width -3
 set key reverse
 
 # define axis: remove border on top and right and set color to gray

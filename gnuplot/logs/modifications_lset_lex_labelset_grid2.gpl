@@ -23,7 +23,7 @@ set tics textcolor rgb "black"
 set style line 12 lc rgb '#808080' lt 0 lw 1
 set grid back ls 12
 
-set title "LSet (lex) on Grid 200x200 (-0.8)" 
+set title "lex-Strategy on Grid 200^2 (q=-0.8)" 
 set xlabel "Positions normalized to range [0,1]"
 set ylabel "Frequency [million]"
 set output "modifications_lset_lex_labelset_grid2.ps"
