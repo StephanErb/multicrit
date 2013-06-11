@@ -1,0 +1,39 @@
+# ParallelParetoSearch_ParallelBTreeParetoQueue_VectorLabelSet_(quicksort, prefetching)
+# Map: ../instances/DC1
+# Nodes 9559 Edges 39377
+# Nodes 9560 Edges 39377
+1 DC1 0.0964627 2 11.5848 12 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+2 DC2 0.106232 6 13.5203 14 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+3 DC3 0.120151 3 14.748 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+4 DC4 0.0981447 2 15.3867 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+5 DC5 0.0963112 1 15.3859 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+6 DC6 0.0712587 7 15.3359 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+7 DC7 0.121214 2 15.3867 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+8 DC8 0.0641735 1 15.2812 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+9 DC9 0.150011 6 15.1965 15 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+# ParallelParetoSearch_ParallelBTreeParetoQueue_VectorLabelSet_(quicksort, prefetching)
+# Map: ../instances/RI1
+# Nodes 53658 Edges 192084
+# Nodes 53659 Edges 192084
+10 RI1 0.379319 3 40.6957 41 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+11 RI2 0.590988 15 44.0254 46 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+12 RI3 0.261728 2 44.0738 46 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+13 RI4 0.389948 17 44.4461 46 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+14 RI5 0.56022 16 45.2051 46 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+15 RI6 0.512875 3 46.3219 47 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+16 RI7 0.624471 3 47.884 49 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+17 RI8 0.57748 4 49.7551 50 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+18 RI9 0.785895 22 51.6012 52 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+# ParallelParetoSearch_ParallelBTreeParetoQueue_VectorLabelSet_(quicksort, prefetching)
+# Map: ../instances/NJ1
+# Nodes 330386 Edges 1202458
+# Nodes 330387 Edges 1202458
+19 NJ1 2.4988 2 252.691 253 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+20 NJ2 2.89059 6 261.918 264 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+21 NJ3 2.64695 21 263.102 264 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+22 NJ4 2.96787 5 269.764 273 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+23 NJ5 2.33145 7 270.976 273 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+24 NJ6 4.67725 12 296.644 302 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+25 NJ7 2.21117 6 288.99 302 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+26 NJ8 2.21925 13 287.396 302 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+27 NJ9 3.14656 24 292.898 302 8  # time in [s], target node label count, memory [mb], peak memory [mb], p 

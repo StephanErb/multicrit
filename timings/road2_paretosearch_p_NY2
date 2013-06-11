@@ -1,0 +1,65 @@
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 61.4421 1469 7557.41 7787 32  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 62.6168 1469 7699.64 8013 28  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 62.8604 1469 7821.04 8292 24  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 63.6372 1469 7687.97 8032 20  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 63.8751 1469 8073.23 9094 16  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 69.0323 1469 7982.02 8543 14  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 73.1821 1469 7599.93 7836 12  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 80.6429 1469 7639.29 7939 10  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 91.62 1469 8388.58 9061 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 115.644 1469 8180.37 8670 6  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 150.192 1469 7521.85 7732 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 269.27 1469 7378.7 7433 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+2 NY2 536.743 1469 7314.09 7314 1  # time in [s], target node label count, memory [mb], peak memory [mb], p

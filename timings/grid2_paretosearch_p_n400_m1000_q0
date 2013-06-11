@@ -1,0 +1,13 @@
+0 400 400 141.905 11255.5 0 12076.8 12349 32 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 141.745 11255.5 0 13408.3 14417 28 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 139.176 11255.5 0 13372.3 14431 24 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 141.96 11255.5 0 13676.6 16642 20 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 142.094 11255.5 0 12423.6 13751 16 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 150.407 11255.5 0 13835.8 15510 14 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 157.401 11255.5 0 14983 16218 12 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 170.804 11255.5 0 14850.3 16682 10 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 194.361 11255.5 0 13175.9 14170 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 242.246 11255.5 0 13791.2 14508 6 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 328.55 11255.5 0 14257.4 17740 4 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 596.834 11255.5 0 11952.2 12130 2 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 1127.39 11255.5 0 11323.3 12048 1 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size

@@ -1,0 +1,13 @@
+0 300 300 111.877 8014.33 0 5438.73 5992 4 1000 4 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+# Class 1 Grid Instances of [Machuca 2012]
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+0 300 300 98.1437 8014.33 0 4991.38 6273 4 1000 8 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 93.8283 8014.33 0 4357.92 4400 4 1000 16 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 91.7249 8014.33 0 4664.02 5293 4 1000 32 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 92.2639 8014.33 0 5209.79 6157 4 1000 64 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 90.3631 8014.33 0 4633.92 5197 4 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 91.0097 8014.33 0 5378.1 5981 4 1000 256 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 91.5894 8014.33 0 5649.76 6302 4 1000 512 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 92.469 8014.33 0 4503.64 4680 4 1000 1024 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 94.5497 8014.33 0 5275.92 6164 4 1000 2048 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 300 300 96.8648 8014.33 0 5650.23 6425 4 1000 4096 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size

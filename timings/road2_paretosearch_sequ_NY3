@@ -1,0 +1,5 @@
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 1025.21 16 11964.7 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p

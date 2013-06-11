@@ -1,0 +1,4 @@
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d50 
+# Nodes 100000 Edges 5007922
+100000 50 640.496 1342.67 1974.32 2292 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p

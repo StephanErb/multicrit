@@ -1,0 +1,4 @@
+# SequentialSharedHeapLabelSettingAlgorithm_VectorSet_Lex
+# Map: n100000_d10 
+# Nodes 99998 Edges 1000420
+100000 10 438.505 1592 3794.11 4919 0  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p

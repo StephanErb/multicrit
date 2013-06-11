@@ -1,0 +1,104 @@
+# SequentialParetoSearch_BTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+1 NY1 538.968 1089 5987.01 5987 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+2 NY2 525.687 1469 6069.61 6069 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+3 NY3 1030.14 16 11964.8 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+4 NY4 799.273 5121 9167.77 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+5 NY5 581.774 2451 6497.35 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+6 NY6 613.694 1502 6275.63 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+7 NY7 770.346 274 7796.98 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+8 NY8 1061.62 7397 11774.8 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+9 NY9 563.035 919 6805.18 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+10 NY10 619.29 774 6802.34 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+11 NY11 562.011 631 6157.04 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+12 NY12 559.794 1571 6505.86 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+13 NY13 630.42 3046 6631.67 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+14 NY14 946.156 2871 10400.9 11964 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+15 NY15 1281.02 1 12736.4 12736 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+16 NY16 598.933 2034 6057.26 12736 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+17 NY17 514.145 1724 6098.77 12736 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+18 NY18 1130.43 1276 11968.1 12736 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+19 NY19 839.994 4224 8741.61 12736 0  # time in [s], target node label count, memory [mb], peak memory [mb], p
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+20 NY20 859.735 3262 9454.97 12736 0  # time in [s], target node label count, memory [mb], peak memory [mb], p

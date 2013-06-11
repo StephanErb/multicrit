@@ -1,0 +1,52 @@
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 77.7791 1172.67 3188.96 3568 32  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 79.3337 1172.67 3265.46 3740 28  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 79.9092 1172.67 3256.64 3665 24  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 79.9115 1172.67 3529.63 4076 20  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 80.7773 1172.67 3438.78 3924 16  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 85.5414 1172.67 3437.76 3962 14  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 91.1689 1172.67 3296.77 3710 12  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 99.3282 1172.67 3356.31 3797 10  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 110.067 1172.67 3451.18 4027 8  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 138.592 1172.67 3396.76 3872 6  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 181.668 1172.67 3215.19 3624 4  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 327.902 1172.67 3198.55 3624 2  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: n100000_d30 
+# Nodes 100000 Edges 3004602
+100000 30 627.236 1172.67 2924.71 3570 1  # n, degree, time in [s], target node label count, memory [mb], peak memory [mb], p

@@ -1,0 +1,13 @@
+0 500 500 23.4478 1525.5 0 4735.23 4887 32 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 23.9015 1525.5 0 5106.63 5564 28 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 24.0629 1525.5 0 5214.33 5633 24 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 24.4781 1525.5 0 4969.52 5561 20 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 25.1678 1525.5 0 5278.97 5898 16 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 27.3447 1525.5 0 4665.05 4786 14 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 29.313 1525.5 0 5369.28 5624 12 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 32.7137 1525.5 0 5499.41 5816 10 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 37.2484 1525.5 0 5670.6 5980 8 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 46.2739 1525.5 0 5492.19 6215 6 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 63.9886 1525.5 0 4768.59 4858 4 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 116.519 1525.5 0 4611.34 4706 2 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 500 500 209.701 1525.5 0 4514.29 4603 1 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size

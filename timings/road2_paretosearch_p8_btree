@@ -1,0 +1,24 @@
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+1 NY1 94.694 1089 7878.4 8479 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+2 NY2 92.9797 1469 8843.07 9224 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+3 NY3 182.837 16 15873.4 16938 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+4 NY4 141.506 5121 16937.8 16938 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+5 NY5 104.481 2451 16937.4 16938 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+6 NY6 109.69 1502 16937.3 16938 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+7 NY7 139.089 274 16937.4 16938 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+8 NY8 190.055 7397 18153.9 18399 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+9 NY9 99.5052 919 18568.6 18909 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+10 NY10 109.543 774 21129.2 21709 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+11 NY11 99.7218 631 21816.6 21822 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+12 NY12 98.36 1571 21968.7 22017 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+13 NY13 112.922 3046 21973.7 22017 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+14 NY14 169.065 2871 24491 24878 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+15 NY15 232.826 1 25938 26055 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+16 NY16 106.632 2034 26006.7 26055 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+17 NY17 92.5125 1724 26006.4 26055 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+18 NY18 207.15 1276 26193 26362 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+19 NY19 150.291 4224 26358.3 26362 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+20 NY20 154.713 3262 26357.6 26362 8  # time in [s], target node label count, memory [mb], peak memory [mb], p

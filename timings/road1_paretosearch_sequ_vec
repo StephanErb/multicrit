@@ -1,0 +1,147 @@
+# SequentialParetoSearch_BTreeParetoQueue_VectorLabelSet_(quicksort, prefetching)
+# Map: ../instances/DC1
+# Nodes 9559 Edges 39377
+# Nodes 9560 Edges 39377
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+1 DC1 0.0591103 2 7.44727 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+2 DC2 0.0731435 6 7.50508 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+3 DC3 0.0867894 3 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+4 DC4 0.0626204 2 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+5 DC5 0.0521786 1 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+6 DC6 0.0360978 7 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+7 DC7 0.0736729 2 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+8 DC8 0.0326864 1 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+9 DC9 0.118792 6 7.51172 7 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+# SequentialParetoSearch_BTreeParetoQueue_VectorLabelSet_(quicksort, prefetching)
+# Map: ../instances/RI1
+# Nodes 53658 Edges 192084
+# Nodes 53659 Edges 192084
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+10 RI1 0.262503 3 33.191 33 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+11 RI2 0.569597 15 34.0395 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+12 RI3 0.186907 2 33.2734 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+13 RI4 0.3777 17 33.2734 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+14 RI5 0.620251 16 33.7891 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+15 RI6 0.575098 3 34.0469 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+16 RI7 0.603408 3 33.5312 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+17 RI8 0.483513 4 33.5312 34 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+18 RI9 0.80589 22 35.0781 35 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+# SequentialParetoSearch_BTreeParetoQueue_VectorLabelSet_(quicksort, prefetching)
+# Map: ../instances/NJ1
+# Nodes 330386 Edges 1202458
+# Nodes 330387 Edges 1202458
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+19 NJ1 2.94015 2 196.857 196 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+20 NJ2 4.7614 6 199.239 199 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+21 NJ3 4.14331 21 197.441 199 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+22 NJ4 4.02781 5 200.793 200 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+23 NJ5 2.58724 7 196.926 200 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+24 NJ6 11.7046 12 208.527 208 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+25 NJ7 2.57462 6 197.441 208 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+26 NJ8 2.27882 13 196.41 208 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 
+#
+# Sequential BTree: 
+#  inner slots size [8, 128]
+#  leaf slots size [165, 660]
+27 NJ9 6.15562 24 202.598 208 0  # time in [s], target node label count, memory [mb], peak memory [mb], p 

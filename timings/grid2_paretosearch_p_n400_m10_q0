@@ -1,0 +1,13 @@
+0 400 400 12.022 1201.1 0 2545.8 2630 32 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 12.3168 1201.1 0 2732.88 2960 28 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 12.2732 1201.1 0 2869.31 3114 24 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 12.3095 1201.1 0 2873.16 3083 20 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 12.3929 1201.1 0 2673.3 2978 16 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 13.3302 1201.1 0 2521.16 2575 14 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 14.1828 1201.1 0 2527.86 2602 12 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 15.5992 1201.1 0 2935.41 3097 10 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 17.4364 1201.1 0 3081.78 3247 8 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 21.4572 1201.1 0 3146.19 3321 6 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 28.6925 1201.1 0 3286.56 3832 4 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 50.2435 1201.1 0 2437.51 2474 2 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 400 400 100.838 1201.1 0 2407.05 2459 1 10 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size

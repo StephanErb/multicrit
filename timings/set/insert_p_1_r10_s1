@@ -1,12 +1,12 @@
 # Bulk Insertion
-13.3966 0 1 100 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-42.8174 0 1 316 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-163.598 0 2 1000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-584.01 0 3 3162 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-2098.15 0 8 10000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-10048.7 0 24 31622 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-41861.6 0 73 100000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-135948 0 230 316227 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-517991 0 726 1000000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-1.8826e+06 0 2293 3162277 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-6.16178e+06 0 7249 10000000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+12.9188 0 1 100 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+42.7009 0 1 316 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+170.541 0 2 1000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+584.331 0 3 3162 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+2133.88 0 8 10000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+9654.81 0 24 31622 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+45570.5 0 73 100000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+145508 0 230 316227 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+542328 0 726 1000000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+1.84444e+06 0 2293 3162277 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+6.15504e+06 0 7249 10000000 10 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p

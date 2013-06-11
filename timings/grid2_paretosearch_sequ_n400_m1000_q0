@@ -1,0 +1,1 @@
+0 400 400 1118.28 11255.5 0 9542.43 10104 0 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size

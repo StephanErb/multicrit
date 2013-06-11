@@ -1,12 +1,12 @@
 # Bulk Construction
-4.75787 0 2 100 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-14.3161 0 4 316 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-44.8829 0 4 1000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-142.658 0 4 3162 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-445.031 0 4 10000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-1787.11 -0.00390625 4 31622 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-5606.79 -0.0546875 8 100000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-19889.9 -0.101562 24 316227 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-69404.5 61.0781 73 1000000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-218054 192.941 230 3162277 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
-678452 610.215 726 10000000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+4.73601 0 2 100 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+14.3652 0 4 316 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+44.8127 0 4 1000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+141.409 0 4 3162 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+449.247 0 4 10000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+1781.16 -0.00390625 4 31622 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+5741.96 -0.0546875 8 100000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+19420 -0.101562 24 316227 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+67732.6 61.0781 73 1000000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+209665 192.941 230 3162277 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p
+661029 610.215 726 10000000 0 1 1 # time in [µs], memory [mb], peak memory [mb], k, ratio, skew, p

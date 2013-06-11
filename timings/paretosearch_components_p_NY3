@@ -1,0 +1,104 @@
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 1 1 168.858 90.5751 423.269 80.2788 268.942 1031.93
+ # 3 NY3 1 1 168.832 90.5702 421.956 80.3093 269.188 1030.86
+ # 3 NY3 1 1 168.789 90.5379 422.033 80.2887 268.994 1030.64
+ # 3 NY3 1031.14 16 14223.6 14223 1  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 2 2 79.0689 50.864 211.676 45.8279 135.506 522.943
+ # 3 NY3 2 2 81.2817 50.8506 214.589 45.9637 137.683 530.369
+ # 3 NY3 2 2 85.2459 50.8623 259.134 45.8724 142.423 583.538
+ # 3 NY3 545.617 16 14290.4 14307 2  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 4 4 46.1963 30.5754 117.251 28.2666 76.2896 298.579
+ # 3 NY3 4 4 46.9545 30.5671 119.909 28.1431 76.6093 302.183
+ # 3 NY3 4 4 47.2443 30.5594 123.414 28.2007 76.9344 306.353
+ # 3 NY3 302.372 16 18829.4 21143 4  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 6 6 32.3195 24.5246 87.3648 23.0204 54.9369 222.166
+ # 3 NY3 6 6 32.5092 24.5238 92.0837 23.1108 55.1129 227.34
+ # 3 NY3 6 6 32.8404 24.5269 91.2525 23.0508 55.2274 226.898
+ # 3 NY3 225.468 16 15601.7 16387 6  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 8 8 25.2808 21.2365 66.2697 20.3446 43.7184 176.85
+ # 3 NY3 8 8 25.472 21.2212 69.0191 20.3441 43.7273 179.784
+ # 3 NY3 8 8 25.7929 21.2608 71.2475 20.3641 44.0861 182.752
+ # 3 NY3 179.795 16 15818.5 16662 8  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 10 10 22.005 20.1082 57.1897 19.3395 37.9295 156.572
+ # 3 NY3 10 10 22.4029 20.096 59.5395 19.3287 38.6697 160.037
+ # 3 NY3 10 10 22.8615 20.0903 60.2536 19.3057 39.3733 161.884
+ # 3 NY3 159.498 16 15826.2 16861 10  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 12 12 20.1338 19.2367 50.7151 18.5443 34.2985 142.928
+ # 3 NY3 12 12 20.6527 19.2526 52.4434 18.524 34.7691 145.642
+ # 3 NY3 12 12 21.8768 19.2676 53.8557 18.4623 36.6254 150.088
+ # 3 NY3 146.219 16 15996.5 17151 12  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 14 14 19.3608 19.3931 45.9385 18.6509 32.3786 135.722
+ # 3 NY3 14 14 19.6812 19.4748 47.2215 18.6501 32.7819 137.81
+ # 3 NY3 14 14 19.4885 19.4708 47.7223 18.7049 32.6385 138.025
+ # 3 NY3 137.186 16 15367.8 16149 14  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 16 16 18.5154 18.9252 38.6493 17.874 30.6689 124.633
+ # 3 NY3 16 16 19.307 18.9101 39.5186 17.9662 31.7369 127.439
+ # 3 NY3 16 16 20.4476 18.9204 39.6599 17.9753 33.5816 130.585
+ # 3 NY3 127.552 16 15456.8 16301 16  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 20 20 18.4823 19.7118 35.181 18.869 30.2906 122.535
+ # 3 NY3 20 20 19.4822 19.8537 35.7747 18.9792 31.7252 125.815
+ # 3 NY3 20 20 20.9706 19.6228 35.9677 18.788 34.1482 129.497
+ # 3 NY3 125.949 16 15451.3 16373 20  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 24 24 18.6156 20.7963 32.9151 19.8811 30.3094 122.518
+ # 3 NY3 24 24 18.621 20.8228 33.4262 19.9106 30.2747 123.055
+ # 3 NY3 24 24 18.4798 20.6071 33.9473 19.7924 30.3974 123.224
+ # 3 NY3 122.932 16 15494.3 16411 24  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 28 28 18.4875 21.3895 31.1202 20.6876 29.8891 121.574
+ # 3 NY3 28 28 20.9022 21.3648 31.6692 20.7233 33.4773 128.137
+ # 3 NY3 28 28 22.9322 21.3276 32.3491 20.7304 36.4718 133.811
+ # 3 NY3 127.841 16 15218.9 16052 28  # time in [s], target node label count, memory [mb], peak memory [mb], p
+# ParallelParetoSearch_ParallelBTreeParetoQueue_BTreeLabelSet_(quicksort, prefetching)
+# Map: ../instances/USA-road-t.NY.gr ../instances/USA-road-m.NY.gr
+# Nodes 264346 Edges 733846
+# Nodes 264347 Edges 730100
+3 NY3 32 32 18.8823 21.4603 28.3454 20.8636 30.4554 120.007
+ # 3 NY3 32 32 22.3564 21.4749 28.7289 20.864 35.3136 128.738
+ # 3 NY3 32 32 24.1955 21.5189 28.9809 20.8817 37.9113 133.488
+ # 3 NY3 127.411 16 14646.8 14937 32  # time in [s], target node label count, memory [mb], peak memory [mb], p

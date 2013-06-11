@@ -1,0 +1,13 @@
+0 100 100 1.36876 1082.9 0 119.384 129 32 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.23888 1082.9 0 117.88 128 28 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.23015 1082.9 0 125.61 140 24 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.18933 1082.9 0 124.556 141 20 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.04782 1082.9 0 115.611 126 16 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.03767 1082.9 0 114.604 124 14 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.01149 1082.9 0 118.549 139 12 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 0.999964 1082.9 0 114.101 123 10 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 0.974007 1082.9 0 116.382 126 8 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.04295 1082.9 0 121.344 152 6 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.14015 1082.9 0 114.602 124 4 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 1.70833 1082.9 0 109.233 118 2 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
+0 100 100 2.82533 1082.9 0 97.0152 115 1 1000 128 # time in [s], target node label count, q, memory [mb], peak memory [mb], p, max_costs, buffer_batch_size
