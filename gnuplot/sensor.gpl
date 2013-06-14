@@ -3,7 +3,7 @@ set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
 #set size 0.40,0.38
-set size 0.70,0.48
+set size 0.7,0.44
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1

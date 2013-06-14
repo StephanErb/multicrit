@@ -33,7 +33,7 @@ set style line 7 linecolor rgbcolor "#CD950C" linewidth 2 pointsize 1.2 pt 9 lt 
 set logscale x 2
 
 set title "Bulk Insertion (ratio=10, skew=1)"
-set xlabel "Branching parameter b"
+set xlabel "Branching parameter {/Symbol b}"
 set ylabel "Runtime [ns] per element" offset 1
 set output "btree_parameter_b_r10.ps"
 
