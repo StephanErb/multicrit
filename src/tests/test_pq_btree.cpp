@@ -8,6 +8,14 @@
 #include <iostream>
 #include <algorithm>
 
+#include "tbb/task_scheduler_init.h"
+#ifdef PARALLEL_BUILD
+	unsigned short p = tbb::task_scheduler_init::default_num_threads();	
+#else
+	unsigned short p = 0;
+#endif
+
+
 struct btree_test_set_traits {
     static const bool   selfverify = true;
     static const unsigned int    leafparameter_k = 8;
@@ -21,7 +29,7 @@ void assertTrue(bool cond, std::string msg) {
 	}
 }
 void testBulkUpdatesOfSingleLeaf() {
-	btree<int, std::less<int>, btree_test_set_traits> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -79,7 +87,7 @@ void testBulkUpdatesOfSingleLeaf() {
 }
 
 void testSplitLeafInto2() {
-	btree<int, std::less<int>, btree_test_set_traits> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -112,7 +120,7 @@ void testSplitLeafInto2() {
 }
 
 void testSplitLeafInto3() {
-	btree<int, std::less<int>, btree_test_set_traits> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;
@@ -128,7 +136,7 @@ void testSplitLeafInto3() {
 	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 	assertTrue(btree.get_stats().leaves == 1, "Leafcount");
-    assertTrue(btree.size() == 8, "Tree size");
+        assertTrue(btree.size() == 8, "Tree size");
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 1});
@@ -166,7 +174,7 @@ void testSplitLeafInto3() {
 }
 
 void testSplitDeepRebalancingInsert() {
-	btree<int, std::less<int>, btree_test_set_traits> btree;
+	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
 	std::vector<Operation<int> > updates;

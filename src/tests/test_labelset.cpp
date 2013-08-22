@@ -1,16 +1,7 @@
 #include "../SeqLabelSet.hpp"
+#include "../Label.hpp"
 #include <iostream>
 #include <algorithm>
-
-struct Label {
-	Label(int first=0, int second=0): first_weight(first), second_weight(second) {};
-	typedef unsigned int weight_type;
-	weight_type first_weight;
-	weight_type second_weight;
-	bool operator==(const Label& other) const {
-		return first_weight == other.first_weight && second_weight == other.second_weight;
-	}
-};
 
 void assertTrue(bool cond, std::string msg) {
 	if (!cond) {

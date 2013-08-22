@@ -249,12 +249,13 @@ public:
             verify();
         }
     }
-
-    template<typename sequence_type>
-    void find_pareto_minima(const min_key_type& prefix_minima, sequence_type& minima) const {
-        BTREE_ASSERT(minima.empty());
-        find_pareto_minima(root, prefix_minima, minima);
+    
+    template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+    inline void find_pareto_minima(const min_key_type& prefix_minima, upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {                                 
+        BTREE_ASSERT(updates.empty());
+        find_pareto_minima(root, prefix_minima, updates, candidates, graph);
     }
+
 
 private:
 

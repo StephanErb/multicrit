@@ -194,7 +194,7 @@ public:
 		labels.insert(labels.begin(), label_type_extended(min, max, /*permanent*/ true));
 		labels.insert(labels.end(), label_type_extended(max, min, /*permanent*/ true));
 
-		best_label = *labels.begin(); // one of the sentinals
+		best_label = *labels.rbegin(); // one of the sentinals
 		best_label_priority = B::computePriority(best_label);
 
 		perm_label_counter = 2; // sentinals
@@ -214,7 +214,7 @@ public:
 
 	void markBestLabelAsPermantent() {
 		label_type old_best_label = best_label;
-		best_label_priority = B::computePriority(*labels.begin()); // prio of sentinal
+		best_label_priority = B::computePriority(*labels.rbegin()); // prio of sentinal
 
 		// Scan all labels: Find new best label and mark the old one as permanent.
 		for (typename B::iterator i = labels.begin(); i != labels.end(); ++i) {
@@ -240,6 +240,11 @@ public:
 
 	label_type getBestTemporaryLabel() const {
 		return best_label;
+	}
+	
+	void init(const label_type& label) {
+		label_type_extended new_label(label);
+		labels.insert(++labels.begin(), new_label);
 	}
 
 	/* Subtraction used to hide the sentinals */
@@ -293,7 +298,7 @@ public:
 		temp_labels.insert(temp_labels.begin(), label_type(min, max));
 		temp_labels.insert(temp_labels.end(), label_type(max, min));
 
-		best_label = *temp_labels.begin(); // one of the sentinals
+		best_label = *temp_labels.rbegin(); // one of the sentinals
 		best_label_priority = B::computePriority(best_label);
 	}
 
@@ -317,7 +322,7 @@ public:
 		if (!hasTemporaryLabels()) {
 			return;
 		}
-		best_label_priority = B::computePriority(*temp_labels.begin()); // prio of sentinal
+		best_label_priority = B::computePriority(*temp_labels.rbegin()); // prio of sentinal
 		const label_type old_best_label = best_label;
 		typename B::iterator i = temp_labels.begin();
 
@@ -352,6 +357,10 @@ public:
 
 	label_type getBestTemporaryLabel() const {
 		return best_label;
+	}
+
+	void init(const label_type& label) {
+		perm_labels.insert(++perm_labels.begin(), label);
 	}
 
 	/* Subtraction used to hide the sentinals */
@@ -467,6 +476,11 @@ public:
 
 	label_type getBestTemporaryLabel() const {
 		return heap.getUserData(heap.getMin());
+	}
+
+	void init(const label_type& label) {
+		label_type_extended new_label(label);
+		labels.insert(++labels.begin(), new_label);
 	}
 
 	/* Subtraction used to hide the sentinals */

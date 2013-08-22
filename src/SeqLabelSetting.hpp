@@ -101,6 +101,10 @@ public:
 		std::cout << stats.toString() << std::endl;
 	}
 
+	void printComponentTimings() const {
+
+	}
+
 	size_t size(NodeID node) {return labels[node].size(); }
 
 	iterator begin(NodeID node) { return labels[node].begin(); }
