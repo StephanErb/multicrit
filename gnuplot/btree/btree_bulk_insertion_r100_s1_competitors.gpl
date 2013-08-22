@@ -36,7 +36,7 @@ set ylabel "Runtime [ns] per element" offset 1
 set output "btree_bulk_insertion_r100_s1_competitors.ps"
 
 set xrange [100:]
-set yrange [0:]
+set yrange [0:1400]
 
 plot '../../timings/set/insert_sequ_r100_s1' using 4:($1*1000/$4) title 'set (seq)' w lp ls 3,\
      '../../timings/set/insert_p_1_r100_s1' using 4:($1*1000/$4) title 'mcstl (p1)' w lp ls 2,\

@@ -2,7 +2,7 @@
 set encoding iso_8859_1
 
 set terminal postscript eps enhanced color font 'Helvetica,11 linewidth 2 rounded 
-set size 0.6,0.40
+set size 0.66,0.44
 
 # define grid
 set style line 12 lc rgb '#bbbbbb' lt 0 lw 1
@@ -42,7 +42,7 @@ set style histogram rowstacked
 set style fill solid 0.8 border lt -1
 
 
-set xrange [-0.5:5.5]
+set xrange [-0.5:7.5]
 set yrange [0:100]
 
 plot '< cat ../timings/paretosearch_components_sequ_NY3 ../timings/paretosearch_components_p_NY3_limited' using (100*$9/$10):xtic(4):xticlabel(3) t "Update Pareto queue" ls 4,\
