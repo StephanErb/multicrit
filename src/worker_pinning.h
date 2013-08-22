@@ -11,6 +11,10 @@
 #include "tbb/task_scheduler_observer.h"
 #include <pthread.h>
 
+
+/** 
+ * To enable pinning of threads to cores, just include this header.
+ */
 	struct tbb_set_affinity : public tbb::task_scheduler_observer {
 		tbb::atomic<int> threadID;
 

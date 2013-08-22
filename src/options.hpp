@@ -15,11 +15,11 @@
 #ifndef LABEL_SETTING_ALGORITHM
 //#define LABEL_SETTING_ALGORITHM NodeHeapLabelSettingAlgorithm
 //#define LABEL_SETTING_ALGORITHM SharedHeapLabelSettingAlgorithm // will always use SharedHeapLabelSet
-#define LABEL_SETTING_ALGORITHM ParetoSearch // will always use custom pareto label set
+#define LABEL_SETTING_ALGORITHM ParetoSearch // will always use a custom pareto label set
 #endif
 
 /**
- * The specific LabelSet Implementation type to be used by the NodeHeaplabelSettingAlgo
+ * The specific LabelSet Implementation type to be used by the NodeHeapLabelSettingAlgorithm
  */
 #define LABEL_SET NaiveLabelSet
 //#define LABEL_SET SplittedNaiveLabelSet
@@ -40,18 +40,22 @@
 
 /**
  * If defined, use std::set to store labels, otherwise use an std::vector
+ * (Warning: no longer maintained and not implemented for all cases as it was not competitive)
  */
 //#define TREE_SET
 
 
 /**
- * If defined, a pareto queue will be based ontop of a tree, otherwise it uses std::vector
+ * Configure the ParetoQueue implementation used by the ParetoSearch algorithm.
  */
 #ifndef PARETO_QUEUE
   //#define PARETO_QUEUE VectorParetoQueue
   #define PARETO_QUEUE BTreeParetoQueue
 #endif
 
+/**
+ * Within the ParetoSearch algorithm, use either a std::vector-based or a B-tree-based Labelset
+ */
 //#define BTREE_PARETO_LABELSET
 
 /**
