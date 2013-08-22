@@ -71,6 +71,7 @@ CLEAN_TARGETS = $(addprefix clean.,$(TARGETS))\
 .PHONY: all clean $(CLEAN_TARGETS)
 
 PARALLEL_TARGETS = $(addsuffix .par,$(PARALLEL))
+PARALLEL_TESTS = $(addsuffix .par,$(TESTS))
 
 ifeq ($(MAKECMDGOALS),clean)
 BUILD_TARGETS :=
@@ -101,7 +102,7 @@ all: $(TARGETS) $(PARALLEL_TARGETS)
 
 test: all
 	cd $(BINDIR); $(foreach test,$(TESTS),./$(test);)
-	cd $(BINDIR); $(foreach test,$(PARA_TESTS),./$(test);)
+	cd $(BINDIR); $(foreach test,$(PARALLEL_TESTS),./$(test);)
 
 time_pq_mcstl_set: time_pq_set
 	/software/gcc-4.2.4-64/bin/g++-4.2.4 -O3 -march=native -DNDEBUG $(DEFAULT_OPS) -DENABLE_MCSTL -fopenmp -I../lib/mcstl/c++ -o ./bin/time_pq_mcstl_set time_pq_set.cpp
