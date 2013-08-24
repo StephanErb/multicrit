@@ -1,15 +1,23 @@
+#undef NDEBUG // uncomment to enable assertions
+//#define BTREE_DEBUG // uncomment to enable debug print
+#define TBB_USE_DEBUG 1
+#define TBB_USE_ASSERT 1
+#define TBB_USE_THREADING_TOOLS 1
+
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE shortestpath_abelsetting_tests
+#include <boost/test/auto_unit_test.hpp>
+
 #include <iostream>
 #include "../BiCritShortestPathAlgorithm.hpp"
 #include "../GraphGenerator.hpp"
 
 void assertTrue(bool cond, std::string msg) {
-	if (!cond) {
-		std::cout << "FAILED: " << msg << std::endl;
-		exit(-1);
-	}
+	BOOST_REQUIRE_MESSAGE(cond, msg);
 }
 
-bool contains(LabelSettingAlgorithm& algo, const NodeID node, const Label label) {
+template<class LabelSettingAlgorithm>
+bool contains(const LabelSettingAlgorithm& algo, const NodeID node, const Label& label) {
 	return std::find(algo.begin(node), algo.end(node), label) != algo.end(node);
 }
 
@@ -35,11 +43,8 @@ void createGridSimple(Graph& graph) {
 	graph.finalize();
 }
 
-void testGridSimple() {
-	Graph graph;
-	createGridSimple(graph);
-
-	LabelSettingAlgorithm algo(graph);
+template<class LabelSettingAlgorithm>
+void testGridSimple(LabelSettingAlgorithm&& algo) {
 	algo.run(NodeID(0));
 
 	assertTrue(algo.size(NodeID(1)) == 2, "Should not contain dominated labels");
@@ -47,12 +52,8 @@ void testGridSimple() {
 	assertTrue(contains(algo, NodeID(1), Label(3,2)), "");
 }
 
-void testGridExponential() {
-	Graph graph;
-	GraphGenerator<Graph> generator;
-	generator.generateExponentialGraph(graph, 20);
-
-	LabelSettingAlgorithm algo(graph);
+template<class LabelSettingAlgorithm>
+void testGridExponential(LabelSettingAlgorithm&& algo, const Graph& graph) {
 	algo.run(NodeID(0));
 
 	assertTrue(algo.size(NodeID(0)) == 1, "Start node should have no labels");
@@ -65,11 +66,46 @@ void testGridExponential() {
 	}
 }
  
-int main() {
-	testGridSimple();
-	testGridExponential();
-
-	std::cout << "Tests passed successfully." << std::endl;
-	return 0;
+BOOST_AUTO_TEST_CASE(testParetoSearch_Simple) {
+	Graph graph;
+	createGridSimple(graph);
+	#ifdef PARALLEL_BUILD
+		testGridSimple(ParetoSearch<Graph>(graph, my_default_thread_count));
+	#else 
+		testGridSimple(ParetoSearch<Graph>(graph));
+	#endif
+}
+BOOST_AUTO_TEST_CASE(testParetoSearch_Exponential) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateExponentialGraph(graph, 20);
+	#ifdef PARALLEL_BUILD
+		testGridExponential(ParetoSearch<Graph>(graph, my_default_thread_count), graph);
+	#else 
+		testGridExponential(ParetoSearch<Graph>(graph), graph);
+	#endif
 }
 
+BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_Simple) {
+	Graph graph;
+	createGridSimple(graph);
+	testGridSimple(SharedHeapLabelSettingAlgorithm<Graph>(graph));
+}
+BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_Exponential) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateExponentialGraph(graph, 20);
+	testGridExponential(SharedHeapLabelSettingAlgorithm<Graph>(graph), graph);
+}
+
+BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_Simple) {
+	Graph graph;
+	createGridSimple(graph);
+	testGridSimple(NodeHeapLabelSettingAlgorithm<Graph>(graph));
+}
+BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_Exponential) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateExponentialGraph(graph, 20);
+	testGridExponential(NodeHeapLabelSettingAlgorithm<Graph>(graph), graph);
+}

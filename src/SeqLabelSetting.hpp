@@ -16,6 +16,11 @@
 #include "SeqLabelSet.hpp"
 #include "SeqLabelSettingStatistics.hpp"
 
+
+/**
+ * Label setting algorithm where we store just the best label of each node within a heap used to find the next label to explore.
+ * The heap is small, but unfornately it is difficult to find the labels used to populate this heap.
+ */
 template<typename graph_slot>
 class NodeHeapLabelSettingAlgorithm {
 private:
@@ -38,7 +43,7 @@ private:
 public:
 
 	typedef typename LabelSet<Label>::iterator iterator;
-	typedef typename LabelSet<Label>::iterator const_iterator;
+	typedef typename LabelSet<Label>::const_iterator const_iterator;
 
 	NodeHeapLabelSettingAlgorithm(const graph_slot& graph_):
 		heap((NodeID)graph_.numberOfNodes()),
@@ -97,13 +102,8 @@ public:
 		}		
 	}
 	
-	void printStatistics() {
-		std::cout << stats.toString() << std::endl;
-	}
-
-	void printComponentTimings() const {
-
-	}
+	void printStatistics() { std::cout << stats.toString() << std::endl; }
+	void printComponentTimings() const { }
 
 	size_t size(NodeID node) {return labels[node].size(); }
 
@@ -115,6 +115,9 @@ public:
 
 
 
+/**
+ * Label setting algorithm where all tenative labels are stored in a single, large heap.
+ */
 template<typename graph_slot>
 class SharedHeapLabelSettingAlgorithm {
 private:
@@ -138,7 +141,7 @@ private:
 public:
 
 	typedef typename SharedHeapLabelSet<Label, BinaryHeap>::iterator iterator;
-	typedef typename SharedHeapLabelSet<Label, BinaryHeap>::iterator const_iterator;
+	typedef typename SharedHeapLabelSet<Label, BinaryHeap>::const_iterator const_iterator;
 
 	SharedHeapLabelSettingAlgorithm(const graph_slot& graph_):
 		heap(LARGE_ENOUGH_FOR_EVERYTHING),
@@ -192,11 +195,9 @@ public:
 		std::cout << stats.toString() << std::endl;
 	}
 
-	void printComponentTimings() const {
+	void printComponentTimings() const { }
 
-	}
-
-	size_t size(NodeID node) {return labels[node].size(); }
+	size_t size(NodeID node) { return labels[node].size(); }
 
 	iterator begin(NodeID node) { return labels[node].begin(); }
 	const_iterator begin(NodeID node) const { return labels[node].begin(); }

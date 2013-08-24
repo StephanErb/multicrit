@@ -4,6 +4,10 @@
 #define TBB_USE_ASSERT 1
 #define TBB_USE_THREADING_TOOLS 1
 
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE btree_update_tests
+#include <boost/test/auto_unit_test.hpp>
+
 #include "../datastructures/BTree.hpp"
 #include <iostream>
 #include <algorithm>
@@ -23,12 +27,10 @@ struct btree_test_set_traits {
 };
 
 void assertTrue(bool cond, std::string msg) {
-	if (!cond) {
-		std::cout << "FAILED: " << msg << std::endl;
-		exit(-1);
-	}
+	BOOST_REQUIRE_MESSAGE(cond, msg);
 }
-void testBulkUpdatesOfSingleLeaf() {
+
+BOOST_AUTO_TEST_CASE(testBulkUpdatesOfSingleLeaf) {
 	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -86,7 +88,7 @@ void testBulkUpdatesOfSingleLeaf() {
 	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 }
 
-void testSplitLeafInto2() {
+BOOST_AUTO_TEST_CASE(testSplitLeafIntoTwoLeaves) {
 	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -119,7 +121,7 @@ void testSplitLeafInto2() {
 	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 }
 
-void testSplitLeafInto3() {
+BOOST_AUTO_TEST_CASE(testSplitLeafIntoThreeLeaves) {
 	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -136,7 +138,7 @@ void testSplitLeafInto3() {
 	btree.apply_updates(updates, INSERTS_AND_DELETES);
 	assertTrue(btree.height() == 0, "8 elements fit into a leaf");
 	assertTrue(btree.get_stats().leaves == 1, "Leafcount");
-        assertTrue(btree.size() == 8, "Tree size");
+	assertTrue(btree.size() == 8, "Tree size");
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 1});
@@ -149,7 +151,6 @@ void testSplitLeafInto3() {
 	assertTrue(btree.height() == 1, "13 elements need 3 leaves");
 	assertTrue(btree.get_stats().leaves == 3, "Leafcount");
 	assertTrue(btree.size() == 13, "Tree size");
-
 
 	updates.clear();
 	updates.push_back({Operation<int>::INSERT, 0});
@@ -173,7 +174,7 @@ void testSplitLeafInto3() {
 	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 }
 
-void testSplitDeepRebalancingInsert() {
+BOOST_AUTO_TEST_CASE(testSplitDeepRebalancingInsert) {
 	btree<int, std::less<int>, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -238,15 +239,4 @@ void testSplitDeepRebalancingInsert() {
 	btree.clear();
 	assertTrue(btree.size() == 0, "Empty");
 	assertTrue(btree.get_stats().leaves == 0, "Leave count");
-}
-
-
-int main() {
-	testBulkUpdatesOfSingleLeaf();
-	testSplitLeafInto2();
-	testSplitLeafInto3();
-	testSplitDeepRebalancingInsert();
-
-	std::cout << "Tests passed successfully." << std::endl;
-	return 0;
 }

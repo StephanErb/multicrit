@@ -4,6 +4,10 @@
 #define TBB_USE_ASSERT 1
 #define TBB_USE_THREADING_TOOLS 1
 
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE btree_findparetomin_tests
+#include <boost/test/auto_unit_test.hpp>
+
 #include "../utility/datastructure/graph/KGraph.hpp"
 #include "../utility/datastructure/graph/Edge.hpp"
 #include "../utility/datastructure/graph/GraphTypes.hpp"
@@ -35,10 +39,7 @@ struct btree_test_set_traits {
 };
 
 void assertTrue(bool cond, std::string msg) {
-	if (!cond) {
-		std::cout << "FAILED: " << msg << std::endl;
-		exit(-1);
-	}
+	BOOST_REQUIRE_MESSAGE(cond, msg);
 }
 
 struct LabelComparator {
@@ -50,7 +51,7 @@ struct LabelComparator {
 	}
 };
 
-void testParetoMinInLeaf() {
+BOOST_AUTO_TEST_CASE(testParetoMinInLeaf) {
 	btree<NodeLabel, Label, LabelComparator, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -92,7 +93,7 @@ void testParetoMinInLeaf() {
 	assertTrue(empty_candidates.empty(), "Candidates should be empty");
 }
 
-void testParetoMinInInternalNode() {
+BOOST_AUTO_TEST_CASE(testParetoMinInInternalNode) {
 	btree<NodeLabel, Label, LabelComparator, btree_test_set_traits> btree(p);
 	assertTrue(btree.size() == 0, "Empty");
 
@@ -133,12 +134,4 @@ void testParetoMinInInternalNode() {
 	assertTrue(btree.get_stats().leaves == 0, "Leave count");
 
 	assertTrue(empty_candidates.empty(), "Candidates should be empty");
-}
-
-int main() {	
-	testParetoMinInLeaf();
-	testParetoMinInInternalNode();
-
-	std::cout << "Tests passed successfully." << std::endl;
-	return 0;
 }

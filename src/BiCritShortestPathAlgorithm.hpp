@@ -8,7 +8,6 @@
 
 #include "options.hpp"
 
-// Width of nodes given as number of cache-lines
 #ifndef BRANCHING_PARAMETER_B
 #define BRANCHING_PARAMETER_B 32
 #endif

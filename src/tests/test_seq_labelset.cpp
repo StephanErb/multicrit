@@ -1,21 +1,24 @@
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE numeral_conversion_tests
+#include <boost/test/auto_unit_test.hpp>
+
 #include "../SeqLabelSet.hpp"
 #include "../Label.hpp"
 #include <iostream>
 #include <algorithm>
 
+
 void assertTrue(bool cond, std::string msg) {
-	if (!cond) {
-		std::cout << "FAILED: " << msg << std::endl;
-		exit(-1);
-	}
+	BOOST_REQUIRE_MESSAGE(cond, msg);
 }
 
-bool contains(const LabelSet<Label>& set, const Label label) {
+template<class LabelSet> 
+bool contains(const LabelSet& set, const Label label) {
 	return std::find(set.begin(), set.end(), label) != set.end();
 }
 
-void testSimpleInsertion() {
-	LabelSet<Label> set;
+template<class LabelSet> 
+void testSimpleInsertion(LabelSet set) {
 	assertTrue(set.size() == 0, "Should be empty");
 
 	Label label = Label(1,10);
@@ -56,8 +59,8 @@ void testSimpleInsertion() {
 	assertTrue(contains(set, Label(1,10)), "Label should have remained");
 }
 
-void testAdditionForBorderlineCase1() {
-	LabelSet<Label> set;
+template<class LabelSet> 
+void testAdditionForBorderlineCase1(LabelSet set) {
 	assertTrue(set.size() == 0, "Should be empty");
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
@@ -66,8 +69,8 @@ void testAdditionForBorderlineCase1() {
 	assertTrue(contains(set, Label(5,5)), "Label should have remained");
 }
 
-void testAdditionForBorderlineCase2() {
-	LabelSet<Label> set;
+template<class LabelSet> 
+void testAdditionForBorderlineCase2(LabelSet set) {
 	assertTrue(set.size() == 0, "Should be empty");
 	set.add(Label(5,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
@@ -76,8 +79,8 @@ void testAdditionForBorderlineCase2() {
 	assertTrue(contains(set, Label(4,6)), "Label should have remained");
 }
 
-void testAdditionForBorderlineCase3() {
-	LabelSet<Label> set;
+template<class LabelSet> 
+void testAdditionForBorderlineCase3(LabelSet set) {
 	assertTrue(set.size() == 0, "Should be empty");
 	set.add(Label(4,6));
 	assertTrue(set.size() == 1, "Should have fitted non-dominated into sequence");
@@ -86,9 +89,8 @@ void testAdditionForBorderlineCase3() {
 	assertTrue(contains(set, Label(4,6)), "Original label should have remained");
 }
 
-void testBestLabelInteraction() {
-	LabelSet<Label> set;
-
+template<class LabelSet> 
+void testBestLabelInteraction(LabelSet set) {
 	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
 
 	set.add(Label(4,5));
@@ -109,13 +111,28 @@ void testBestLabelInteraction() {
 	assertTrue(!set.hasTemporaryLabels(), "Should be empty");
 }
 
-int main() {
-	testSimpleInsertion();
-	testAdditionForBorderlineCase1();
-	testAdditionForBorderlineCase2();
-	testAdditionForBorderlineCase3();
-	testBestLabelInteraction();
 
-	std::cout << "Tests passed successfully." << std::endl;
-	return 0;
+BOOST_AUTO_TEST_CASE(testSimpleInsertion_NaiveLabelSet) {
+	testSimpleInsertion(NaiveLabelSet<Label>());
+}
+BOOST_AUTO_TEST_CASE(testBorderlineCases_NaiveLabelSet) {
+	testAdditionForBorderlineCase1(NaiveLabelSet<Label>());
+	testAdditionForBorderlineCase2(NaiveLabelSet<Label>());
+	testAdditionForBorderlineCase3(NaiveLabelSet<Label>());
+}
+BOOST_AUTO_TEST_CASE(testBestLabelInteraction_NaiveLabelSet) {
+	testBestLabelInteraction(NaiveLabelSet<Label>());
+}
+
+
+BOOST_AUTO_TEST_CASE(testSimpleInsertion_HeapLabelSet) {
+	testSimpleInsertion(HeapLabelSet<Label>());
+}
+BOOST_AUTO_TEST_CASE(testBorderlineCases_HeapLabelSet) {
+	testAdditionForBorderlineCase1(HeapLabelSet<Label>());
+	testAdditionForBorderlineCase2(HeapLabelSet<Label>());
+	testAdditionForBorderlineCase3(HeapLabelSet<Label>());
+}
+BOOST_AUTO_TEST_CASE(testBestLabelInteraction_HeapLabelSet) {
+	testBestLabelInteraction(HeapLabelSet<Label>());
 }

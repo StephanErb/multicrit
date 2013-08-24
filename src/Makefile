@@ -21,7 +21,7 @@
 #
 #####################################################
 CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set time_pq_btree time_labelsetting tbb_inner_loop_parallelization time_sensor_instances time_pq_vector time_pq_btree_delete
-TESTS=test_labelset test_labelsetting test_pq_btree test_pq_btree_paretomin
+TESTS=test_seq_labelset test_labelsetting test_pq_btree test_pq_btree_paretomin
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)
@@ -32,12 +32,12 @@ DEFAULT_OPS = -Wall -Wextra $(CPPFLAGS)
 # Sequential
 CXXFLAGS = -O3 -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 
 CXXFLAGSDBG = -O3 -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 # -fno-inline -fno-default-inline -fno-builtin
-CXXLIBS= -lrt -ltbb -ltbbmalloc
+CXXLIBS= -lrt -ltbb -ltbbmalloc -lboost_unit_test_framework
 
 # Parallel
 CXXPFLAGS = -O3 -march=native -DNDEBUG $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD
 CXXPFLAGSDBG = -O3 -march=native -g3 -W $(DEFAULT_OPS) -std=c++11 -DPARALLEL_BUILD -DTBB_USE_DEBUG=1 -DTBB_USE_ASSERT=1 -DTBB_USE_THREADING_TOOLS=1 # -fno-inline -fno-default-inline -fno-builtin 
-CXXPLIBS= -lrt -ltbb -ltbbmalloc -lpthread
+CXXPLIBS= -lrt -ltbb -ltbbmalloc -lpthread -lboost_unit_test_framework
 
 #set directorys here the project depends upon (e.g. otherwise linked directories)
 DEPENDENCYDIRS=.
@@ -100,7 +100,7 @@ SHELL = /bin/bash
 
 all: $(TARGETS) $(PARALLEL_TARGETS)
 
-test: all
+tests: all
 	cd $(BINDIR); $(foreach test,$(TESTS),./$(test);)
 	cd $(BINDIR); $(foreach test,$(PARALLEL_TESTS),./$(test);)
 

@@ -261,7 +261,7 @@ public:
 /**
   * Similar to the naive implementation, but temporary labels and 
   * permanent labels are kept in different sets, limiting the set
-  * of elements that have to be scanned constanly.
+  * of elements that have to be scanned.
   */
 template<typename label_type_slot>
 class SplittedNaiveLabelSet : public LabelSetBase<label_type_slot, label_type_slot > {
