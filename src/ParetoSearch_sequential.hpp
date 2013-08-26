@@ -71,9 +71,8 @@ private:
 		std::vector<unsigned long> set_dominations;
 	#endif
 
-	#ifdef BTREE_PARETO_LABELSET
-		typename LabelSet::ThreadLocalLSData labelset_data;
-	#endif
+	typename LabelSet::ThreadLocalLSData labelset_data;
+
 
 public:
 	ParetoSearch(const graph_slot& graph_):
@@ -101,11 +100,7 @@ public:
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));
-		#ifdef BTREE_PARETO_LABELSET
-			labels[node].labels.init(Label(0,0), labelset_data);
-		#else
-			labels[node].labels.init(Label(0,0));
-		#endif
+		labels[node].labels.init(Label(0,0), labelset_data);
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
@@ -138,11 +133,7 @@ public:
 					++cand_iter;
 				}
 				std::sort(range_start, cand_iter, groupLabels);
-				#ifdef BTREE_PARETO_LABELSET
-					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data, stats);
-				#else
-					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, stats);
-				#endif
+				ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data, stats);
 			}
 			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
 

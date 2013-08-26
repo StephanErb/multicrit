@@ -384,6 +384,7 @@ public:
     typedef std::vector<Label, _Alloc> LabelVec;
     typedef typename LabelVec::iterator label_iter;
     typedef typename LabelVec::const_iterator const_label_iter;
+    typedef utility::NullData ThreadLocalLSData;
 private:
     LabelVec labels;
 public:
@@ -408,7 +409,7 @@ public:
     }
 
     template<class NodeID, class candidates_iter_type, class Stats, class PQUpdates>
-    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& updates, Stats& stats) {
+    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& updates, const ThreadLocalLSData&,Stats& stats) {
         typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
         int modifications = 0;
 
@@ -489,7 +490,7 @@ public:
         #endif
     }
 
-    void init(const Label& label) {
+    void init(const Label& label, const ThreadLocalLSData&) {
         labels.insert(++labels.begin(), label);
     }
 

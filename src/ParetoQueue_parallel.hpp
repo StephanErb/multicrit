@@ -164,9 +164,7 @@ public:
 	struct ThreadData {
 		BufferedSharedVector<NodeLabel, CandLabelVec, tbb::atomic<size_t>> candidates;
 		BufferedSharedOpVector<Operation<NodeLabel>, OpVec, tbb::atomic<size_t>> updates;
-		#ifdef BTREE_PARETO_LABELSET
-			typename LabelSet::ThreadLocalLSData labelset_data;
-		#endif
+		typename LabelSet::ThreadLocalLSData labelset_data;
 	};	
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
 	TLSData tls_data;

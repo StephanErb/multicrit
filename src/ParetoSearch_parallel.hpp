@@ -113,7 +113,7 @@ public:
 			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
 			tl.labelset_data.spare_leaf = pq.labelsets[0].allocate_leaf_without_count();
 			tl.labelset_data.spare_inner = pq.labelsets[0].allocate_inner_without_count(0);
-		#endif
+		#endif 
 	}
 
 	~ParetoSearch() {
@@ -129,12 +129,8 @@ public:
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));
-		#ifdef BTREE_PARETO_LABELSET
-			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-			pq.labelsets[node].init(Label(0,0), tl.labelset_data);
-		#else
-			pq.labelsets[node].init(Label(0,0));
-		#endif
+		pq.labelsets[node].init(Label(0,0), pq.tls_data.local().labelset_data);
+
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
 			tbb::tick_count stop = tbb::tick_count::now();
@@ -199,11 +195,7 @@ public:
 					std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
 					TIME_SUBCOMPONENT(subtimings.candidates_sort);
 
-					#ifdef BTREE_PARETO_LABELSET
-						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data, stats);
-					#else
-						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, stats);
-					#endif
+					ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data, stats);
 					TIME_SUBCOMPONENT(subtimings.update_labelsets);
 				}
 			}, candidates_aff_part);
