@@ -20,6 +20,9 @@
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
 #include "tbb/tick_count.h"
+#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
+#else
+#define TIME_COMPONENT(target) do { } while(0)
 #endif
 
 template<typename graph_slot>
@@ -115,23 +118,14 @@ public:
 			pq.findParetoMinima(updates, candidates, graph);
 			const size_t minima_count = updates.size();
 			stats.report(MINIMA_COUNT, minima_count);
-
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[FIND_PARETO_MIN] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[FIND_PARETO_MIN]);
 
 			#ifdef RADIX_SORT
 				radix_sort(candidates.data(), candidates.size(), [](const NodeLabel& x) { return x.node; });
 			#else 
 				std::sort(candidates.begin(), candidates.end(), groupCandidates);
 			#endif
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[CANDIDATE_SORT] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[CANDIDATE_SORT]);
 
 			const auto cand_end = candidates.end();
 			auto cand_iter = candidates.begin();
@@ -150,31 +144,18 @@ public:
 					ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, stats);
 				#endif
 			}
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[UPDATE_LABELSETS] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
 
 			// Sort sequence for batch update
 			std::sort(updates.begin()+minima_count, updates.end(), groupOpsByWeight);
 			std::inplace_merge(updates.begin(), updates.begin()+minima_count, updates.end(), groupOpsByWeight);
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[UPDATES_SORT] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[UPDATES_SORT]);
 
 			const size_t pre_update_size = pq.size();
 			stats.report(UPDATE_COUNT, updates.size());
 			pq.applyUpdates(updates);
 			stats.report(PQ_SIZE_DELTA, std::abs((signed long)pq.size()-(signed long)pre_update_size));
-
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[PQ_UPDATE] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[PQ_UPDATE]);
 
 			updates.clear();
 			candidates.clear();

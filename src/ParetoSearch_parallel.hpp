@@ -32,8 +32,10 @@
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
 #include "tbb/tick_count.h"
+#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
+#else
+#define TIME_COMPONENT(target) do { } while(0)
 #endif
-
 
 template<typename graph_slot>
 class ParetoSearch {
@@ -133,11 +135,7 @@ public:
 
 			// write updates & candidates to thread locals in pq.*
 			pq.findParetoMinima(); 
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[FIND_PARETO_MIN] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[FIND_PARETO_MIN]);
 
 			// Count gaps moved to the end via sorting. Then we can ignore them
 			size_t candidate_counter_size_diff = 0;
@@ -151,11 +149,7 @@ public:
 			#else
 				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, auto_part, min_problem_size(pq.candidate_counter, 512));
 			#endif
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[SORT_CANDIDATES] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[SORT_CANDIDATES]);
 
 			pq.candidate_counter -= candidate_counter_size_diff;
 			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 64)),
@@ -204,11 +198,7 @@ public:
 					#endif
 				}
 			}, candidates_aff_part);
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[UPDATE_LABELSETS] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
 
 			// Count gaps moved to the end via sorting. Then we can ignore them
 			size_t update_counter_size_diff = 0;
@@ -218,19 +208,11 @@ public:
 			}
 
 			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, auto_part, min_problem_size(pq.update_counter, 512));
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[SORT_UPDATES] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[SORT_UPDATES]);
 
 			pq.update_counter -= update_counter_size_diff;
 			pq.applyUpdates(pq.updates.data(), pq.update_counter, tree_aff_part);
-			#ifdef GATHER_SUBCOMPNENT_TIMING
-				stop = tbb::tick_count::now();
-				timings[PQ_UPDATE] += (stop-start).seconds();
-				start = stop;
-			#endif
+			TIME_COMPONENT(timings[PQ_UPDATE]);
 		}		
 	}
 
