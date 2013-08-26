@@ -19,10 +19,10 @@
 #include "radix_sort.hpp"
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
-#include "tbb/tick_count.h"
-#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
+	#include "tbb/tick_count.h"
+	#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
 #else
-#define TIME_COMPONENT(target) do { } while(0)
+	#define TIME_COMPONENT(target) do { } while(0)
 #endif
 
 template<typename graph_slot>

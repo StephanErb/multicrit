@@ -31,11 +31,17 @@
 #include "tbb/atomic.h"
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
-#include "tbb/tick_count.h"
-#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
+	#include "tbb/tick_count.h"
+	#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
 #else
-#define TIME_COMPONENT(target) do { } while(0)
+	#define TIME_COMPONENT(target) do { } while(0)
 #endif
+#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+	#define TIME_SUBCOMPONENT(target) TIME_COMPONENT(target)
+#else
+	#define TIME_SUBCOMPONENT(target) do { } while(0)
+#endif
+
 
 template<typename graph_slot>
 class ParetoSearch {
@@ -51,14 +57,24 @@ private:
 	const graph_slot& graph;
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
-		enum Component {FIND_PARETO_MIN=0, UPDATE_LABELSETS=1, SORT_CANDIDATES=2, SORT_UPDATES=3, PQ_UPDATE=4, CLEAR_BUFFERS=9,
-						TL_CANDIDATES_SORT=5, TL_UPDATE_LABELSETS=6, TL_FIND_PARETO_MIN=7, TL_WRITE_LOCAL_TO_SHARED=8, TL_CREATE_CANDIDATES=10};
-		double timings[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		enum Component {FIND_PARETO_MIN=0, UPDATE_LABELSETS=1, SORT_CANDIDATES=2, SORT_UPDATES=3, PQ_UPDATE=4,
+						TL_CANDIDATES_SORT=5, TL_UPDATE_LABELSETS=6 };
+		double timings[7] = {0, 0, 0, 0, 0, 0, 0};
+
+		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+			struct tls_tim {
+				double candidates_sort = 0;
+				double update_labelsets = 0;
+			};
+			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
+			TLSTimings tls_timings;
+		#endif
 	#endif
 
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> set_changes;
 	#endif
+ 
 
 	struct GroupByWeightComp {
 		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
@@ -165,7 +181,7 @@ public:
 				tl.updates.setup(pq.updates, pq.update_counter);
 				
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-					typename ParetoQueue::TLSTimings::reference subtimings = pq.tls_timings.local();
+					typename TLSTimings::reference subtimings = this->tls_timings.local();
 					tbb::tick_count start = tbb::tick_count::now();
 					tbb::tick_count stop = tbb::tick_count::now();
 				#endif
@@ -181,21 +197,14 @@ public:
 						++i;
 					}
 					std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
-					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-						stop = tbb::tick_count::now();
-						subtimings.candidates_sort += (stop-start).seconds();
-						start = stop;
-					#endif
+					TIME_SUBCOMPONENT(subtimings.candidates_sort);
+
 					#ifdef BTREE_PARETO_LABELSET
 						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data, stats);
 					#else
 						ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, stats);
 					#endif
-					#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-						stop = tbb::tick_count::now();
-						subtimings.update_labelsets += (stop-start).seconds();
-						start = stop;
-					#endif
+					TIME_SUBCOMPONENT(subtimings.update_labelsets);
 				}
 			}, candidates_aff_part);
 			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
@@ -277,20 +286,13 @@ public:
 		std::cout << stats.toString() << std::endl;
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				for (typename ParetoQueue::TLSTimings::reference subtimings : pq.tls_timings) {
+				for (typename TLSTimings::reference subtimings : tls_timings) {
 					timings[TL_CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[TL_CANDIDATES_SORT]);
-					timings[TL_FIND_PARETO_MIN] = std::max(subtimings.find_pareto_min, timings[TL_FIND_PARETO_MIN]);
 					timings[TL_UPDATE_LABELSETS] = std::max(subtimings.update_labelsets, timings[TL_UPDATE_LABELSETS]);
-					timings[TL_WRITE_LOCAL_TO_SHARED] = std::max(subtimings.write_local_to_shared, timings[TL_WRITE_LOCAL_TO_SHARED]);
-					timings[TL_CREATE_CANDIDATES] = std::max(subtimings.create_candidates, timings[TL_CREATE_CANDIDATES]);
 				}
 			#endif
 			std::cout << "# Subcomponent Timings:" << std::endl;
 			std::cout << "#   " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
-			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "#       " << timings[TL_FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
-				std::cout << "#       " << timings[TL_CREATE_CANDIDATES]  << " Create Candidates" << std::endl;
-			#endif
 			std::cout << "#   " << timings[SORT_CANDIDATES] << " Sort Candidates"  << std::endl;
 			std::cout << "#   " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
 			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
@@ -299,10 +301,6 @@ public:
 			#endif
 			std::cout << "#   " << timings[SORT_UPDATES] << " Sort Updates"  << std::endl;
 			std::cout << "#   " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
-			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "#   " << timings[TL_WRITE_LOCAL_TO_SHARED] << " Writing thread local data to shared memory"  << std::endl;
-				std::cout << "#   " << timings[CLEAR_BUFFERS] << " Copying remainig data from thread local buffers"  << std::endl;
-			#endif
 		#endif
 		pq.printStatistics();
 	}

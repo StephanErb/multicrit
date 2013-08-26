@@ -172,20 +172,6 @@ public:
 	TLSData tls_data;
 
 
-	 #ifdef GATHER_SUBCOMPNENT_TIMING
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			struct tls_tim {
-				double candidates_sort = 0;
-				double update_labelsets = 0;
-				double find_pareto_min = 0;
-				double write_local_to_shared = 0;
-				double create_candidates = 0;
-			};
-			typedef tbb::enumerable_thread_specific<tls_tim, tbb::cache_aligned_allocator<tls_tim>, tbb::ets_key_per_instance > TLSTimings;
-			TLSTimings tls_timings;
-		#endif
-	#endif
-
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads)
@@ -301,24 +287,11 @@ public:
 
 	inline void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
 		typename TLSData::reference tl = tls_data.local();
-
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			typename TLSTimings::reference subtimings = tls_timings.local();
-			tbb::tick_count start = tbb::tick_count::now();
-			tbb::tick_count stop = tbb::tick_count::now();
-		#endif
 		tl.updates.setup(updates, update_counter);
 		tl.candidates.setup(candidates, candidate_counter);
 
 		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
-		#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-			stop = tbb::tick_count::now();
-			subtimings.find_pareto_min += (stop-start).seconds();
-			start = stop;
-		#endif
 	}
-
-
 };
 
 
