@@ -40,7 +40,7 @@ private:
 	value_type* vec;
 	counter_type* counter;
 public:
-	inline void setup(vector_type& _vec, counter_type& _counter) {
+	BufferedSharedVector(vector_type& _vec, counter_type& _counter) {
 		vec = _vec.data();
 		counter = &_counter;
 	}
@@ -70,7 +70,7 @@ private:
 	value_type* vec;
 	counter_type* counter;
 public:
-	inline void setup(vector_type& _vec, counter_type& _counter) {
+	BufferedSharedOpVector(vector_type& _vec, counter_type& _counter) {
 		vec = _vec.data();
 		counter = &_counter;
 	}
@@ -164,9 +164,14 @@ public:
 
 
 	struct ThreadData {
-		BufferedSharedVector<NodeLabel, CandLabelVec, tbb::atomic<size_t>> candidates;
-		BufferedSharedOpVector<Operation<NodeLabel>, OpVec, tbb::atomic<size_t>> updates;
+		BufferedSharedVector<NodeLabel, CandLabelVec, AtomicCounter> candidates;
+		BufferedSharedOpVector<Operation<NodeLabel>, OpVec, AtomicCounter> updates;
 		typename LabelSet::ThreadLocalLSData labelset_data;
+
+		ThreadData(ParallelBTreeParetoQueue* pq) 
+		:	candidates(pq->candidates, pq->candidate_counter),
+		    updates(pq->updates, pq->update_counter)
+		{}
 	};	
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
 	TLSData tls_data;
@@ -176,7 +181,7 @@ public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads)
 		: base_type(_num_threads), min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()),
-			graph(_graph), labelsets(_graph.numberOfNodes())
+			graph(_graph), labelsets(_graph.numberOfNodes()), tls_data([this](){ return this; })
 	{
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		candidates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
@@ -287,9 +292,6 @@ public:
 
 	inline void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
 		typename TLSData::reference tl = tls_data.local();
-		tl.updates.setup(updates, update_counter);
-		tl.candidates.setup(candidates, candidate_counter);
-
 		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
 	}
 };

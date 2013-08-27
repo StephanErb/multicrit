@@ -170,7 +170,6 @@ public:
 						tl.labelset_data.spare_inner = pq.labelsets[pq.candidates[r.begin()].node].allocate_inner_without_count(0);
 					}
 				#endif
-				tl.updates.setup(pq.updates, pq.update_counter);
 				
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename TLSTimings::reference subtimings = this->tls_timings.local();
