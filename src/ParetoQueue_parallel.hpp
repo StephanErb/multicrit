@@ -155,9 +155,11 @@ public:
 
 	std::vector<PaddedLabelSet> labelsets;
 
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> update_counter;
+
+	typedef tbb::atomic<size_t> AtomicCounter;
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) AtomicCounter update_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) tbb::atomic<size_t> candidate_counter;
+	 __attribute__ ((aligned (DCACHE_LINESIZE))) AtomicCounter candidate_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) CandLabelVec candidates;
 
 

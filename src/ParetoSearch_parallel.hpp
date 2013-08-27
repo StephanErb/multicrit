@@ -156,11 +156,7 @@ public:
 				tl.candidates.reset();
 			}
 
-			#ifdef RADIX_SORT
-				parallel_radix_sort(pq.candidates.data(), pq.candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_problem_size(pq.candidate_counter, 512));
-			#else
-				parallel_sort(pq.candidates.data(), pq.candidates.data() + pq.candidate_counter, groupCandidates, auto_part, min_problem_size(pq.candidate_counter, 512));
-			#endif
+			sort(pq.candidates, pq.candidate_counter, auto_part);
 			TIME_COMPONENT(timings[SORT_CANDIDATES]);
 
 			pq.candidate_counter -= candidate_counter_size_diff;
@@ -215,6 +211,15 @@ public:
 			pq.applyUpdates(pq.updates.data(), pq.update_counter, tree_aff_part);
 			TIME_COMPONENT(timings[PQ_UPDATE]);
 		}		
+	}
+
+	inline void sort(typename ParetoQueue::CandLabelVec& candidates, const typename ParetoQueue::AtomicCounter& candidate_counter, tbb::auto_partitioner& auto_part) {
+		const auto min_prob_size = min_problem_size(candidate_counter, 512);
+		#ifdef RADIX_SORT
+			parallel_radix_sort(candidates.data(), candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_prob_size);
+		#else
+			parallel_sort(candidates.data(), candidates.data() + candidate_counter, groupCandidates, auto_part, min_prob_size);
+		#endif
 	}
 
 	inline size_t min_problem_size(size_t total, const double max=1.0) const {

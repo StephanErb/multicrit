@@ -115,11 +115,7 @@ public:
 			stats.report(MINIMA_COUNT, minima_count);
 			TIME_COMPONENT(timings[FIND_PARETO_MIN]);
 
-			#ifdef RADIX_SORT
-				radix_sort(candidates.data(), candidates.size(), [](const NodeLabel& x) { return x.node; });
-			#else 
-				std::sort(candidates.begin(), candidates.end(), groupCandidates);
-			#endif
+			sort(candidates);
 			TIME_COMPONENT(timings[CANDIDATE_SORT]);
 
 			const auto cand_end = candidates.end();
@@ -143,14 +139,22 @@ public:
 			TIME_COMPONENT(timings[UPDATES_SORT]);
 
 			const size_t pre_update_size = pq.size();
-			stats.report(UPDATE_COUNT, updates.size());
 			pq.applyUpdates(updates);
+			stats.report(UPDATE_COUNT, updates.size());
 			stats.report(PQ_SIZE_DELTA, std::abs((signed long)pq.size()-(signed long)pre_update_size));
 			TIME_COMPONENT(timings[PQ_UPDATE]);
 
 			updates.clear();
 			candidates.clear();
 		}		
+	}
+
+	inline void sort(std::vector<NodeLabel>& candidates) {
+		#ifdef RADIX_SORT
+			radix_sort(candidates.data(), candidates.size(), [](const NodeLabel& x) { return x.node; });
+		#else 
+			std::sort(candidates.begin(), candidates.end(), groupCandidates);
+		#endif
 	}
 	
 	void printStatistics() {
