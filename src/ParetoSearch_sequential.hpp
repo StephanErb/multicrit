@@ -45,13 +45,7 @@ private:
 		typedef VectorParetoLabelSet<std::allocator<Label>> LabelSet;
 	#endif
 
-	struct LabelSetStruct {
-		#ifdef BUCKET_SORT
-			LabelVec candidates;
-		#endif
-		LabelSet labels;
-	};
-	std::vector<LabelSetStruct> labels;
+	std::vector<LabelSet> labels;
 
 	std::vector<Operation<NodeLabel> > updates;
 	std::vector<NodeID> affected_nodes;
@@ -84,8 +78,8 @@ public:
 		#endif
 	{
 		#ifdef BTREE_PARETO_LABELSET
-			labelset_data.spare_leaf = labels[0].labels.allocate_leaf_without_count();
-			labelset_data.spare_inner = labels[0].labels.allocate_inner_without_count(0);
+			labelset_data.spare_leaf = labels[0].allocate_leaf_without_count();
+			labelset_data.spare_inner = labels[0].allocate_inner_without_count(0);
 		#endif
 		updates.reserve(LARGE_ENOUGH_FOR_MOST);
 		candidates.reserve(LARGE_ENOUGH_FOR_MOST);
@@ -93,14 +87,14 @@ public:
 
 	~ParetoSearch() {
 		#ifdef BTREE_PARETO_LABELSET
-			labels[0].labels.free_node_without_count(labelset_data.spare_leaf);
-			labels[0].labels.free_node_without_count(labelset_data.spare_inner);
+			labels[0].free_node_without_count(labelset_data.spare_leaf);
+			labels[0].free_node_without_count(labelset_data.spare_inner);
 		#endif
 	}
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));
-		labels[node].labels.init(Label(0,0), labelset_data);
+		labels[node].init(Label(0,0), labelset_data);
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count start = tbb::tick_count::now();
@@ -124,12 +118,12 @@ public:
 				// find all labels belonging to the same target node
 				auto range_start = cand_iter;
 				auto& ls = labels[range_start->node];
-				ls.labels.prefetch();
+				ls.prefetch();
 				while (cand_iter != cand_end && range_start->node == cand_iter->node) {
 					++cand_iter;
 				}
 				std::sort(range_start, cand_iter, groupLabels);
-				ls.labels.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data, stats);
+				ls.updateLabelSet(range_start->node, range_start, cand_iter, updates, labelset_data, stats);
 			}
 			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
 
@@ -161,8 +155,8 @@ public:
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			for (auto& ls : labels) {
 				for (size_t i=0; i < 101; ++i) {
-					set_insertions[i] += ls.labels.set_insertions[i];
-					set_dominations[i] += ls.labels.set_dominations[i];
+					set_insertions[i] += ls.set_insertions[i];
+					set_dominations[i] += ls.set_dominations[i];
 				}
 			}
 			std::cout << "# LabelSet Modifications: insertion/deletion, dominance position" << std::endl;
@@ -188,11 +182,11 @@ public:
 		#endif
 	}
 
-	size_t size(NodeID node) const { return labels[node].labels.size(); }
-	std::vector<Label>::iterator begin(NodeID node) { return labels[node].labels.begin(); }
-	std::vector<Label>::const_iterator begin(NodeID node) const { return labels[node].labels.begin(); }
-	std::vector<Label>::iterator end(NodeID node) { return labels[node].labels.end(); }
-	std::vector<Label>::const_iterator end(NodeID node) const { return labels[node].labels.end(); }
+	size_t size(NodeID node) const { return labels[node].size(); }
+	std::vector<Label>::iterator begin(NodeID node) { return labels[node].begin(); }
+	std::vector<Label>::const_iterator begin(NodeID node) const { return labels[node].begin(); }
+	std::vector<Label>::iterator end(NodeID node) { return labels[node].end(); }
+	std::vector<Label>::const_iterator end(NodeID node) const { return labels[node].end(); }
 
 
 private:

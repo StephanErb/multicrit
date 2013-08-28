@@ -114,14 +114,14 @@ public:
 
 
 		unsigned long final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0,
-			[](const unsigned long accum, const T& ls) { return accum + ls.labels.size() -2; /*sentinal correction*/ });
+			[](const unsigned long accum, const T& ls) { return accum + ls.size() -2; /*sentinal correction*/ });
 		unsigned long finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
 		double finally_dom_percent = 100.0 * finally_dominated / data[LABEL_NONDOMINATED];
 		out_stream << "#     finally dominated" << ": " << finally_dom_percent << "% (=" << finally_dominated <<")\n";
 
 		double avg_set_size = final_total_label_count / (double) labels.size();
 		unsigned long max_set_size = (*std::max_element(labels.begin(), labels.end(), 
-			[](const T& x, const T& y) { return x.labels.size() < y.labels.size(); })).labels.size() -2; //sentinal correction
+			[](const T& x, const T& y) { return x.size() < y.size(); })).size() -2; //sentinal correction
 		out_stream << "# LabelSet sizes: " << "\n";
 		out_stream << "#   avg" << ": " << avg_set_size << " (of total " << final_total_label_count << ")\n";
 		out_stream << "#   max" << ": " << max_set_size << "\n";
