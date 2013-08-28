@@ -212,7 +212,7 @@ public:
 		}		
 	}
 
-	inline void sort(typename ParetoQueue::CandLabelVec& candidates, const typename ParetoQueue::AtomicCounter& candidate_counter, tbb::auto_partitioner& auto_part) {
+	inline void sort(typename ParetoQueue::CandLabelVec& candidates, const AtomicCounter& candidate_counter, tbb::auto_partitioner& auto_part) {
 		const auto min_prob_size = min_problem_size(candidate_counter, 512);
 		#ifdef RADIX_SORT
 			parallel_radix_sort(candidates.data(), candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_prob_size);

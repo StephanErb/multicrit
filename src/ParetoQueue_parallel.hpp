@@ -15,6 +15,7 @@
 #include "datastructures/BTree_parallel.hpp"
 #undef COMPUTE_PARETO_MIN
 
+#include "datastructures/ThreadLocalWriteBuffer.hpp"
 #include "ParetoLabelSet_sequential.hpp"
 
 #include <algorithm>
@@ -28,67 +29,7 @@
 #include "tbb/task.h"
 #include "tbb/concurrent_vector.h"
 
-#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
 
-template<typename _value_type, typename vector_type, typename counter_type>
-class BufferedSharedVector {
-public:
-	typedef _value_type value_type;
-	size_t current = 0;
-	size_t end = 0;
-private:
-	value_type* vec;
-	counter_type* counter;
-public:
-	BufferedSharedVector(vector_type& _vec, counter_type& _counter) {
-		vec = _vec.data();
-		counter = &_counter;
-	}
-	inline void reset() {
-		current = end = 0;
-	}
-	template<typename ...Args>
-	inline void emplace_back(Args&& ...args) {
-		if (current == end) {
-			current = counter->fetch_and_add(BATCH_SIZE);
-			end = current + BATCH_SIZE;
-			for (unsigned short i = 0; i < BATCH_SIZE; ++i) {
-				vec[current+i].node = std::numeric_limits<unsigned int>::max();
-			}
-		}
-		vec[current++] = value_type(std::forward<Args>(args)...);
-	}
-};
-
-template<typename _value_type, typename vector_type, typename counter_type>
-class BufferedSharedOpVector {
-public:
-	typedef _value_type value_type;
-	size_t current = 0;
-	size_t end = 0;
-private:
-	value_type* vec;
-	counter_type* counter;
-public:
-	BufferedSharedOpVector(vector_type& _vec, counter_type& _counter) {
-		vec = _vec.data();
-		counter = &_counter;
-	}
-	inline void reset() {
-		current = end = 0;
-	}
-	template<typename ...Args>
-	inline void emplace_back(Args&& ...args) {
-		if (current == end) {
-			current = counter->fetch_and_add(BATCH_SIZE);
-			end = current + BATCH_SIZE;
-			for (unsigned short i = 0; i < BATCH_SIZE; ++i) {
-				vec[current+i].data.first_weight = vec[current+i].data.second_weight = std::numeric_limits<unsigned int>::max();
-			}
-		}
-		vec[current++] = value_type(std::forward<Args>(args)...);
-	}
-};
 
 template<typename type>
 struct BTreeSetOrderer {
@@ -155,8 +96,6 @@ public:
 
 	std::vector<PaddedLabelSet> labelsets;
 
-
-	typedef tbb::atomic<size_t> AtomicCounter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) AtomicCounter update_counter;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
 	 __attribute__ ((aligned (DCACHE_LINESIZE))) AtomicCounter candidate_counter;
@@ -164,13 +103,16 @@ public:
 
 
 	struct ThreadData {
-		BufferedSharedVector<NodeLabel, CandLabelVec, AtomicCounter> candidates;
-		BufferedSharedOpVector<Operation<NodeLabel>, OpVec, AtomicCounter> updates;
+		ThreadLocalWriteBuffer<NodeLabel> candidates;
+		ThreadLocalWriteBuffer<Operation<NodeLabel>> updates;
 		typename LabelSet::ThreadLocalLSData labelset_data;
 
 		ThreadData(ParallelBTreeParetoQueue* pq) 
-		:	candidates(pq->candidates, pq->candidate_counter),
-		    updates(pq->updates, pq->update_counter)
+		:	candidates(pq->candidates.data(), pq->candidate_counter,
+				NodeLabel(std::numeric_limits<NodeID>::max(), Label())),
+		    updates(pq->updates.data(), pq->update_counter, 
+		    	Operation<NodeLabel>(Operation<NodeLabel>::INSERT, std::numeric_limits<NodeID>::max(), 
+		    		std::numeric_limits<Label::weight_type>::max(), std::numeric_limits<Label::weight_type>::max()))
 		{}
 	};	
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
