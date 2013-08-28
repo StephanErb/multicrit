@@ -31,27 +31,14 @@
 
 
 
-template<typename type>
-struct BTreeSetOrderer {
-	inline bool operator() (const type& i, const type& j) const {
-		if (i.first_weight == j.first_weight) {
-			if (i.second_weight == j.second_weight) {
-				return i.node < j.node;
-			}
-			return i.second_weight < j.second_weight;
-		}
-		return i.first_weight < j.first_weight;
-	}
-};
-
 /**
  * Queue storing all temporary labels of all nodes.
  */
 template<typename graph_slot>
-class ParallelBTreeParetoQueue : public btree<NodeLabel, Label, BTreeSetOrderer<NodeLabel>> {
+class ParallelBTreeParetoQueue : public btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> {
 	friend class FindParetMinTask;
 private:
-	typedef btree<NodeLabel, Label, BTreeSetOrderer<NodeLabel>> base_type;
+	typedef btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> base_type;
 
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
@@ -73,13 +60,6 @@ private:
 public:
 
 	using base_type::num_threads;
-
-
-	struct GroupLabelsByWeightComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-			return i.combined() < j.combined();
-		}
-	};
 
 	#ifdef BTREE_PARETO_LABELSET
 		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp, tbb::cache_aligned_allocator<Label>> LabelSet;

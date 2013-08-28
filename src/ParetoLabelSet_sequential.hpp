@@ -116,6 +116,9 @@ private:
     using base::print_node;
     using base::update_leaf_in_current_tree;
 
+    GroupOperationsByWeightComperator<Operation<NodeLabel>> groupByWeight;
+
+
 public:
     // *** Constructors and Destructor
 
@@ -127,11 +130,6 @@ public:
 
 public:
 
-    struct GroupByWeightComp {
-        inline bool operator() (const Operation<Label>& i, const Operation<Label>& j) const {
-            return i.data.combined() < j.data.combined(); 
-        }
-    } groupByWeight;
 
     template<class NodeID, class candidates_iter_type, class PQUpdates, class Stats>
     void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& pq_updates, ThreadLocalLSData& _data, Stats& ls_stats) {
@@ -533,11 +531,7 @@ private:
         return 0; 
     }
 
-    struct GroupByWeightComp {
-        inline bool operator() (const Label& i, const Label& j) const {
-            return i.combined() < j.combined(); 
-        }
-    } groupByWeight;
+    GroupLabelsByWeightComperator groupByWeight;
 
     static struct WeightLessComp {
         inline bool operator() (const Label& i, const Label& j) const {

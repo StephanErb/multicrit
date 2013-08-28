@@ -16,7 +16,7 @@ struct Label {
 		: first_weight( first_weight_ ), second_weight( second_weight_ ) 
 	{}
 
-	inline uint64_t combined() const {
+	inline uint64_t combinedWeight() const {
 		return (uint64_t) first_weight << 32 | second_weight;
 	}
 
@@ -58,5 +58,49 @@ struct NodeLabel : public Label {
 	}
 };
 
+
+struct GroupNodeLabelsByNodeComperator {
+	inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
+		return i.node < j.node;
+	}
+};
+
+struct GroupLabelsByWeightComperator {
+	inline bool operator() (const Label& i, const Label& j) const {
+		return i.combinedWeight() < j.combinedWeight();
+	}
+};
+
+template<typename Operation>
+struct GroupOperationsByWeightComperator {
+	inline bool operator() (const Operation& i, const Operation& j) const {
+	    return i.data.combined() < j.data.combined(); 
+	}
+};
+
+template<typename Operation>
+struct GroupOperationsByWeightAndNodeComperator {
+	inline bool operator() (const Operation& i, const Operation& j) const {
+		if (i.data.first_weight == j.data.first_weight) {
+			if (i.data.second_weight == j.data.second_weight) {
+				return i.data.node < j.data.node;
+			}
+			return i.data.second_weight < j.data.second_weight;
+		}
+		return i.data.first_weight < j.data.first_weight;
+	}
+};
+
+struct GroupNodeLablesByWeightAndNodeComperator {
+	inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
+		if (i.first_weight == j.first_weight) {
+			if (i.second_weight == j.second_weight) {
+				return i.node < j.node;
+			}
+			return i.second_weight < j.second_weight;
+		}
+		return i.first_weight < j.first_weight;
+	}
+};
 
 #endif

@@ -32,11 +32,9 @@ private:
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
 
-	struct GroupLabelsByWeightComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-			return i.combined() < j.combined(); 
-		}
-	} groupLabels;
+	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupOpsByWeight;
+	GroupNodeLabelsByNodeComperator groupCandidates;
+	GroupLabelsByWeightComperator groupLabels;
 	
 
 	#ifdef BTREE_PARETO_LABELSET
@@ -188,26 +186,6 @@ public:
 	std::vector<Label>::iterator end(NodeID node) { return labels[node].end(); }
 	std::vector<Label>::const_iterator end(NodeID node) const { return labels[node].end(); }
 
-
-private:
-
-	struct GroupNodeLabelsByNodeComp {
-		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
-			return i.node < j.node;
-		}
-	} groupCandidates;
-
-	struct GroupOpsByWeightComp {
-		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
-			if (i.data.first_weight == j.data.first_weight) {
-				if (i.data.second_weight == j.data.second_weight) {
-					return i.data.node < j.data.node;
-				}
-				return i.data.second_weight < j.data.second_weight;
-			}
-			return i.data.first_weight < j.data.first_weight;
-		}
-	} groupOpsByWeight;
 
 };
 

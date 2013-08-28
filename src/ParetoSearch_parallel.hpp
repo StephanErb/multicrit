@@ -76,29 +76,9 @@ private:
 	#endif
  
 
-	struct GroupByWeightComp {
-		inline bool operator() (const Operation<NodeLabel>& i, const Operation<NodeLabel>& j) const {
-			if (i.data.first_weight == j.data.first_weight) {
-				if (i.data.second_weight == j.data.second_weight) {
-					return i.data.node < j.data.node;
-				}
-				return i.data.second_weight < j.data.second_weight;
-			}
-			return i.data.first_weight < j.data.first_weight;
-		}
-	} groupByWeight;
-
-	struct GroupNodeLabelsByNodeComp {
-		inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {
-			return i.node < j.node;
-		}
-	} groupCandidates;
-
-	struct GroupLabelsByNodeComp {
-		inline bool operator() (const Label& i, const Label& j) const {
-            return i.combined() < j.combined(); 
-		}
-	} groupLabels;
+	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupByWeight;
+	GroupNodeLabelsByNodeComperator groupCandidates;
+	GroupLabelsByWeightComperator groupLabels;
 
 
 public:

@@ -36,14 +36,6 @@ private:
 		std::vector<unsigned long> pq_deletes;
 	#endif
 
-	static void printLabels(const std::string msg, const const_iterator begin, const const_iterator end) {
-		std::cout << msg;
-		for (const_iterator i = begin; i != end; ++i) {
-			std::cout << " (" << i->node << ": " << i->first_weight << "," << i->second_weight << ")";
-		}
-		std::cout << std::endl;
-	}
-
 public:
 
 	VectorParetoQueue()
@@ -160,19 +152,8 @@ public:
 class BTreeParetoQueue {
 private:
 
-	template<typename type>
-	struct SetOrderer {
-  		inline bool operator() (const type& i, const type& j) const {
-  			if (i.first_weight == j.first_weight) {
-  				if (i.second_weight == j.second_weight) {
-  					return i.node < j.node;
-  				}
-  				return i.second_weight < j.second_weight;
-  			}
-  			return i.first_weight < j.first_weight;
-  		}
-	};
-	typedef btree<NodeLabel, Label, SetOrderer<NodeLabel>> QueueType;
+
+	typedef btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> QueueType;
 	QueueType labels;
 
 	typedef typename Label::weight_type weight_type;
