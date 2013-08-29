@@ -112,16 +112,16 @@ public:
 			pq.findParetoMinima(); 
 			TIME_COMPONENT(timings[FIND_PARETO_MIN]);
 
-			// Count gaps moved to the end via sorting. Then we can ignore them
-			size_t candidate_counter_size_diff = 0;
-			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				candidate_counter_size_diff += tl.candidates.reset();
-			}
-
 			sort(pq.candidates, pq.candidate_counter, auto_part);
 			TIME_COMPONENT(timings[SORT_CANDIDATES]);
-
+			
+			// Count gaps moved to the end via sorting. Then we can ignore them
+			size_t candidate_counter_size_diff = 0;
+			for (auto& tl : pq.tls_data) {
+				candidate_counter_size_diff += tl.candidates.reset();
+			}
 			pq.candidate_counter -= candidate_counter_size_diff;
+
 			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 64)),
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
@@ -152,16 +152,16 @@ public:
 			}, candidates_aff_part);
 			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
 
-			// Count gaps moved to the end via sorting. Then we can ignore them
-			size_t update_counter_size_diff = 0;
-			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				update_counter_size_diff += tl.updates.reset();
-			}
-
 			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, auto_part, min_problem_size(pq.update_counter, 512));
 			TIME_COMPONENT(timings[SORT_UPDATES]);
 
+			// Count gaps moved to the end via sorting. Then we can ignore them
+			size_t update_counter_size_diff = 0;
+			for (auto& tl : pq.tls_data) {
+				update_counter_size_diff += tl.updates.reset();
+			}
 			pq.update_counter -= update_counter_size_diff;
+
 			pq.applyUpdates(pq.updates.data(), pq.update_counter, tree_aff_part);
 			TIME_COMPONENT(timings[PQ_UPDATE]);
 		}		
