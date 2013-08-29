@@ -116,7 +116,7 @@ private:
     using base::print_node;
     using base::update_leaf_in_current_tree;
 
-    GroupOperationsByWeightComperator<Operation<NodeLabel>> groupByWeight;
+    GroupOperationsByWeightComperator<Operation<Label>> groupByWeight;
 
 
 public:

@@ -69,6 +69,8 @@ public:
 
 protected:
 
+    typedef btree_base_copy<_Key, _Compare, _Traits, _Alloc> btree_self_type;
+
     explicit inline btree_base_copy(const allocator_type &alloc=allocator_type())
         : root(NULL), allocator(alloc) { 
     }
@@ -192,11 +194,20 @@ protected:
         inner_node* spare_inner;
         UpdateDescriptorArray subtree_updates_per_level[MAX_TREE_LEVEL];
         local_update_list local_updates;
+        btree_self_type& btree;
 
-        ThreadLocalLSData() {
+        ThreadLocalLSData(btree_self_type& _btree) : btree(_btree) {
             weightdelta.reserve(LARGE_ENOUGH_FOR_MOST);
             local_updates.reserve(LARGE_ENOUGH_FOR_MOST);
             leaves.reserve(LARGE_ENOUGH_FOR_MOST);
+
+            spare_leaf = btree.allocate_leaf_without_count();
+            spare_inner = btree.allocate_inner_without_count(0);
+        }
+
+        ~ThreadLocalLSData() {
+            btree.free_node_without_count(spare_inner);
+            btree.free_node_without_count(spare_leaf);
         }
 
     };

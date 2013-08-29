@@ -88,24 +88,7 @@ public:
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_changes(101)
 		#endif
-	{ 
-		#ifdef BTREE_PARETO_LABELSET
-			typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-			tl.labelset_data.spare_leaf = pq.labelsets[0].allocate_leaf_without_count();
-			tl.labelset_data.spare_inner = pq.labelsets[0].allocate_inner_without_count(0);
-		#endif 
-	}
-
-	~ParetoSearch() {
-		#ifdef BTREE_PARETO_LABELSET
-			for (auto& tl : pq.tls_data) {
-				if (tl.labelset_data.spare_leaf != NULL) {
-					pq.labelsets[0].free_node_without_count(tl.labelset_data.spare_leaf);
-					pq.labelsets[0].free_node_without_count(tl.labelset_data.spare_inner);
-				}
-			}
-		#endif
-	}
+	{}
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));
@@ -132,8 +115,7 @@ public:
 			// Count gaps moved to the end via sorting. Then we can ignore them
 			size_t candidate_counter_size_diff = 0;
 			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				candidate_counter_size_diff += (tl.candidates.end - tl.candidates.current);
-				tl.candidates.reset();
+				candidate_counter_size_diff += tl.candidates.reset();
 			}
 
 			sort(pq.candidates, pq.candidate_counter, auto_part);
@@ -144,12 +126,6 @@ public:
 			[this](const candidate_range& r) {
 				ParetoQueue& pq = this->pq;
 				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-				#ifdef BTREE_PARETO_LABELSET
-					if (tl.labelset_data.spare_leaf == NULL) {
-						tl.labelset_data.spare_leaf = pq.labelsets[pq.candidates[r.begin()].node].allocate_leaf_without_count();
-						tl.labelset_data.spare_inner = pq.labelsets[pq.candidates[r.begin()].node].allocate_inner_without_count(0);
-					}
-				#endif
 				
 				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
 					typename TLSTimings::reference subtimings = this->tls_timings.local();
@@ -179,8 +155,7 @@ public:
 			// Count gaps moved to the end via sorting. Then we can ignore them
 			size_t update_counter_size_diff = 0;
 			for (typename ParetoQueue::TLSData::reference tl : pq.tls_data) {
-				update_counter_size_diff += (tl.updates.end - tl.updates.current);
-				tl.updates.reset();
+				update_counter_size_diff += tl.updates.reset();
 			}
 
 			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, auto_part, min_problem_size(pq.update_counter, 512));
@@ -288,10 +263,10 @@ public:
 	}
 
 	size_t size(NodeID node) const { return pq.labelsets[node].size(); }
-	typename ParetoQueue::LabelSet::label_iter begin(NodeID node) { return pq.labelsets[node].begin(); }
-	typename ParetoQueue::LabelSet::label_iter end(NodeID node) { return pq.labelsets[node].end(); }
-	typename ParetoQueue::LabelSet::const_label_iter begin(NodeID node) const { return pq.labelsets[node].begin(); }
-	typename ParetoQueue::LabelSet::const_label_iter end(NodeID node) const { return pq.labelsets[node].end(); }
+	std::vector<Label>::iterator begin(NodeID node) { return pq.labelsets[node].begin(); }
+	std::vector<Label>::iterator end(NodeID node) { return pq.labelsets[node].end(); }
+	std::vector<Label>::const_iterator begin(NodeID node) const { return pq.labelsets[node].begin(); }
+	std::vector<Label>::const_iterator end(NodeID node) const { return pq.labelsets[node].end(); }
 
 
 };

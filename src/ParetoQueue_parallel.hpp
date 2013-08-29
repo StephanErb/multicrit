@@ -62,7 +62,7 @@ public:
 	using base_type::num_threads;
 
 	#ifdef BTREE_PARETO_LABELSET
-		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp, tbb::cache_aligned_allocator<Label>> LabelSet;
+		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, tbb::cache_aligned_allocator<Label>> LabelSet;
 	#else
 		typedef VectorParetoLabelSet<tbb::cache_aligned_allocator<Label>> LabelSet;
 	#endif
@@ -92,7 +92,8 @@ public:
 				NodeLabel(std::numeric_limits<NodeID>::max(), Label())),
 		    updates(pq->updates.data(), pq->update_counter, 
 		    	Operation<NodeLabel>(Operation<NodeLabel>::INSERT, std::numeric_limits<NodeID>::max(), 
-		    		std::numeric_limits<Label::weight_type>::max(), std::numeric_limits<Label::weight_type>::max()))
+		    		std::numeric_limits<Label::weight_type>::max(), std::numeric_limits<Label::weight_type>::max())),
+		    labelset_data(pq->labelsets[0])
 		{}
 	};	
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 

@@ -38,7 +38,7 @@ private:
 	
 
 	#ifdef BTREE_PARETO_LABELSET
-		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComp, std::allocator<Label>> LabelSet;
+		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, std::allocator<Label>> LabelSet;
 	#else
 		typedef VectorParetoLabelSet<std::allocator<Label>> LabelSet;
 	#endif
@@ -69,26 +69,16 @@ private:
 public:
 	ParetoSearch(const graph_slot& graph_):
 		labels(graph_.numberOfNodes()), 
-		graph(graph_)
+		graph(graph_),
+		labelset_data(labels[0])
 		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 			,set_insertions(101)
 			,set_dominations(101)
 		#endif
 	{
-		#ifdef BTREE_PARETO_LABELSET
-			labelset_data.spare_leaf = labels[0].allocate_leaf_without_count();
-			labelset_data.spare_inner = labels[0].allocate_inner_without_count(0);
-		#endif
 		updates.reserve(LARGE_ENOUGH_FOR_MOST);
 		candidates.reserve(LARGE_ENOUGH_FOR_MOST);
 	 }
-
-	~ParetoSearch() {
-		#ifdef BTREE_PARETO_LABELSET
-			labels[0].free_node_without_count(labelset_data.spare_leaf);
-			labels[0].free_node_without_count(labelset_data.spare_inner);
-		#endif
-	}
 
 	void run(const NodeID node) {
 		pq.init(NodeLabel(node, Label(0,0)));

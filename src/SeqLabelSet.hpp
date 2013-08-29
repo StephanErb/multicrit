@@ -31,7 +31,7 @@ public:
 			return (uint64_t) label.first_weight + (uint64_t) label.second_weight;
 		#endif
 		#ifdef PRIORITY_LEX
-			return label.combined();
+			return label.combinedWeight();
 		#endif
 		#ifdef PRIORITY_MAX
 			return std::max(label.first_weight, label.second_weight);

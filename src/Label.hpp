@@ -71,16 +71,16 @@ struct GroupLabelsByWeightComperator {
 	}
 };
 
-template<typename Operation>
+template<typename op_type>
 struct GroupOperationsByWeightComperator {
-	inline bool operator() (const Operation& i, const Operation& j) const {
-	    return i.data.combined() < j.data.combined(); 
+	inline bool operator() (const op_type& i, const op_type& j) const {
+	    return i.data.combinedWeight() < j.data.combinedWeight(); 
 	}
 };
 
-template<typename Operation>
+template<typename op_type>
 struct GroupOperationsByWeightAndNodeComperator {
-	inline bool operator() (const Operation& i, const Operation& j) const {
+	inline bool operator() (const op_type& i, const op_type& j) const {
 		if (i.data.first_weight == j.data.first_weight) {
 			if (i.data.second_weight == j.data.second_weight) {
 				return i.data.node < j.data.node;
