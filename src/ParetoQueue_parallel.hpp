@@ -44,7 +44,6 @@ private:
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
 
-	typedef typename Label::weight_type weight_type;
 	const Label min_label;
 
 	typedef typename base_type::node node;
@@ -103,7 +102,7 @@ public:
 public:
 
 	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads)
-		: base_type(_num_threads), min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max()),
+		: base_type(_num_threads), min_label(std::numeric_limits<Label::weight_type>::min(), std::numeric_limits<Label::weight_type>::max()),
 			graph(_graph), labelsets(_graph.numberOfNodes()), tls_data([this](){ return this; })
 	{
 		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
@@ -119,14 +118,6 @@ public:
 	template<typename T, typename Partitioner>
 	void applyUpdates(const T* updates, const size_t update_count, Partitioner& partitioner) {
 		base_type::apply_updates(updates, update_count, INSERTS_AND_DELETES, partitioner);
-	}
-
-	bool empty() {
-		return base_type::empty();
-	}
-
-	size_t size() {
-		return base_type::size();
 	}
 
 	void printStatistics() {
