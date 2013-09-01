@@ -2,6 +2,13 @@
 #include "stdio.h"
 #include "string.h"
 
+#ifndef MEMORY_H_
+#define MEMORY_H_
+
+#define CACHE_ALIGNED __attribute__ ((aligned (DCACHE_LINESIZE)))
+
+
+
 // Source:
 // http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
@@ -17,8 +24,6 @@ int getCurrentMemorySize(){ // this value is in KB!
     FILE* file = fopen("/proc/self/status", "r");
     int result = -1;
     char line[128];
-
-
     while (fgets(line, 128, file) != NULL){
         if (strncmp(line, "VmRSS:", 6) == 0){
             result = parseStatusLine(line);
@@ -33,8 +38,6 @@ int getPeakMemorySize(){ // this value is in KB!
     FILE* file = fopen("/proc/self/status", "r");
     int result = -1;
     char line[128];
-
-
     while (fgets(line, 128, file) != NULL){
         if (strncmp(line, "VmHWM:", 6) == 0){
             result = parseStatusLine(line);
@@ -58,3 +61,5 @@ void flushDataCache() {
     do_not_optimize = c[rand() % size];
     free(c);
 }
+
+#endif
