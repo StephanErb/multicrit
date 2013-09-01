@@ -381,7 +381,10 @@ class VectorParetoLabelSet {
 public:
     typedef std::vector<Label, _Alloc> LabelVec;
     typedef typename LabelVec::iterator label_iter;
+    typedef typename LabelVec::iterator iterator;
     typedef typename LabelVec::const_iterator const_label_iter;
+    typedef typename LabelVec::const_iterator const_iterator;
+
     typedef utility::NullData ThreadLocalLSData;
 private:
     LabelVec labels;

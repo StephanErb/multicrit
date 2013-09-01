@@ -34,7 +34,7 @@
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename graph_slot>
+template<typename graph_slot, typename TLSData>
 class ParallelBTreeParetoQueue : public btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> {
 	friend class FindParetMinTask;
 private:
@@ -43,71 +43,28 @@ private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
-
-	const Label min_label;
-
 	typedef typename base_type::node node;
 	typedef typename base_type::inner_node inner_node;
 	typedef typename base_type::inner_node_data inner_node_data;
 	typedef typename base_type::leaf_node leaf_node;
 	typedef typename base_type::width_type width_type;
-
+	
 	using base_type::min_problem_size;
 
+	const Label min_label;
 	const graph_slot& graph;
+
+	TLSData& tls_data;
 
 public:
 
 	using base_type::num_threads;
 
-	#ifdef BTREE_PARETO_LABELSET
-		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, tbb::cache_aligned_allocator<Label>> LabelSet;
-	#else
-		typedef VectorParetoLabelSet<tbb::cache_aligned_allocator<Label>> LabelSet;
-	#endif
 
-	typedef std::vector< Operation<NodeLabel>, tbb::cache_aligned_allocator<Operation<NodeLabel>> > OpVec; 
-	typedef std::vector< NodeLabel, tbb::cache_aligned_allocator<Label> > CandLabelVec;
-
-	struct PaddedLabelSet : public LabelSet {
-		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
-	};
-
-	std::vector<PaddedLabelSet> labelsets;
-
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) AtomicCounter update_counter;
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) OpVec updates;
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) AtomicCounter candidate_counter;
-	 __attribute__ ((aligned (DCACHE_LINESIZE))) CandLabelVec candidates;
-
-
-	struct ThreadData {
-		ThreadLocalWriteBuffer<NodeLabel> candidates;
-		ThreadLocalWriteBuffer<Operation<NodeLabel>> updates;
-		typename LabelSet::ThreadLocalLSData labelset_data;
-
-		ThreadData(ParallelBTreeParetoQueue* pq) 
-		:	candidates(pq->candidates.data(), pq->candidate_counter,
-				NodeLabel(std::numeric_limits<NodeID>::max(), Label())),
-		    updates(pq->updates.data(), pq->update_counter, 
-		    	Operation<NodeLabel>(Operation<NodeLabel>::INSERT, std::numeric_limits<NodeID>::max(), 
-		    		std::numeric_limits<Label::weight_type>::max(), std::numeric_limits<Label::weight_type>::max())),
-		    labelset_data(pq->labelsets[0])
-		{}
-	};	
-	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
-	TLSData tls_data;
-
-
-public:
-
-	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads)
+	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads, TLSData& _tls_data)
 		: base_type(_num_threads), min_label(std::numeric_limits<Label::weight_type>::min(), std::numeric_limits<Label::weight_type>::max()),
-			graph(_graph), labelsets(_graph.numberOfNodes()), tls_data([this](){ return this; })
-	{
-		updates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
-		candidates.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
-	}
+			graph(_graph), tls_data(_tls_data)
+	{}
 
 	void init(const NodeLabel& data) {
 		Operation<NodeLabel> op = {Operation<NodeLabel>::INSERT, data};
@@ -131,7 +88,7 @@ public:
         min_problem_size = std::max((base_type::size()/num_threads) / (log2(base_type::size()/num_threads + 1)+1), base_type::maxweight(1)*1.0);
 
 		if (base_type::size() <= min_problem_size) {
-			findParetoMinAndDistribute(base_type::root, min_label);
+			findParetoMinima(base_type::root, min_label);
 		} else {
 			assert(!base_type::root->isleafnode());
 			const inner_node* const inner = (inner_node*) base_type::root;
@@ -148,6 +105,11 @@ public:
 			}
 			tbb::task::spawn_root_and_wait(root_tasks);
 		}
+	}
+
+	inline void findParetoMinima(const node* const in_node, const Label& prefix_minima) {
+		typename TLSData::reference tl = tls_data.local();
+		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
 	}
 
     class FindParetMinTask : public tbb::task {
@@ -176,7 +138,7 @@ public:
 
 		tbb::task* execute() {
 			if (slot.weight <= tree->min_problem_size) {
-				tree->findParetoMinAndDistribute(slot.childid, *prefix_minima);
+				tree->findParetoMinima(slot.childid, *prefix_minima);
 				return NULL;
 			} else {
 				assert(!slot.childid->isleafnode());
@@ -204,10 +166,6 @@ public:
 		}
     };
 
-	inline void findParetoMinAndDistribute(const node* const in_node, const Label& prefix_minima) {
-		typename TLSData::reference tl = tls_data.local();
-		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
-	}
 };
 
 

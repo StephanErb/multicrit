@@ -30,6 +30,8 @@
 #include "tbb/task.h"
 #include "tbb/atomic.h"
 
+#include "memory.h"
+
 #ifdef GATHER_SUBCOMPNENT_TIMING
 	#include "tbb/tick_count.h"
 	#define TIME_COMPONENT(target) do { stop = tbb::tick_count::now(); target += (stop-start).seconds(); start = stop; } while(0)
@@ -45,16 +47,255 @@
 
 template<typename graph_slot>
 class ParetoSearch {
-	friend class LabelSetUpdateTask;
 private:
 	typedef typename graph_slot::NodeID NodeID;
 	typedef typename graph_slot::EdgeID EdgeID;
 	typedef typename graph_slot::Edge Edge;
 
-	typedef ParallelBTreeParetoQueue<graph_slot> ParetoQueue;
+	#ifdef BTREE_PARETO_LABELSET
+		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, tbb::cache_aligned_allocator<Label>> LabelSet;
+	#else
+		typedef VectorParetoLabelSet<tbb::cache_aligned_allocator<Label>> LabelSet;
+	#endif
+
+
+	struct PaddedLabelSet : public LabelSet {
+		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
+	};
+
+
+	struct ThreadData {
+		ThreadLocalWriteBuffer<NodeLabel> candidates;
+		ThreadLocalWriteBuffer<Operation<NodeLabel>> updates;
+		typename LabelSet::ThreadLocalLSData labelset_data;
+
+		ThreadData(ParetoSearch* algo) 
+		:	candidates(algo->candidates, algo->candidate_counter,
+				NodeLabel(std::numeric_limits<NodeID>::max(), Label())),
+		    updates(algo->updates, algo->update_counter, 
+		    	Operation<NodeLabel>(Operation<NodeLabel>::INSERT, std::numeric_limits<NodeID>::max(), 
+		    		std::numeric_limits<Label::weight_type>::max(), std::numeric_limits<Label::weight_type>::max())),
+		    labelset_data(algo->labelsets[0])
+		{}
+	};	
+	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
+
+
+	typedef ParallelBTreeParetoQueue<graph_slot, TLSData> ParetoQueue;
+
+
+	typedef Operation<NodeLabel> Updates; 
+
+	CACHE_ALIGNED Updates* updates;
+	CACHE_ALIGNED NodeLabel* candidates;
+	CACHE_ALIGNED AtomicCounter update_counter;
+	CACHE_ALIGNED AtomicCounter candidate_counter;
+
+	std::vector<PaddedLabelSet> labelsets;
+
+	TLSData tls_data;
+
 	ParetoQueue pq;
+
 	ParetoSearchStatistics<Label> stats;
 	const graph_slot& graph;
+
+	
+
+	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupByWeight;
+	GroupNodeLabelsByNodeComperator groupCandidates;
+	GroupLabelsByWeightComperator groupLabels;
+
+
+public:
+	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
+		updates((Updates*) malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(Updates))),
+		candidates((NodeLabel*) malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(NodeLabel))),
+		labelsets(graph_.numberOfNodes()),
+		tls_data([this](){ return this; }),
+		pq(graph_, num_threads, tls_data),
+		graph(graph_)
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			,set_changes(101)
+		#endif
+	{ }
+
+	void run(const NodeID node) {
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			tbb::tick_count stop, start = tbb::tick_count::now();
+		#endif
+
+		tbb::auto_partitioner auto_part;
+		tbb::affinity_partitioner candidates_part;
+		tbb::auto_partitioner tree_part;
+
+		pq.init(NodeLabel(node, Label(0,0)));
+		labelsets[node].init(Label(0,0), tls_data.local().labelset_data);
+
+		while (!pq.empty()) {
+			update_counter = 0;
+			candidate_counter = 0;
+			stats.report(ITERATION, pq.size());
+
+			pq.findParetoMinima(); // write pareto minima to updates & candidates vectors
+			TIME_COMPONENT(timings[FIND_PARETO_MIN]);
+
+			sortByNode(candidates, candidate_counter, auto_part, min_problem_size(candidate_counter, 512));
+			TIME_COMPONENT(timings[SORT_CANDIDATES]);
+			candidate_counter -= countGapsInThreadLocalCandidateBuckets();
+
+			tbb::parallel_for(node_based_range(candidates, candidate_counter, min_problem_size(candidate_counter, 64)),
+			[this](const node_based_range& r) {				
+				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+					typename TLSTimings::reference subtimings = tls_timings.local();
+					tbb::tick_count stop, start = tbb::tick_count::now();
+				#endif
+				typename TLSData::reference tl = tls_data.local();
+
+				size_t i = r.begin();
+				const size_t end = r.end();
+				while(i != end) {
+					const size_t range_start = i;
+					const NodeID node = candidates[i].node;
+					auto& ls = labelsets[node];
+					ls.prefetch(); // fetch label set while we prepare its candidate labels
+
+					while (i != end && candidates[i].node == node) {
+						++i;
+					}
+					std::sort(candidates+range_start, candidates+i, groupLabels);
+					TIME_SUBCOMPONENT(subtimings.candidates_sort);
+
+					ls.updateLabelSet(node, candidates+range_start, candidates+i, tl.updates, tl.labelset_data, stats);
+					TIME_SUBCOMPONENT(subtimings.update_labelsets);
+				}
+			}, candidates_part);
+			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
+
+			parallel_sort(updates, updates+update_counter, groupByWeight, auto_part, min_problem_size(update_counter, 512));
+			TIME_COMPONENT(timings[SORT_UPDATES]);
+			update_counter -= countGapsInThreadLocalUpdateBuckets();
+
+			pq.applyUpdates(updates, update_counter, tree_part);
+			TIME_COMPONENT(timings[PQ_UPDATE]);
+		}		
+	}
+
+	inline void sortByNode(NodeLabel* candidates, const AtomicCounter& candidate_counter, tbb::auto_partitioner& auto_part, const size_t min_prob_size) {
+		#ifdef RADIX_SORT
+			parallel_radix_sort(candidates, candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_prob_size);
+		#else
+			parallel_sort(candidates, candidates + candidate_counter, groupCandidates, auto_part, min_prob_size);
+		#endif
+	}
+
+	inline size_t countGapsInThreadLocalUpdateBuckets() {
+		size_t update_counter_size_diff = 0;
+		for (auto& tl : tls_data) {
+			update_counter_size_diff += tl.updates.reset();
+		}
+		return update_counter_size_diff;
+	}
+
+	inline size_t countGapsInThreadLocalCandidateBuckets() {
+		size_t update_counter_size_diff = 0;
+		for (auto& tl : tls_data) {
+			update_counter_size_diff += tl.candidates.reset();
+		}
+		return update_counter_size_diff;
+	}
+
+	inline size_t min_problem_size(const size_t total, const double max=1.0) const {
+		return std::max((total/pq.num_threads) / (log2(total/pq.num_threads + 1)+1), max);
+	}
+
+	/** 
+	 * Range class which splits only one node boundaries (so that each label set is only updated by a single thread)
+	 */
+	class node_based_range {
+	public:
+		typedef size_t Value;
+		typedef size_t size_type;
+		typedef Value const_iterator;
+
+	    node_based_range() {}
+
+	    node_based_range(const NodeLabel* candidates_, const AtomicCounter& candidate_counter_, const size_type grainsize_=1) : 
+	        my_end(candidate_counter_), my_begin(0), my_grainsize(grainsize_), candidates(candidates_)
+	    {}
+
+	    node_based_range(node_based_range& r, tbb::split) : 
+	        my_end(r.my_end), my_begin(r.split()), my_grainsize(r.my_grainsize), candidates(r.candidates)
+	    {}
+
+	    const_iterator	begin()		   const { return my_begin; }
+	    const_iterator	end() 		   const { return my_end; }
+	    size_type		size() 		   const { return size_type(my_end - my_begin); }
+	    size_type		grainsize()    const { return grainsize; }
+	    bool 			empty() 	   const { return !(my_begin < my_end);}
+	    bool			is_divisible() const { return my_grainsize < size();}
+
+	private:
+	    Value my_end;
+	    const Value my_begin;
+   	    const size_type my_grainsize;
+	   	const NodeLabel* candidates;
+
+	    Value split() {
+	    	// find middle by best effort
+	        Value middle = my_begin + (my_end-my_begin)/2u;
+	        const NodeID node = candidates[middle].node;
+	        // correct until we find the first candidate belonging to another labelset
+	        while (middle != my_end && candidates[middle].node == node) {
+	        	++middle;
+	        }
+	        my_end = middle;
+	        return middle;
+	    }
+	};
+
+	void printStatistics() {
+		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
+			std::cout << "# LabelSet Modifications" << std::endl;
+			for (size_t i=0; i < 101; ++i) {
+				std::cout << i << " " << set_changes[i] << std::endl;
+			}
+		#endif
+		std::cout << stats.toString() << std::endl;
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				for (typename TLSTimings::reference subtimings : tls_timings) {
+					timings[TL_CANDIDATES_SORT]  = std::max(subtimings.candidates_sort,  timings[TL_CANDIDATES_SORT]);
+					timings[TL_UPDATE_LABELSETS] = std::max(subtimings.update_labelsets, timings[TL_UPDATE_LABELSETS]);
+				}
+			#endif
+			std::cout << "# Subcomponent Timings:" << std::endl;
+			std::cout << "#   " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
+			std::cout << "#   " << timings[SORT_CANDIDATES]  << " Sort Candidates"  << std::endl;
+			std::cout << "#   " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
+				std::cout << "#       " << timings[TL_CANDIDATES_SORT]  << " Sort Candidate Labels " << std::endl;
+				std::cout << "#       " << timings[TL_UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
+			#endif
+			std::cout << "#   " << timings[SORT_UPDATES] << " Sort Updates"  << std::endl;
+			std::cout << "#   " << timings[PQ_UPDATE]    << " Update PQ " << std::endl;
+		#endif
+		pq.printStatistics();
+	}
+
+	void printComponentTimings() const {
+		#ifdef GATHER_SUBCOMPNENT_TIMING
+			std::cout << pq.num_threads << " " << pq.num_threads << " " << timings[FIND_PARETO_MIN] << " " << timings[SORT_CANDIDATES] << " " << timings[UPDATE_LABELSETS] << " " << timings[SORT_UPDATES] << " " << timings[PQ_UPDATE];
+		#endif
+	}
+
+	size_t size(NodeID node) const { return labelsets[node].size(); }
+	LabelSet::iterator begin(NodeID node) { return labelsets[node].begin(); }
+	LabelSet::iterator end(NodeID node) { return labelsets[node].end(); }
+	LabelSet::const_iterator begin(NodeID node) const { return labelsets[node].begin(); }
+	LabelSet::const_iterator end(NodeID node) const { return labelsets[node].end(); }
+
+private:
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING
 		enum Component {FIND_PARETO_MIN=0, UPDATE_LABELSETS=1, SORT_CANDIDATES=2, SORT_UPDATES=3, PQ_UPDATE=4,
@@ -74,202 +315,7 @@ private:
 	#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
 		std::vector<unsigned long> set_changes;
 	#endif
- 
-
-	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupByWeight;
-	GroupNodeLabelsByNodeComperator groupCandidates;
-	GroupLabelsByWeightComperator groupLabels;
-
-
-public:
-	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
-		pq(graph_, num_threads),
-		graph(graph_)
-		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-			,set_changes(101)
-		#endif
-	{}
-
-	void run(const NodeID node) {
-		pq.init(NodeLabel(node, Label(0,0)));
-		pq.labelsets[node].init(Label(0,0), pq.tls_data.local().labelset_data);
-
-		#ifdef GATHER_SUBCOMPNENT_TIMING
-			tbb::tick_count start = tbb::tick_count::now();
-			tbb::tick_count stop = tbb::tick_count::now();
-		#endif
-
-		tbb::auto_partitioner auto_part;
-		tbb::affinity_partitioner candidates_aff_part;
-		tbb::auto_partitioner tree_aff_part;
-
-		while (!pq.empty()) {
-			pq.update_counter = 0;
-			pq.candidate_counter = 0;
-			stats.report(ITERATION, pq.size());
-
-			// write updates & candidates to thread locals in pq.*
-			pq.findParetoMinima(); 
-			TIME_COMPONENT(timings[FIND_PARETO_MIN]);
-
-			sort(pq.candidates, pq.candidate_counter, auto_part);
-			TIME_COMPONENT(timings[SORT_CANDIDATES]);
-			
-			// Count gaps moved to the end via sorting. Then we can ignore them
-			size_t candidate_counter_size_diff = 0;
-			for (auto& tl : pq.tls_data) {
-				candidate_counter_size_diff += tl.candidates.reset();
-			}
-			pq.candidate_counter -= candidate_counter_size_diff;
-
-			tbb::parallel_for(candidate_range(&pq, min_problem_size(pq.candidate_counter, 64)),
-			[this](const candidate_range& r) {
-				ParetoQueue& pq = this->pq;
-				typename ParetoQueue::TLSData::reference tl = pq.tls_data.local();
-				
-				#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-					typename TLSTimings::reference subtimings = this->tls_timings.local();
-					tbb::tick_count start = tbb::tick_count::now();
-					tbb::tick_count stop = tbb::tick_count::now();
-				#endif
-
-				size_t i = r.begin();
-				const size_t end = r.end();
-				while(i != end) {
-					const size_t range_start = i;
-					const NodeID node = pq.candidates[i].node;
-					auto& ls = pq.labelsets[node];
-					ls.prefetch();
-					while (i != end && pq.candidates[i].node == node) {
-						++i;
-					}
-					std::sort(pq.candidates.begin()+range_start, pq.candidates.begin()+i, groupLabels);
-					TIME_SUBCOMPONENT(subtimings.candidates_sort);
-
-					ls.updateLabelSet(node, pq.candidates.cbegin()+range_start, pq.candidates.cbegin()+i, tl.updates, tl.labelset_data, stats);
-					TIME_SUBCOMPONENT(subtimings.update_labelsets);
-				}
-			}, candidates_aff_part);
-			TIME_COMPONENT(timings[UPDATE_LABELSETS]);
-
-			parallel_sort(pq.updates.data(), pq.updates.data() + pq.update_counter, groupByWeight, auto_part, min_problem_size(pq.update_counter, 512));
-			TIME_COMPONENT(timings[SORT_UPDATES]);
-
-			// Count gaps moved to the end via sorting. Then we can ignore them
-			size_t update_counter_size_diff = 0;
-			for (auto& tl : pq.tls_data) {
-				update_counter_size_diff += tl.updates.reset();
-			}
-			pq.update_counter -= update_counter_size_diff;
-
-			pq.applyUpdates(pq.updates.data(), pq.update_counter, tree_aff_part);
-			TIME_COMPONENT(timings[PQ_UPDATE]);
-		}		
-	}
-
-	inline void sort(typename ParetoQueue::CandLabelVec& candidates, const AtomicCounter& candidate_counter, tbb::auto_partitioner& auto_part) {
-		const auto min_prob_size = min_problem_size(candidate_counter, 512);
-		#ifdef RADIX_SORT
-			parallel_radix_sort(candidates.data(), candidate_counter, [](const NodeLabel& x) { return x.node; }, auto_part, min_prob_size);
-		#else
-			parallel_sort(candidates.data(), candidates.data() + candidate_counter, groupCandidates, auto_part, min_prob_size);
-		#endif
-	}
-
-	inline size_t min_problem_size(size_t total, const double max=1.0) const {
-		return std::max((total/pq.num_threads) / (log2(total/pq.num_threads + 1)+1), max);
-	}
-
-	class candidate_range {
-	public:
-		typedef size_t Value;
-		typedef size_t size_type;
-		typedef Value const_iterator;
-
-	    candidate_range() {}
-
-	    candidate_range(ParetoQueue* _pq, size_type grainsize_=1) : 
-	        my_end(_pq->candidate_counter), my_begin(0), my_grainsize(grainsize_), my_pq(_pq)
-	    {}
-
-	    const_iterator begin() const {return my_begin;}
-	    const_iterator end() const {return my_end;}
-
-	    size_type size() const {
-	        return size_type(my_end-my_begin);
-	    }
-	    size_type grainsize() const {return my_grainsize;}
-
-	    bool empty() const {return !(my_begin<my_end);}
-	    bool is_divisible() const {return my_grainsize<size();}
-
-	    candidate_range(candidate_range& r, tbb::split) : 
-	        my_end(r.my_end),
-	        my_begin(do_split(r)),
-	        my_grainsize(r.my_grainsize),
-	        my_pq(r.my_pq)
-	    {}
-
-	private:
-	    Value my_end;
-	    Value my_begin;
-	    size_type my_grainsize;
-	    ParetoQueue* my_pq;
-
-	    static Value do_split( candidate_range& r ) {
-	        Value middle = r.my_begin + (r.my_end-r.my_begin)/2u;
-	        const NodeID node = r.my_pq->candidates[middle].node;
-	        while (middle < r.my_end && r.my_pq->candidates[middle].node == node) {
-	        	++middle;
-	        }
-	        r.my_end = middle;
-	        return middle;
-	    }
-	};
-
-	void printStatistics() {
-		#ifdef GATHER_DATASTRUCTURE_MODIFICATION_LOG
-			std::cout << "# LabelSet Modifications" << std::endl;
-			for (size_t i=0; i < 101; ++i) {
-				std::cout << i << " " << set_changes[i] << std::endl;
-			}
-		#endif
-		std::cout << stats.toString() << std::endl;
-		#ifdef GATHER_SUBCOMPNENT_TIMING
-			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				for (typename TLSTimings::reference subtimings : tls_timings) {
-					timings[TL_CANDIDATES_SORT] = std::max(subtimings.candidates_sort, timings[TL_CANDIDATES_SORT]);
-					timings[TL_UPDATE_LABELSETS] = std::max(subtimings.update_labelsets, timings[TL_UPDATE_LABELSETS]);
-				}
-			#endif
-			std::cout << "# Subcomponent Timings:" << std::endl;
-			std::cout << "#   " << timings[FIND_PARETO_MIN]  << " Find Pareto Min" << std::endl;
-			std::cout << "#   " << timings[SORT_CANDIDATES] << " Sort Candidates"  << std::endl;
-			std::cout << "#   " << timings[UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			#ifdef GATHER_SUB_SUBCOMPNENT_TIMING
-				std::cout << "#       " << timings[TL_CANDIDATES_SORT] << " Sort Candidate Labels " << std::endl;
-				std::cout << "#       " << timings[TL_UPDATE_LABELSETS] << " Update Labelsets " << std::endl;
-			#endif
-			std::cout << "#   " << timings[SORT_UPDATES] << " Sort Updates"  << std::endl;
-			std::cout << "#   " << timings[PQ_UPDATE] << " Update PQ " << std::endl;
-		#endif
-		pq.printStatistics();
-	}
-
-	void printComponentTimings() const {
-		#ifdef GATHER_SUBCOMPNENT_TIMING
-			std::cout << pq.num_threads << " " << pq.num_threads << " " << timings[FIND_PARETO_MIN] << " " << timings[SORT_CANDIDATES] << " " << timings[UPDATE_LABELSETS] << " " << timings[SORT_UPDATES] << " " << timings[PQ_UPDATE];
-		#endif
-	}
-
-	size_t size(NodeID node) const { return pq.labelsets[node].size(); }
-	std::vector<Label>::iterator begin(NodeID node) { return pq.labelsets[node].begin(); }
-	std::vector<Label>::iterator end(NodeID node) { return pq.labelsets[node].end(); }
-	std::vector<Label>::const_iterator begin(NodeID node) const { return pq.labelsets[node].begin(); }
-	std::vector<Label>::const_iterator end(NodeID node) const { return pq.labelsets[node].end(); }
-
 
 };
-
 
 #endif 
