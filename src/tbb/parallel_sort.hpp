@@ -65,7 +65,7 @@ public:
     RandomAccessIterator begin;
     size_t size;
 
-    quick_sort_range( RandomAccessIterator begin_, size_t size_, const Compare comp_, const size_t grainsize_) :
+    quick_sort_range( RandomAccessIterator begin_, size_t size_, const Compare& comp_, const size_t grainsize_) :
         grainsize(grainsize_), comp(comp_), begin(begin_), size(size_) {}
 
     bool empty() const {return size==0;}
