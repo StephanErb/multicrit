@@ -10,6 +10,7 @@
 #include "utility/datastructure/container/BinaryHeap.hpp"
 #include "datastructures/UnboundBinaryHeap.hpp"
 #include "Label.hpp"
+#include "Graph.hpp"
 
 #include <iostream>
 #include <vector>
@@ -21,19 +22,15 @@
  * Label setting algorithm where we store just the best label of each node within a heap used to find the next label to explore.
  * The heap is small, but unfornately it is difficult to find the labels used to populate this heap.
  */
-template<typename graph_slot>
 class NodeHeapLabelSettingAlgorithm {
 private:
 
-	typedef typename graph_slot::NodeID NodeID;
-	typedef typename graph_slot::EdgeID EdgeID;
-	typedef typename graph_slot::Edge Edge;
 	typedef typename LabelSet<Label>::Priority Priority;
 	typedef typename utility::datastructure::BinaryHeap<NodeID, Priority, std::numeric_limits<Priority>, Label> BinaryHeap;
 
 	BinaryHeap heap;
 	std::vector<LabelSet<Label> > labels;
-	const graph_slot& graph;
+	const Graph& graph;
 	LabelSettingStatistics stats;
 
 	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
@@ -45,7 +42,7 @@ public:
 	typedef typename LabelSet<Label>::iterator iterator;
 	typedef typename LabelSet<Label>::const_iterator const_iterator;
 
-	NodeHeapLabelSettingAlgorithm(const graph_slot& graph_):
+	NodeHeapLabelSettingAlgorithm(const Graph& graph_):
 		heap((NodeID)graph_.numberOfNodes()),
 		labels(graph_.numberOfNodes()),
 		graph(graph_),
@@ -118,12 +115,8 @@ public:
 /**
  * Label setting algorithm where all tenative labels are stored in a single, large heap.
  */
-template<typename graph_slot>
 class SharedHeapLabelSettingAlgorithm {
 private:
-	typedef typename graph_slot::NodeID NodeID;
-	typedef typename graph_slot::EdgeID EdgeID;
-	typedef typename graph_slot::Edge Edge;
 	typedef typename LabelSet<Label>::Priority Priority;
 
 	typedef UnboundBinaryHeap<Priority, std::numeric_limits<Priority>, NodeLabel> BinaryHeap;
@@ -131,7 +124,7 @@ private:
 
 	BinaryHeap heap;
 	std::vector<SharedHeapLabelSet<Label, BinaryHeap> > labels;
-	const graph_slot& graph;
+	const Graph& graph;
 	LabelSettingStatistics stats;
 
 	static inline Label createNewLabel(const Label& current_label, const Edge& edge) {
@@ -143,7 +136,7 @@ public:
 	typedef typename SharedHeapLabelSet<Label, BinaryHeap>::iterator iterator;
 	typedef typename SharedHeapLabelSet<Label, BinaryHeap>::const_iterator const_iterator;
 
-	SharedHeapLabelSettingAlgorithm(const graph_slot& graph_):
+	SharedHeapLabelSettingAlgorithm(const Graph& graph_):
 		heap(LARGE_ENOUGH_FOR_EVERYTHING),
 		labels(graph_.numberOfNodes()),
 		graph(graph_),

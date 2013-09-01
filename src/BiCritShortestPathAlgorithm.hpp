@@ -1,10 +1,7 @@
 #ifndef LABELSETTING_H_
 #define LABELSETTING_H_
 
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-#include "utility/datastructure/graph/GraphTypes.hpp"
-#include "utility/datastructure/graph/GraphMacros.h"
+
 
 #include "options.hpp"
 
@@ -25,18 +22,16 @@ const unsigned short my_default_thread_count = 0;
 #endif
 
 #include "SeqLabelSetting.hpp"
+#include "Graph.hpp"
 
-typedef utility::datastructure::IntegerBiWeightedEdge Edge;
-typedef utility::datastructure::KGraph<Edge> Graph;
-typedef utility::datastructure::NodeID NodeID;
 
-class LabelSettingAlgorithm : public LABEL_SETTING_ALGORITHM<Graph> {
+class LabelSettingAlgorithm : public LABEL_SETTING_ALGORITHM {
 public:
 	LabelSettingAlgorithm(const Graph& graph_, const unsigned short _num_threads=my_default_thread_count):
 #ifdef PARALLEL_BUILD
-		LABEL_SETTING_ALGORITHM<Graph>(graph_, _num_threads)
+		LABEL_SETTING_ALGORITHM(graph_, _num_threads)
 #else 
-		LABEL_SETTING_ALGORITHM<Graph>(graph_)
+		LABEL_SETTING_ALGORITHM(graph_)
 #endif
 	 {if(_num_threads == 0){} /* prevent unused variable warning */}
 };

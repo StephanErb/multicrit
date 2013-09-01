@@ -18,6 +18,7 @@
 #include "assert.h"
 #include "Label.hpp"
 #include "algorithm"
+#include "Graph.hpp"
 
 #include "tbb/parallel_sort.hpp"
 
@@ -45,13 +46,8 @@
 #endif
 
 
-template<typename graph_slot>
 class ParetoSearch {
 private:
-	typedef typename graph_slot::NodeID NodeID;
-	typedef typename graph_slot::EdgeID EdgeID;
-	typedef typename graph_slot::Edge Edge;
-
 	#ifdef BTREE_PARETO_LABELSET
 		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, tbb::cache_aligned_allocator<Label>> LabelSet;
 	#else
@@ -81,7 +77,7 @@ private:
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
 
 
-	typedef ParallelBTreeParetoQueue<graph_slot, TLSData> ParetoQueue;
+	typedef ParallelBTreeParetoQueue<TLSData> ParetoQueue;
 
 
 	typedef Operation<NodeLabel> Updates; 
@@ -98,7 +94,7 @@ private:
 	ParetoQueue pq;
 
 	ParetoSearchStatistics<Label> stats;
-	const graph_slot& graph;
+	const Graph& graph;
 
 	
 
@@ -108,7 +104,7 @@ private:
 
 
 public:
-	ParetoSearch(const graph_slot& graph_, const unsigned short num_threads):
+	ParetoSearch(const Graph& graph_, const unsigned short num_threads):
 		updates((Updates*) malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(Updates))),
 		candidates((NodeLabel*) malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(NodeLabel))),
 		labelsets(graph_.numberOfNodes()),
@@ -218,8 +214,6 @@ public:
 		typedef size_t size_type;
 		typedef Value const_iterator;
 
-	    node_based_range() {}
-
 	    node_based_range(const NodeLabel* candidates_, const AtomicCounter& candidate_counter_, const size_type grainsize_=1) : 
 	        my_end(candidate_counter_), my_begin(0), my_grainsize(grainsize_), candidates(candidates_)
 	    {}
@@ -231,7 +225,7 @@ public:
 	    const_iterator	begin()		   const { return my_begin; }
 	    const_iterator	end() 		   const { return my_end; }
 	    size_type		size() 		   const { return size_type(my_end - my_begin); }
-	    size_type		grainsize()    const { return grainsize; }
+	    size_type		grainsize()    const { return my_grainsize; }
 	    bool 			empty() 	   const { return !(my_begin < my_end);}
 	    bool			is_divisible() const { return my_grainsize < size();}
 

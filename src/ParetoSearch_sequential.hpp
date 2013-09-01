@@ -14,6 +14,7 @@
 #include "ParetoSearchStatistics.hpp"
 #include <algorithm>
 #include "Label.hpp"
+#include "Graph.hpp"
 
 #include "ParetoLabelSet_sequential.hpp"
 #include "radix_sort.hpp"
@@ -25,13 +26,8 @@
 	#define TIME_COMPONENT(target) do { } while(0)
 #endif
 
-template<typename graph_slot>
 class ParetoSearch {
 private:
-	typedef typename graph_slot::NodeID NodeID;
-	typedef typename graph_slot::EdgeID EdgeID;
-	typedef typename graph_slot::Edge Edge;
-
 	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupOpsByWeight;
 	GroupNodeLabelsByNodeComperator groupCandidates;
 	GroupLabelsByWeightComperator groupLabels;
@@ -49,7 +45,7 @@ private:
 	std::vector<NodeID> affected_nodes;
 	std::vector<NodeLabel> candidates;
 
-	const graph_slot& graph;
+	const Graph& graph;
 	ParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
@@ -67,7 +63,7 @@ private:
 
 
 public:
-	ParetoSearch(const graph_slot& graph_):
+	ParetoSearch(const Graph& graph_):
 		labels(graph_.numberOfNodes()), 
 		graph(graph_),
 		labelset_data(labels[0])

@@ -20,8 +20,8 @@
 
 #include <algorithm>
 #include <limits>
-#include "utility/datastructure/graph/GraphMacros.h"
 #include "Label.hpp"
+#include "Graph.hpp"
 
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"
@@ -34,15 +34,12 @@
 /**
  * Queue storing all temporary labels of all nodes.
  */
-template<typename graph_slot, typename TLSData>
+template<typename TLSData>
 class ParallelBTreeParetoQueue : public btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> {
 	friend class FindParetMinTask;
 private:
 	typedef btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> base_type;
 
-	typedef typename graph_slot::NodeID NodeID;
-	typedef typename graph_slot::EdgeID EdgeID;
-	typedef typename graph_slot::Edge Edge;
 	typedef typename base_type::node node;
 	typedef typename base_type::inner_node inner_node;
 	typedef typename base_type::inner_node_data inner_node_data;
@@ -52,7 +49,7 @@ private:
 	using base_type::min_problem_size;
 
 	const Label min_label;
-	const graph_slot& graph;
+	const Graph& graph;
 
 	TLSData& tls_data;
 
@@ -61,7 +58,7 @@ public:
 	using base_type::num_threads;
 
 
-	ParallelBTreeParetoQueue(const graph_slot& _graph, const base_type::thread_count _num_threads, TLSData& _tls_data)
+	ParallelBTreeParetoQueue(const Graph& _graph, const base_type::thread_count _num_threads, TLSData& _tls_data)
 		: base_type(_num_threads), min_label(std::numeric_limits<Label::weight_type>::min(), std::numeric_limits<Label::weight_type>::max()),
 			graph(_graph), tls_data(_tls_data)
 	{}
