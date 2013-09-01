@@ -20,11 +20,11 @@ struct Label {
 		return (uint64_t) first_weight << 32 | second_weight;
 	}
 
-	bool operator==(const Label& other) const {
+	inline bool operator==(const Label& other) const {
 		return other.first_weight == first_weight && other.second_weight == second_weight;
 	}
 
-	bool operator!=(const Label& other) const {
+	inline bool operator!=(const Label& other) const {
 		return other.first_weight != first_weight || other.second_weight != second_weight;
 	}
 
