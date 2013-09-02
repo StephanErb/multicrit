@@ -70,9 +70,9 @@ BOOST_AUTO_TEST_CASE(testParetoSearch_Simple) {
 	Graph graph;
 	createGridSimple(graph);
 	#ifdef PARALLEL_BUILD
-		testGridSimple(ParetoSearch<Graph>(graph, my_default_thread_count));
+		testGridSimple(ParetoSearch<>(graph, my_default_thread_count));
 	#else 
-		testGridSimple(ParetoSearch<Graph>(graph));
+		testGridSimple(ParetoSearch<>(graph));
 	#endif
 }
 BOOST_AUTO_TEST_CASE(testParetoSearch_Exponential) {
@@ -80,32 +80,32 @@ BOOST_AUTO_TEST_CASE(testParetoSearch_Exponential) {
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
 	#ifdef PARALLEL_BUILD
-		testGridExponential(ParetoSearch<Graph>(graph, my_default_thread_count), graph);
+		testGridExponential(ParetoSearch<>(graph, my_default_thread_count), graph);
 	#else 
-		testGridExponential(ParetoSearch<Graph>(graph), graph);
+		testGridExponential(ParetoSearch<>(graph), graph);
 	#endif
 }
 
 BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_Simple) {
 	Graph graph;
 	createGridSimple(graph);
-	testGridSimple(SharedHeapLabelSettingAlgorithm<Graph>(graph));
+	testGridSimple(SharedHeapLabelSettingAlgorithm(graph));
 }
 BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_Exponential) {
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
-	testGridExponential(SharedHeapLabelSettingAlgorithm<Graph>(graph), graph);
+	testGridExponential(SharedHeapLabelSettingAlgorithm(graph), graph);
 }
 
 BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_Simple) {
 	Graph graph;
 	createGridSimple(graph);
-	testGridSimple(NodeHeapLabelSettingAlgorithm<Graph>(graph));
+	testGridSimple(NodeHeapLabelSettingAlgorithm(graph));
 }
 BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_Exponential) {
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
-	testGridExponential(NodeHeapLabelSettingAlgorithm<Graph>(graph), graph);
+	testGridExponential(NodeHeapLabelSettingAlgorithm(graph), graph);
 }
