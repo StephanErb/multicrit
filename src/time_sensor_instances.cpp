@@ -27,9 +27,6 @@ static void time(const Graph& graph, int nodecount, int degree, bool verbose, in
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
-	std::fill_n(timings, iterations, 0);
-	std::fill_n(label_count, iterations, 0);
-	std::fill_n(memory, iterations, 0);
 
 	boost::uniform_int<> dist(0, graph.numberOfNodes()-1);
 

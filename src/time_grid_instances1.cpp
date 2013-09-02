@@ -18,9 +18,6 @@ void timeGrid(int num, std::string label, int height, int width, bool verbose, i
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
-	std::fill_n(timings, iterations, 0);
-	std::fill_n(label_count, iterations, 0);
-	std::fill_n(memory, iterations, 0);
 
 	for (int i = 0; i < iterations; i++) {
 		Graph graph;

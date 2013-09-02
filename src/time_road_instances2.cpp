@@ -23,9 +23,6 @@ static void time(const Graph& graph, NodeID start_node, NodeID end, int total_nu
 	double timings[iterations];
 	double label_count[iterations];
 	double memory[iterations];
-	std::fill_n(timings, iterations, 0);
-	std::fill_n(label_count, iterations, 0);
-	std::fill_n(memory, iterations, 0);
 
 	for (int i = 0; i < iterations; ++i) {
 		LabelSettingAlgorithm algo(graph, p);
