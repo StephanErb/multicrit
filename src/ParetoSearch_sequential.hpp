@@ -26,19 +26,22 @@
 	#define TIME_COMPONENT(target) do { } while(0)
 #endif
 
+ #ifdef BTREE_PARETO_LABELSET
+	typedef BtreeParetoLabelSet<std::allocator<Label>> ParetoLabelSet;
+#else
+	typedef VectorParetoLabelSet<std::allocator<Label>> ParetoLabelSet;
+#endif
+
+template<typename labelset_slot=ParetoLabelSet>
 class ParetoSearch {
 private:
+
+	typedef labelset_slot LabelSet;
+
 	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupOpsByWeight;
 	GroupNodeLabelsByNodeComperator groupCandidates;
 	GroupLabelsByWeightComperator groupLabels;
 	
-
-	#ifdef BTREE_PARETO_LABELSET
-		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, std::allocator<Label>> LabelSet;
-	#else
-		typedef VectorParetoLabelSet<std::allocator<Label>> LabelSet;
-	#endif
-
 	std::vector<LabelSet> labels;
 
 	std::vector<Operation<NodeLabel> > updates;
@@ -81,8 +84,7 @@ public:
 		labels[node].init(Label(0,0), labelset_data);
 
 		#ifdef GATHER_SUBCOMPNENT_TIMING
-			tbb::tick_count start = tbb::tick_count::now();
-			tbb::tick_count stop = tbb::tick_count::now();
+			tbb::tick_count stop, start = tbb::tick_count::now();
 		#endif
 
 		while (!pq.empty()) {

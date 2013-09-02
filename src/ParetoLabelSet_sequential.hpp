@@ -38,13 +38,11 @@ struct labelset_default_traits {
 /** 
  * Basic class implementing a base B+ tree data structure in memory.
  */
-template <typename _Key,
-          typename _Compare,
-          typename _Alloc>
-class BtreeParetoLabelSet : public btree_base_copy<_Key, _Compare, labelset_default_traits, _Alloc> {
+template <typename _Alloc>
+class BtreeParetoLabelSet : public btree_base_copy<Label, GroupLabelsByWeightComperator, labelset_default_traits, _Alloc> {
 
 protected:
-    typedef btree_base_copy<_Key, _Compare, labelset_default_traits, _Alloc> base;
+    typedef btree_base_copy<Label, GroupLabelsByWeightComperator, labelset_default_traits, _Alloc> base;
 
     typedef typename base::key_type         key_type;
     typedef typename base::key_compare      key_compare;

@@ -45,20 +45,21 @@
 	#define TIME_SUBCOMPONENT(target) do { } while(0)
 #endif
 
+#ifdef BTREE_PARETO_LABELSET
+	typedef BtreeParetoLabelSet<tbb::cache_aligned_allocator<Label>> ParetoLabelSet;
+#else
+	typedef VectorParetoLabelSet<tbb::cache_aligned_allocator<Label>> ParetoLabelSet;
+#endif
 
+
+template<typename labelset_slot=ParetoLabelSet>
 class ParetoSearch {
 private:
-	#ifdef BTREE_PARETO_LABELSET
-		typedef BtreeParetoLabelSet<Label, GroupLabelsByWeightComperator, tbb::cache_aligned_allocator<Label>> LabelSet;
-	#else
-		typedef VectorParetoLabelSet<tbb::cache_aligned_allocator<Label>> LabelSet;
-	#endif
 
-
+	typedef labelset_slot LabelSet;
 	struct PaddedLabelSet : public LabelSet {
 		char pad[DCACHE_LINESIZE - sizeof(LabelSet) % DCACHE_LINESIZE];
 	};
-
 
 	struct ThreadData {
 		ThreadLocalWriteBuffer<NodeLabel> candidates;
@@ -76,10 +77,7 @@ private:
 	};	
 	typedef tbb::enumerable_thread_specific< ThreadData, tbb::cache_aligned_allocator<ThreadData>, tbb::ets_key_per_instance > TLSData; 
 
-
 	typedef ParallelBTreeParetoQueue<TLSData> ParetoQueue;
-
-
 	typedef Operation<NodeLabel> Updates; 
 
 	CACHE_ALIGNED Updates* updates;
@@ -88,20 +86,15 @@ private:
 	CACHE_ALIGNED AtomicCounter candidate_counter;
 
 	std::vector<PaddedLabelSet> labelsets;
-
 	TLSData tls_data;
-
 	ParetoQueue pq;
 
 	ParetoSearchStatistics<Label> stats;
 	const Graph& graph;
 
-	
-
 	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupByWeight;
 	GroupNodeLabelsByNodeComperator groupCandidates;
 	GroupLabelsByWeightComperator groupLabels;
-
 
 public:
 	ParetoSearch(const Graph& graph_, const unsigned short num_threads):
@@ -284,10 +277,10 @@ public:
 	}
 
 	size_t size(NodeID node) const { return labelsets[node].size(); }
-	LabelSet::iterator begin(NodeID node) { return labelsets[node].begin(); }
-	LabelSet::iterator end(NodeID node) { return labelsets[node].end(); }
-	LabelSet::const_iterator begin(NodeID node) const { return labelsets[node].begin(); }
-	LabelSet::const_iterator end(NodeID node) const { return labelsets[node].end(); }
+	typename LabelSet::iterator begin(NodeID node) { return labelsets[node].begin(); }
+	typename LabelSet::iterator end(NodeID node) { return labelsets[node].end(); }
+	typename LabelSet::const_iterator begin(NodeID node) const { return labelsets[node].begin(); }
+	typename LabelSet::const_iterator end(NodeID node) const { return labelsets[node].end(); }
 
 private:
 
