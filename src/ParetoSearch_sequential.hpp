@@ -32,11 +32,12 @@
 	typedef VectorParetoLabelSet<std::allocator<Label>> ParetoLabelSet;
 #endif
 
-template<typename labelset_slot=ParetoLabelSet>
+template<typename labelset_slot=ParetoLabelSet, typename paretoqueue_slot=ParetoQueue>
 class ParetoSearch {
 private:
 
 	typedef labelset_slot LabelSet;
+	typedef paretoqueue_slot SequentialParetoQueue;
 
 	GroupOperationsByWeightAndNodeComperator<Operation<NodeLabel>> groupOpsByWeight;
 	GroupNodeLabelsByNodeComperator groupCandidates;
@@ -49,7 +50,7 @@ private:
 	std::vector<NodeLabel> candidates;
 
 	const Graph& graph;
-	ParetoQueue pq;
+	SequentialParetoQueue pq;
 	ParetoSearchStatistics<Label> stats;
 
 	#ifdef GATHER_SUBCOMPNENT_TIMING

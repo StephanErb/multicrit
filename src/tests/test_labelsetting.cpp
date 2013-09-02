@@ -53,7 +53,7 @@ void testGridSimple(LabelSettingAlgorithm&& algo) {
 }
 
 template<class LabelSettingAlgorithm>
-void testGridExponential(LabelSettingAlgorithm&& algo, const Graph& graph) {
+void testExponential(LabelSettingAlgorithm&& algo, const Graph& graph) {
 	algo.run(NodeID(0));
 
 	assertTrue(algo.size(NodeID(0)) == 1, "Start node should have no labels");
@@ -65,26 +65,95 @@ void testGridExponential(LabelSettingAlgorithm&& algo, const Graph& graph) {
 		label_count = 2 * label_count;
 	}
 }
- 
-BOOST_AUTO_TEST_CASE(testParetoSearch_Simple) {
-	Graph graph;
-	createGridSimple(graph);
-	#ifdef PARALLEL_BUILD
-		testGridSimple(ParetoSearch<>(graph, my_default_thread_count));
-	#else 
-		testGridSimple(ParetoSearch<>(graph));
-	#endif
+
+template<class LabelSettingAlgorithm>
+void testGrid(LabelSettingAlgorithm&& algo, NodeID target_node, size_t expected_labels) {
+	algo.run(NodeID(0));
+	assertTrue(algo.size(target_node) == expected_labels, "Expected num of labels");
 }
-BOOST_AUTO_TEST_CASE(testParetoSearch_Exponential) {
+ 
+
+
+#define BTREE_LS BtreeParetoLabelSet<std::allocator<Label>>
+
+BOOST_AUTO_TEST_CASE(testParetoSearch_BTree_Simple) {
+	/* Would not compile due to missing iterators for extraction */
+}
+BOOST_AUTO_TEST_CASE(testParetoSearch_BTree_Exponential) {
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
 	#ifdef PARALLEL_BUILD
-		testGridExponential(ParetoSearch<>(graph, my_default_thread_count), graph);
+		testExponential(ParetoSearch<BTREE_LS>(graph, my_default_thread_count), graph);
 	#else 
-		testGridExponential(ParetoSearch<>(graph), graph);
+		testExponential(ParetoSearch<BTREE_LS>(graph), graph);
 	#endif
 }
+BOOST_AUTO_TEST_CASE(testParetoSearch_BTree_LargeGrid) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 200, 200, 0.8);
+	#ifdef PARALLEL_BUILD
+		testGrid(ParetoSearch<BTREE_LS>(graph, my_default_thread_count), graph.numberOfNodes()-1, 23);
+	#else 
+		testGrid(ParetoSearch<BTREE_LS>(graph), graph.numberOfNodes()-1, 23);
+	#endif
+}
+BOOST_AUTO_TEST_CASE(testParetoSearch_BTree_ManyLabels) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, -0.8);
+	#ifdef PARALLEL_BUILD
+		testGrid(ParetoSearch<BTREE_LS>(graph, my_default_thread_count), graph.numberOfNodes()-1, 794);
+	#else 
+		testGrid(ParetoSearch<BTREE_LS>(graph), graph.numberOfNodes()-1, 794);
+	#endif
+}
+
+
+#define VECTOR_LS VectorParetoLabelSet<std::allocator<Label>>
+#define VECTOR_PQ VectorParetoQueue
+
+BOOST_AUTO_TEST_CASE(testParetoSearch_Vector_Simple) {
+	Graph graph;
+	createGridSimple(graph);
+	#ifdef PARALLEL_BUILD
+		testGridSimple(ParetoSearch<VECTOR_LS>(graph, my_default_thread_count));
+	#else 
+		testGridSimple(ParetoSearch<VECTOR_LS, VECTOR_PQ>(graph));
+	#endif
+}
+BOOST_AUTO_TEST_CASE(testParetoSearch_Vector_Exponential) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateExponentialGraph(graph, 20);
+	#ifdef PARALLEL_BUILD
+		testExponential(ParetoSearch<VECTOR_LS>(graph, my_default_thread_count), graph);
+	#else 
+		testExponential(ParetoSearch<VECTOR_LS, VECTOR_PQ>(graph), graph);
+	#endif
+}
+BOOST_AUTO_TEST_CASE(testParetoSearch_Vector_LargeGrid) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 200, 200, 0.8);
+	#ifdef PARALLEL_BUILD
+		testGrid(ParetoSearch<VECTOR_LS>(graph, my_default_thread_count), graph.numberOfNodes()-1, 23);
+	#else 
+		testGrid(ParetoSearch<VECTOR_LS, VECTOR_PQ>(graph), graph.numberOfNodes()-1, 23);
+	#endif
+}
+BOOST_AUTO_TEST_CASE(testParetoSearch_Vector_ManyLabels) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, -0.8);
+	#ifdef PARALLEL_BUILD
+		testGrid(ParetoSearch<VECTOR_LS>(graph, my_default_thread_count), graph.numberOfNodes()-1, 794);
+	#else 
+		testGrid(ParetoSearch<VECTOR_LS, VECTOR_PQ>(graph), graph.numberOfNodes()-1, 794);
+	#endif
+}
+
 
 BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_Simple) {
 	Graph graph;
@@ -95,8 +164,21 @@ BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_Exponential) {
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
-	testGridExponential(SharedHeapLabelSettingAlgorithm(graph), graph);
+	testExponential(SharedHeapLabelSettingAlgorithm(graph), graph);
 }
+BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_LargeGrid) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 200, 200, 0.8);
+	testGrid(SharedHeapLabelSettingAlgorithm(graph), graph.numberOfNodes()-1, 23);
+}
+BOOST_AUTO_TEST_CASE(testSharedHeapLabelSettingAlgorithm_ManyLabels) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, -0.8);
+	testGrid(SharedHeapLabelSettingAlgorithm(graph), graph.numberOfNodes()-1, 794);
+}
+
 
 BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_Simple) {
 	Graph graph;
@@ -107,5 +189,17 @@ BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_Exponential) {
 	Graph graph;
 	GraphGenerator<Graph> generator;
 	generator.generateExponentialGraph(graph, 20);
-	testGridExponential(NodeHeapLabelSettingAlgorithm(graph), graph);
+	testExponential(NodeHeapLabelSettingAlgorithm(graph), graph);
+}
+BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_LargeGrid) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 200, 200, 0.8);
+	testGrid(NodeHeapLabelSettingAlgorithm(graph), graph.numberOfNodes()-1, 23);
+}
+BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_ManyLabels) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, -0.8);
+	testGrid(NodeHeapLabelSettingAlgorithm(graph), graph.numberOfNodes()-1, 794);
 }

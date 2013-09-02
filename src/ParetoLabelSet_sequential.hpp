@@ -82,6 +82,10 @@ public:
     typedef typename base::UpdateDescriptorArray UpdateDescriptorArray;
     typedef typename base::ThreadLocalLSData ThreadLocalLSData;
 
+    typedef utility::NullData iterator;
+    typedef utility::NullData const_iterator;
+
+
 
 private:
     using base::root;
