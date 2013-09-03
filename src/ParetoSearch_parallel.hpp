@@ -80,8 +80,8 @@ private:
 	typedef ParallelBTreeParetoQueue<TLSData> ParetoQueue;
 	typedef Operation<NodeLabel> Updates; 
 
-	CACHE_ALIGNED Updates* updates;
-	CACHE_ALIGNED NodeLabel* candidates;
+	CACHE_ALIGNED Updates*   const updates;
+	CACHE_ALIGNED NodeLabel* const candidates;
 	CACHE_ALIGNED AtomicCounter update_counter;
 	CACHE_ALIGNED AtomicCounter candidate_counter;
 
