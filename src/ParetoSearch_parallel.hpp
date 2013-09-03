@@ -109,6 +109,11 @@ public:
 		#endif
 	{ }
 
+	~ParetoSearch() {
+		free(updates);
+		free(candidates);
+	}
+
 	void run(const NodeID node) {
 		#ifdef GATHER_SUBCOMPNENT_TIMING
 			tbb::tick_count stop, start = tbb::tick_count::now();
