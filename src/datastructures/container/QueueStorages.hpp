@@ -8,7 +8,7 @@
 #ifndef QUEUESTORAGES_HPP_
 #define QUEUESTORAGES_HPP_
 
-#include "../../exception.h"
+#include "../../utility/exception.h"
 
 #include <cstring>
 #include <limits>

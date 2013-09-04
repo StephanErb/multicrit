@@ -14,7 +14,7 @@
 
 #include "NodeHeapLabelSet.hpp"
 #include "LabelSettingStatistics.hpp"
-#include "../utility/datastructure/container/BinaryHeap.hpp"
+#include "../datastructures/container/BinaryHeap.hpp"
 
 #include <iostream>
 #include <vector>

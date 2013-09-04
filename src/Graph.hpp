@@ -1,10 +1,10 @@
 #ifndef GRAPH_H_
 #define GRAPH_H_
 
-#include "utility/datastructure/graph/KGraph.hpp"
-#include "utility/datastructure/graph/Edge.hpp"
-#include "utility/datastructure/graph/GraphTypes.hpp"
-#include "utility/datastructure/graph/GraphMacros.h"
+#include "datastructures/graph/KGraph.hpp"
+#include "datastructures/graph/Edge.hpp"
+#include "datastructures/graph/GraphTypes.hpp"
+#include "datastructures/graph/GraphMacros.h"
 
 typedef utility::datastructure::IntegerBiWeightedEdge Edge;
 typedef utility::datastructure::KGraph<Edge> Graph;

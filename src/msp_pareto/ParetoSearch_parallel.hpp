@@ -12,7 +12,6 @@
 #endif
  
 
-
 #include "../options.hpp"
 
 #include "../Label.hpp"
@@ -22,7 +21,6 @@
 #include "ParetoSearchStatistics.hpp"
 #include "ParetoLabelSet.hpp"
 
-#include "../memory.h"
 #include "../tbx/parallel_sort.hpp"
 
 #include "tbb/parallel_sort.h"

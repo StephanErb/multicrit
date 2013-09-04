@@ -5,7 +5,9 @@
 
 #include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
-#include "memory.h"
+
+#include "utility/timing.h"
+#include "utility/memory.h"
 
 #include <valgrind/callgrind.h>
 

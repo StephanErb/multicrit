@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream>
 
-#include "../../tool/Functors.hpp"
+#include "../../utility/Functors.hpp"
 
 namespace utility{
 namespace datastructure{

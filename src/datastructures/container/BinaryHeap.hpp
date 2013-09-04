@@ -8,13 +8,12 @@
 #ifndef BINARY_HEAP_HPP_
 #define BINARY_HEAP_HPP_
 
-#include "../../exception.h"
+#include "../../utility/exception.h"
 #include "../NullData.hpp"
 #include "QueueStorages.hpp"
 
 #include <vector>
 #include <map>
-#include <tr1/unordered_map>
 
 #ifdef USE_GOOGLE_DATASTRUCTURES
 #include <google/dense_hash_map>

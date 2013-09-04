@@ -1,7 +1,7 @@
 #ifndef GRAPHGENERATOR_H_
 #define GRAPHGENERATOR_H_
 
-#include "utility/datastructure/graph/GraphMacros.h"
+#include "Graph.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>

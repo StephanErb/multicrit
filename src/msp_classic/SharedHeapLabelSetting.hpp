@@ -11,7 +11,7 @@
 
 #include "SharedHeapLabelSet.hpp"
 #include "LabelSettingStatistics.hpp"
-#include "../datastructures/UnboundBinaryHeap.hpp"
+#include "../datastructures/container/UnboundBinaryHeap.hpp"
 
 #include <iostream>
 #include <vector>

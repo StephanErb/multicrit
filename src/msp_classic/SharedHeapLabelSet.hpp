@@ -7,8 +7,8 @@
 #define SEQ_SHAREDHEAP_LABELSET_H_
 
 #include "../options.hpp"
-#include "LabelSetBase.hpp"
 #include "../Graph.hpp"
+#include "LabelSetBase.hpp"
 
 
 /**

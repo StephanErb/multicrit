@@ -1,8 +1,7 @@
 
 #include <iostream>
 #include <sstream>
-#include "utility/datastructure/graph/GraphTypes.hpp"
-
+#include "Graph.hpp"
 
 #ifndef LABEL_HPP_
 #define LABEL_HPP_

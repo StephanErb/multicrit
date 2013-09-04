@@ -14,9 +14,9 @@
 #include <algorithm>
 
 #include "LabelSetBase.hpp"
- 
+
 #include "../Graph.hpp"
-#include "../datastructures/UnboundBinaryHeap.hpp"
+#include "../datastructures/container/UnboundBinaryHeap.hpp"
 
 
 /**

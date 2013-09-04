@@ -3,7 +3,7 @@
 
 //#define BTREE_DEBUG
 
-#include "../datastructures/BTree_base_copy.hpp"
+#include "../datastructures/btree/BTree_base_copy.hpp"
 #include "tbb/scalable_allocator.h"
 
 #include <iostream>

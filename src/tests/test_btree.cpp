@@ -8,7 +8,7 @@
 #define BOOST_TEST_MODULE btree_update_tests
 #include <boost/test/auto_unit_test.hpp>
 
-#include "../datastructures/BTree.hpp"
+#include "../datastructures/btree/BTree.hpp"
 #include <iostream>
 #include <algorithm>
 

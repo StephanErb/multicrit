@@ -12,10 +12,12 @@
 #endif
 
 #define COMPUTE_PARETO_MIN
-#include "../datastructures/BTree_parallel.hpp"
+#include "../datastructures/btree/BTree_parallel.hpp"
 #undef COMPUTE_PARETO_MIN
 
 #include "../datastructures/ThreadLocalWriteBuffer.hpp"
+#include "../utility/memory.h"
+
 
 #include <algorithm>
 #include <limits>

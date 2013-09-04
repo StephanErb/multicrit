@@ -9,7 +9,7 @@
 #ifndef EDGE_HPP_
 #define EDGE_HPP_
 
-#include "../../exception.h"
+#include "../../utility/exception.h"
 #include "../NullData.hpp"
 
 #include "GraphTypes.hpp"

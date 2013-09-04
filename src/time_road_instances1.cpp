@@ -8,8 +8,8 @@
 #include "BiCritShortestPathAlgorithm.hpp"
 #include "GraphGenerator.hpp"
 
-#include "timing.h"
-#include "memory.h"
+#include "utility/timing.h"
+#include "utility/memory.h"
 
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tick_count.h"

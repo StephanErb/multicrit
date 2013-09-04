@@ -5,9 +5,9 @@
  *      Author: kobitzsch
  */
 
-#include "../datastructure/graph/KGraph.hpp"
-#include "../datastructure/graph/GraphTypes.hpp"
-#include "../datastructure/graph/Edge.hpp"
+#include "KGraph.hpp"
+#include "GraphTypes.hpp"
+#include "Edge.hpp"
 //#include "../datastructure/graph/ParameterizedEdge.hpp"
 
 using utility::datastructure::NodeID;

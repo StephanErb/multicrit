@@ -33,9 +33,11 @@
 #include <unistd.h>
 #include <cmath>
 #include <string.h>
-#include "../utility/datastructure/NullData.hpp"
-#include "../options.hpp"
-#include "../utility/datastructure/graph/GraphMacros.h"
+#include "../NullData.hpp"
+
+#include "../../options.hpp"
+
+#include "../../Graph.hpp"
 
 
 #include "tbb/atomic.h"

@@ -10,8 +10,8 @@
 #ifndef EDGESTORAGE_HPP_
 #define EDGESTORAGE_HPP_
 
-#include "../../exception.h"
-#include "../../tool/TemplateTricks.hpp"
+#include "../../utility/exception.h"
+#include "../../utility/TemplateTricks.hpp"
 #include "../graph/GraphTypes.hpp"
 #include "../graph/DummyOperators.hpp"
 

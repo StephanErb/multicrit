@@ -10,7 +10,7 @@
 
 #include "GraphTypes.hpp"
 #include "../NullData.hpp"
-#include "../../tool/TemplateTricks.hpp"
+#include "../../utility/TemplateTricks.hpp"
 
 #include "../container/EdgeStorage.hpp"
 

@@ -14,8 +14,8 @@
 #include "mcstl.h"
 #endif
 
-#include "timing.h"
-#include "memory.h"
+#include "utility/timing.h"
+#include "utility/memory.h"
 #include "algorithm"
 #include "limits"
 

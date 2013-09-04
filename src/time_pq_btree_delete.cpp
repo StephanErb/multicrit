@@ -12,10 +12,10 @@
 #include "tbb/tick_count.h"
 #include "tbb/parallel_sort.h"
 
-#include "datastructures/BTree.hpp"
+#include "datastructures/btree/BTree.hpp"
 
-#include "timing.h"
-#include "memory.h"
+#include "utility/timing.h"
+#include "utility/memory.h"
 #include "algorithm"
 #include "limits"
 

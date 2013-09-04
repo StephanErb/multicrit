@@ -8,10 +8,10 @@
 
 
 
-#include "../datastructure/graph/KGraph.hpp"
-#include "../datastructure/graph/GraphTypes.hpp"
-#include "../datastructure/graph/GraphMacros.h"
-#include "../datastructure/graph/Edge.hpp"
+#include "KGraph.hpp"
+#include "GraphTypes.hpp"
+#include "GraphMacros.h"
+#include "Edge.hpp"
 
 
 typedef utility::datastructure::DirectedIntegerWeightedEdge Edge;
