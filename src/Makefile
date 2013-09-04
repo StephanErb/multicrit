@@ -21,7 +21,7 @@
 #
 #####################################################
 CODE=time_grid_instances1 time_grid_instances2 time_road_instances1 time_road_instances2 time_pq_set time_pq_btree time_labelsetting tbb_inner_loop_parallelization time_sensor_instances time_pq_vector time_pq_btree_delete
-TESTS=test_seq_labelset test_labelsetting test_pq_btree test_pq_btree_paretomin
+TESTS=test_seq_labelset test_labelsetting test_paretoqueue test_pq_btree_paretomin
 
 #list of all normal / parallel targets
 TARGETS = $(TESTS) $(CODE)

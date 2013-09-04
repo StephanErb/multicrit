@@ -576,10 +576,10 @@ public:
 	/* Subtraction used to hide the sentinals */
 	std::size_t size() const { return labels.size()-2; }
 
-	typename B::iterator begin() { return labels.begin(); }
-	typename B::const_iterator begin() const { return labels.begin(); }
-	typename B::iterator end() { return labels.end(); }
-	typename B::const_iterator end() const { return labels.end(); }
+	typename B::iterator begin() { return ++labels.begin(); }
+	typename B::const_iterator begin() const { return ++labels.begin(); }
+	typename B::iterator end() { return --labels.end(); }
+	typename B::const_iterator end() const { return --labels.end(); }
 };
 
 

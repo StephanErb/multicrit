@@ -8,6 +8,10 @@
 #define BOOST_TEST_MODULE shortestpath_abelsetting_tests
 #include <boost/test/auto_unit_test.hpp>
 
+#define GATHER_STATS
+#define GATHER_SUBCOMPNENT_TIMING
+#define GATHER_SUB_SUBCOMPNENT_TIMING
+
 #include <iostream>
 #include "../BiCritShortestPathAlgorithm.hpp"
 #include "../GraphGenerator.hpp"
@@ -70,6 +74,20 @@ template<class LabelSettingAlgorithm>
 void testGrid(LabelSettingAlgorithm&& algo, NodeID target_node, size_t expected_labels) {
 	algo.run(NodeID(0));
 	assertTrue(algo.size(target_node) == expected_labels, "Expected num of labels");
+}
+
+template<class LabelSettingAlgorithm1, class LabelSettingAlgorithm2>
+void assertEqualResultCount(Graph& graph, LabelSettingAlgorithm1& algo1, LabelSettingAlgorithm2& algo2) {
+	FORALL_NODES(graph, node) {
+		BOOST_REQUIRE_EQUAL(algo1.size(node), algo2.size(node));
+	}
+}
+
+template<class LabelSettingAlgorithm1, class LabelSettingAlgorithm2>
+void assertEqualResult(Graph& graph, LabelSettingAlgorithm1& algo1, LabelSettingAlgorithm2& algo2) {
+	FORALL_NODES(graph, node) {
+		BOOST_REQUIRE_EQUAL_COLLECTIONS(algo1.begin(node), algo1.end(node), algo2.begin(node), algo2.end(node));
+	}
 }
  
 
@@ -202,4 +220,45 @@ BOOST_AUTO_TEST_CASE(testNodeHeapLabelSettingAlgorithm_ManyLabels) {
 	GraphGenerator<Graph> generator;
 	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, -0.8);
 	testGrid(NodeHeapLabelSettingAlgorithm(graph), graph.numberOfNodes()-1, 794);
+}
+
+
+
+BOOST_AUTO_TEST_CASE(crossValidateShortestPathSearch_Btree) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, 0);
+
+	SharedHeapLabelSettingAlgorithm algo1(graph);
+	#ifdef PARALLEL_BUILD
+		ParetoSearch<BTREE_LS> algo2(graph, my_default_thread_count);
+	#else 
+		ParetoSearch<BTREE_LS> algo2(graph);
+	#endif
+
+	algo1.run(NodeID(0));
+	algo2.run(NodeID(0));
+
+	assertEqualResultCount(graph, algo1, algo2);
+	// The Btree label set implementations do not allow to iterate over its content;
+	// therefore, no content equal check
+}
+
+BOOST_AUTO_TEST_CASE(crossValidateShortestPathSearch_Vector) {
+	Graph graph;
+	GraphGenerator<Graph> generator;
+	generator.generateRandomGridGraphWithCostCorrleation(graph, 100, 100, 0);
+
+	SharedHeapLabelSettingAlgorithm algo1(graph);
+	#ifdef PARALLEL_BUILD
+		ParetoSearch<VECTOR_LS> algo2(graph, my_default_thread_count);
+	#else 
+		ParetoSearch<VECTOR_LS, VECTOR_PQ> algo2(graph);
+	#endif
+
+	algo1.run(NodeID(0));
+	algo2.run(NodeID(0));
+
+	assertEqualResultCount(graph, algo1, algo2);
+	assertEqualResult(graph, algo1, algo2);
 }

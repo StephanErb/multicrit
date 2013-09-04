@@ -105,7 +105,7 @@ public:
 	}
 
 	inline void findParetoMinima(const node* const in_node, const Label& prefix_minima) {
-		typename TLSData::reference tl = tls_data.local();
+		auto& tl = tls_data.local();
 		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
 	}
 

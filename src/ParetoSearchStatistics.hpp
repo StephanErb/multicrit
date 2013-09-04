@@ -112,7 +112,6 @@ public:
 		out_stream << "#     via candidate shortcut" << ": " << dom_shortcut_percent << "% (=" << data[DOMINATION_SHORTCUT] <<")\n";
 		out_stream << "#   initially non-dominated" << ": " << 100-dom_percent << "% (=" << data[LABEL_NONDOMINATED] <<")\n";
 
-
 		unsigned long final_total_label_count = std::accumulate(labels.begin(), labels.end(), 0,
 			[](const unsigned long accum, const T& ls) { return accum + ls.size() -2; /*sentinal correction*/ });
 		unsigned long finally_dominated = data[LABEL_NONDOMINATED] - final_total_label_count;
