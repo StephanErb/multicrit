@@ -14,7 +14,6 @@
 #include "mcstl.h"
 #endif
 
-#include "utility/tool/timer.h"
 #include "timing.h"
 #include "memory.h"
 #include "algorithm"

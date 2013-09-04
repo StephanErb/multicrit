@@ -14,14 +14,16 @@
 
 #ifdef PARALLEL_BUILD
 #include "tbb/task_scheduler_init.h"
-#include "ParetoSearch_parallel.hpp"
+#include "msp_pareto/ParetoSearch_parallel.hpp"
 const unsigned short my_default_thread_count = tbb::task_scheduler_init::default_num_threads();
 #else
-#include "ParetoSearch_sequential.hpp"
+#include "msp_pareto/ParetoSearch_sequential.hpp"
 const unsigned short my_default_thread_count = 0;
 #endif
 
-#include "SeqLabelSetting.hpp"
+#include "msp_classic/NodeHeapLabelSetting.hpp"
+#include "msp_classic/SharedHeapLabelSetting.hpp"
+
 #include "Graph.hpp"
 
 

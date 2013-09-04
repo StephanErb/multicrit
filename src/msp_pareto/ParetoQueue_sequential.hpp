@@ -4,16 +4,16 @@
 #include <iostream>
 #include <vector>
 
-#include "options.hpp"
+#include "../options.hpp"
 
 #define COMPUTE_PARETO_MIN
-#include "datastructures/BTree_sequential.hpp"
+#include "../datastructures/BTree_sequential.hpp"
 #undef COMPUTE_PARETO_MIN
-#include "Label.hpp"
+#include "../Label.hpp"
 
 #include <algorithm>
 #include <limits>
-#include "utility/datastructure/graph/GraphMacros.h"
+#include "../utility/datastructure/graph/GraphMacros.h"
 
 
 /**

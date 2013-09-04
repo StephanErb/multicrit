@@ -11,16 +11,19 @@
 #define PARALLEL_BUILD
 #endif
  
-#include "utility/datastructure/graph/GraphMacros.h"
-#include "options.hpp"
+
+
+#include "../options.hpp"
+
+#include "../Label.hpp"
+#include "../Graph.hpp"
+
 #include "ParetoQueue_parallel.hpp"
 #include "ParetoSearchStatistics.hpp"
-#include "assert.h"
-#include "Label.hpp"
-#include "algorithm"
-#include "Graph.hpp"
+#include "ParetoLabelSet.hpp"
 
-#include "tbb/parallel_sort.hpp"
+#include "../memory.h"
+#include "../tbx/parallel_sort.hpp"
 
 #include "tbb/parallel_sort.h"
 #include "tbb/concurrent_vector.h"
@@ -31,7 +34,9 @@
 #include "tbb/task.h"
 #include "tbb/atomic.h"
 
-#include "memory.h"
+#include "assert.h"
+#include "algorithm"
+
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
 	#include "tbb/tick_count.h"

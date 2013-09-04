@@ -3,14 +3,14 @@
 
 //#define BTREE_DEBUG
 
-#include "datastructures/BTree_base_copy.hpp"
+#include "../datastructures/BTree_base_copy.hpp"
 #include "tbb/scalable_allocator.h"
 
 #include <iostream>
 #include <limits>
 #include <algorithm>
 
-#include "Label.hpp"
+#include "../Label.hpp"
 #include "ParetoSearchStatistics.hpp"
 
 

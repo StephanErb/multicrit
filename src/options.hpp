@@ -21,9 +21,9 @@
 /**
  * The specific LabelSet Implementation type to be used by the NodeHeapLabelSettingAlgorithm
  */
-#define LABEL_SET NaiveLabelSet
-//#define LABEL_SET SplittedNaiveLabelSet
-//#define LABEL_SET HeapLabelSet
+#define NODEHEAP_LABEL_SET NaiveLabelSet
+//#define NODEHEAP_LABEL_SET SplittedNaiveLabelSet
+//#define NODEHEAP_LABEL_SET HeapLabelSet
 
 /**
  * Configure the linear combination used to select the best label

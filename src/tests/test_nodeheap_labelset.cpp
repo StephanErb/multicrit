@@ -2,7 +2,7 @@
 #define BOOST_TEST_MODULE numeral_conversion_tests
 #include <boost/test/auto_unit_test.hpp>
 
-#include "../SeqLabelSet.hpp"
+#include "../msp_classic/NodeHeapLabelSet.hpp"
 #include "../Label.hpp"
 #include <iostream>
 #include <algorithm>

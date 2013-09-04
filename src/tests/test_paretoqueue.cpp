@@ -17,9 +17,9 @@
 #define LEAF_PARAMETER_K 8 
 
 #ifdef PARALLEL_BUILD
-#include "../ParetoQueue_parallel.hpp"
+#include "../msp_pareto/ParetoQueue_parallel.hpp"
 #else 
-#include "../ParetoQueue_sequential.hpp"
+#include "../msp_pareto/ParetoQueue_sequential.hpp"
 #endif
 
 #include "tbb/task_scheduler_init.h"                                                                                                                                                              

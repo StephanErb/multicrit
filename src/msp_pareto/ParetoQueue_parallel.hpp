@@ -5,23 +5,22 @@
 #include <vector>
 #include <deque>
 
-#include "options.hpp"
+#include "../options.hpp"
 
 #ifndef PARALLEL_BUILD
 #define PARALLEL_BUILD
 #endif
 
 #define COMPUTE_PARETO_MIN
-#include "datastructures/BTree_parallel.hpp"
+#include "../datastructures/BTree_parallel.hpp"
 #undef COMPUTE_PARETO_MIN
 
-#include "datastructures/ThreadLocalWriteBuffer.hpp"
-#include "ParetoLabelSet_sequential.hpp"
+#include "../datastructures/ThreadLocalWriteBuffer.hpp"
 
 #include <algorithm>
 #include <limits>
-#include "Label.hpp"
-#include "Graph.hpp"
+#include "../Label.hpp"
+#include "../Graph.hpp"
 
 #include "tbb/enumerable_thread_specific.h"
 #include "tbb/cache_aligned_allocator.h"

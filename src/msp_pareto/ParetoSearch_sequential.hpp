@@ -7,17 +7,17 @@
 #ifndef SEQUENTIAL_PARETO_SEARCH_H_
 #define SEQUENTIAL_PARETO_SEARCH_H_
 
-#include "utility/datastructure/graph/GraphMacros.h"
-#include "options.hpp"
+#include "../utility/datastructure/graph/GraphMacros.h"
+#include "../options.hpp"
 
 #include "ParetoQueue_sequential.hpp"
 #include "ParetoSearchStatistics.hpp"
 #include <algorithm>
-#include "Label.hpp"
-#include "Graph.hpp"
+#include "../Label.hpp"
+#include "../Graph.hpp"
 
-#include "ParetoLabelSet_sequential.hpp"
-#include "radix_sort.hpp"
+#include "ParetoLabelSet.hpp"
+#include "../radix_sort.hpp"
 
 #ifdef GATHER_SUBCOMPNENT_TIMING
 	#include "tbb/tick_count.h"

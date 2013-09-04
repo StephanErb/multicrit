@@ -34,7 +34,7 @@
 #include "tbb/scalable_allocator.h"
 #include "tbb/tbb_thread.h"
 
-#include "../tbb/cache_aligned_blocked_range.hpp"
+#include "../tbx/cache_aligned_blocked_range.hpp"
 
 
 #define TREE_PAR_CUTOFF_LEVEL 1

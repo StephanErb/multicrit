@@ -7,7 +7,6 @@
 #include "GraphGenerator.hpp"
 #include "memory.h"
 
-#include "utility/tool/timer.h"
 #include <valgrind/callgrind.h>
 
 #include "tbb/task_scheduler_init.h"

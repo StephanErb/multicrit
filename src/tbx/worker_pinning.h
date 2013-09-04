@@ -1,5 +1,5 @@
-#ifndef _SCHEDULER_OBSERVER_
-#define _SCHEDULER_OBSERVER_
+#ifndef _TBB_EXT_SCHEDULER_OBSERVER_
+#define _TBB_EXT_SCHEDULER_OBSERVER_
 
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tick_count.h"
