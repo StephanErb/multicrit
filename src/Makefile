@@ -49,7 +49,7 @@ LOG_BUILDERROR=build.error.log
 # (unless of course you know what you are doing)
 ####################################################
 #place to store the dependency files in
-DEPDIR = ./dep/
+DEPDIR = ./.dep/
 #place to store binary files in
 BINDIR = ./bin/
 #place to store object files in
