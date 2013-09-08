@@ -7,6 +7,7 @@
 #define SEQ_LABELSET_BASE_H_
 
 #include "../options.hpp"
+#include "../Label.hpp"
 
 #include <set>
 #include <vector>

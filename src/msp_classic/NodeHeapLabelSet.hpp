@@ -48,13 +48,10 @@ protected:
 
 public:
 	NaiveLabelSet() {
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
-
 		// add sentinals
 		labels.reserve(INITIAL_LABELSET_SIZE);
-		labels.insert(labels.begin(), label_type_extended(min, max, /*permanent*/ true));
-		labels.insert(labels.end(), label_type_extended(max, min, /*permanent*/ true));
+		labels.insert(labels.begin(), label_type_extended(MIN_WEIGHT, MAX_WEIGHT, /*permanent*/ true));
+		labels.insert(labels.end(), label_type_extended(MAX_WEIGHT, MIN_WEIGHT, /*permanent*/ true));
 
 		best_label = *labels.rbegin(); // one of the sentinals
 		best_label_priority = B::computePriority(best_label);
@@ -150,15 +147,12 @@ protected:
 
 public:
 	SplittedNaiveLabelSet() {
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
-
 		// add sentinals
-		perm_labels.insert(perm_labels.begin(), label_type(min, max));
-		perm_labels.insert(perm_labels.end(), label_type(max, min));
+		perm_labels.insert(perm_labels.begin(), label_type(MIN_WEIGHT, MAX_WEIGHT));
+		perm_labels.insert(perm_labels.end(), label_type(MAX_WEIGHT, MIN_WEIGHT));
 
-		temp_labels.insert(temp_labels.begin(), label_type(min, max));
-		temp_labels.insert(temp_labels.end(), label_type(max, min));
+		temp_labels.insert(temp_labels.begin(), label_type(MIN_WEIGHT, MAX_WEIGHT));
+		temp_labels.insert(temp_labels.end(), label_type(MAX_WEIGHT, MIN_WEIGHT));
 
 		best_label = *temp_labels.rbegin(); // one of the sentinals
 		best_label_priority = B::computePriority(best_label);
@@ -255,23 +249,18 @@ protected:
 
 public:
 	HeapLabelSet() {
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
-
 		// add sentinals
 		labels.reserve(INITIAL_LABELSET_SIZE);
-		labels.insert(labels.begin(), label_type_extended(min, max, 0));
-		labels.insert(labels.end(), label_type_extended(max, min, 0));
+		labels.insert(labels.begin(), label_type_extended(MIN_WEIGHT, MAX_WEIGHT, 0));
+		labels.insert(labels.end(), label_type_extended(MAX_WEIGHT, MIN_WEIGHT, 0));
 	}
 
 	// Copy constructor which does not copy
 	HeapLabelSet(const HeapLabelSet&) {
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
-
 		// add sentinals
-		labels.insert(labels.begin(), label_type_extended(min, max, 0));
-		labels.insert(labels.end(), label_type_extended(max, min, 0));
+		labels.reserve(INITIAL_LABELSET_SIZE);
+		labels.insert(labels.begin(), label_type_extended(MIN_WEIGHT, MAX_WEIGHT, 0));
+		labels.insert(labels.end(), label_type_extended(MAX_WEIGHT, MIN_WEIGHT, 0));
 	}
 
 	// Return true if the new_label is non-dominated and has been added

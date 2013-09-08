@@ -1,7 +1,9 @@
-
 #include <iostream>
 #include <sstream>
+#include <limits>
+
 #include "Graph.hpp"
+
 
 #ifndef LABEL_HPP_
 #define LABEL_HPP_
@@ -57,6 +59,8 @@ struct NodeLabel : public Label {
 	}
 };
 
+const Label::weight_type MIN_WEIGHT = std::numeric_limits<Label::weight_type>::min();
+const Label::weight_type MAX_WEIGHT = std::numeric_limits<Label::weight_type>::max();
 
 struct GroupNodeLabelsByNodeComperator {
 	inline bool operator() (const NodeLabel& i, const NodeLabel& j) const {

@@ -73,8 +73,7 @@ private:
 		:	candidates(algo->candidates, algo->candidate_counter,
 				NodeLabel(std::numeric_limits<NodeID>::max(), Label())),
 		    updates(algo->updates, algo->update_counter, 
-		    	Operation<NodeLabel>(Operation<NodeLabel>::INSERT, std::numeric_limits<NodeID>::max(), 
-		    		std::numeric_limits<Label::weight_type>::max(), std::numeric_limits<Label::weight_type>::max())),
+		    	Operation<NodeLabel>(Operation<NodeLabel>::INSERT, std::numeric_limits<NodeID>::max(), MAX_WEIGHT, MAX_WEIGHT)),
 		    labelset_data(algo->labelsets[0])
 		{}
 	};	

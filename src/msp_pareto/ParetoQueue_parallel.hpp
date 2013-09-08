@@ -20,7 +20,6 @@
 
 
 #include <algorithm>
-#include <limits>
 #include "../Label.hpp"
 #include "../Graph.hpp"
 
@@ -60,7 +59,7 @@ public:
 
 
 	ParallelBTreeParetoQueue(const Graph& _graph, const base_type::thread_count _num_threads, TLSData& _tls_data)
-		: base_type(_num_threads), min_label(std::numeric_limits<Label::weight_type>::min(), std::numeric_limits<Label::weight_type>::max()),
+		: base_type(_num_threads), min_label(MIN_WEIGHT, MAX_WEIGHT),
 			graph(_graph), tls_data(_tls_data)
 	{}
 

@@ -12,7 +12,6 @@
 #include "../Label.hpp"
 
 #include <algorithm>
-#include <limits>
 
 
 /**
@@ -42,15 +41,12 @@ public:
 		: pq_inserts(101), pq_deletes(101)
 		#endif
 	{
-		const weight_type min = std::numeric_limits<weight_type>::min();
-		const weight_type max = std::numeric_limits<weight_type>::max();
-
 		labels.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 		temp.reserve(LARGE_ENOUGH_FOR_EVERYTHING);
 
 		// add sentinals
-		labels.insert(labels.begin(), NodeLabel(NodeID(0), Label(min, max)));
-		labels.insert(labels.end(), NodeLabel(NodeID(0), Label(max, min)));
+		labels.insert(labels.begin(), NodeLabel(NodeID(0), Label(MIN_WEIGHT, MAX_WEIGHT)));
+		labels.insert(labels.end(), NodeLabel(NodeID(0), Label(MAX_WEIGHT, MIN_WEIGHT)));
 	}
 
 	void init(const NodeLabel& data) {
@@ -160,7 +156,7 @@ private:
 public:
 
 	BTreeParetoQueue()
-		: min_label(std::numeric_limits<Label::weight_type>::min(), std::numeric_limits<Label::weight_type>::max())
+		: min_label(MIN_WEIGHT, MAX_WEIGHT)
 	{}
 
 	void init(const NodeLabel& data) {

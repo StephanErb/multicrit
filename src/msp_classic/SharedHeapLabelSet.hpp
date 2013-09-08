@@ -39,13 +39,10 @@ public:
 		   : set_insertions(101), set_dominations(101)
 		#endif
 	{
-		const typename label_type::weight_type min = std::numeric_limits<typename label_type::weight_type>::min();
-		const typename label_type::weight_type max = std::numeric_limits<typename label_type::weight_type>::max();
-
 		// add sentinals
 		labels.reserve(INITIAL_LABELSET_SIZE);
-		labels.insert(labels.begin(), label_type_extended(min, max, 0));
-		labels.insert(labels.end(), label_type_extended(max, min, 0));
+		labels.insert(labels.begin(), label_type_extended(MIN_WEIGHT, MAX_WEIGHT, 0));
+		labels.insert(labels.end(), label_type_extended(MAX_WEIGHT, MIN_WEIGHT, 0));
 	}
 
 	// Return true if the new_label is non-dominated and has been added

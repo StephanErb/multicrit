@@ -7,7 +7,6 @@
 #include "tbb/scalable_allocator.h"
 
 #include <iostream>
-#include <limits>
 #include <algorithm>
 
 #include "../Label.hpp"
@@ -141,7 +140,7 @@ public:
         fake_slot.childid = root;
         fake_slot.weight = stats.itemcount;
         batch_type = INSERTS_ONLY;
-        generateUpdates(node, fake_slot, start, end, pq_updates, std::numeric_limits<typename Label::weight_type>::max(), /*continued check*/ false, ls_stats);
+        generateUpdates(node, fake_slot, start, end, pq_updates, MAX_WEIGHT, /*continued check*/ false, ls_stats);
         stats.itemcount = fake_slot.weight;
         root = fake_slot.childid;
 
@@ -403,17 +402,14 @@ public:
             , set_dominations(101)
         #endif
     {
-        const typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::min();
-        const typename Label::weight_type max = std::numeric_limits<typename Label::weight_type>::max();
-
         labels.reserve(INITIAL_LABELSET_SIZE);
-        labels.insert(labels.begin(), Label(min, max));
-        labels.insert(labels.end(), Label(max, min));
+        labels.insert(labels.begin(), Label(MIN_WEIGHT, MAX_WEIGHT));
+        labels.insert(labels.end(), Label(MAX_WEIGHT, MIN_WEIGHT));
     }
 
     template<class NodeID, class candidates_iter_type, class Stats, class PQUpdates>
-    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& updates, const ThreadLocalLSData&,Stats& stats) {
-        typename Label::weight_type min = std::numeric_limits<typename Label::weight_type>::max();
+    void updateLabelSet(const NodeID node, const candidates_iter_type start, const candidates_iter_type end, PQUpdates& updates, const ThreadLocalLSData&, Stats& stats) {
+        typename Label::weight_type min = MAX_WEIGHT;
         int modifications = 0;
 
         size_t previous_first_nondominated = 0;  // of the previous iteration
