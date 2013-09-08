@@ -85,7 +85,7 @@ public:
     using base::clear;
     using base::verify;
 
-private:
+protected:
     using base::root;
     using base::stats;
     using base::allocator;
@@ -114,7 +114,6 @@ private:
     using base::designated_subtreesize;
     using base::update_router;
     using base::create_subtree_from_leaves;
-    using base::find_pareto_minima;
     using base::rewrite;
     using base::update;
     using base::get_resized_leaves_array;
@@ -139,6 +138,12 @@ public:
 public:
     static std::string name() {
         return "Sequential BTree";
+    }
+
+    void printStatistics() const {
+        std::cout << "# " << name() << ": " << std::endl;
+        std::cout << "#  inner slots size [" << innerslotmin << ", " << innerslotmax << "]" << std::endl;
+        std::cout << "#  leaf slots size [" << leafslotmin << ", " << leafslotmax << "]" << std::endl;
     }
 
 public:
@@ -178,12 +183,6 @@ public:
         if (traits::selfverify) {
             verify();
         }
-    }
-
-    template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
-    inline void find_pareto_minima(const min_key_type& prefix_minima, upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {    
-        BTREE_ASSERT(updates.empty());
-        find_pareto_minima(root, prefix_minima, updates, candidates, graph);
     }
 
 private:

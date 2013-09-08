@@ -148,50 +148,82 @@ public:
 /**
  * Queue storing all temporary labels of all nodes.
  */
-class BTreeParetoQueue {
+class BTreeParetoQueue : public btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> {
 private:
 
-
-	typedef btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> QueueType;
-	QueueType labels;
-
-	typedef typename Label::weight_type weight_type;
+	typedef btree<NodeLabel, Label, GroupNodeLablesByWeightAndNodeComperator> base_type;
 	const Label min_label;
-	
+
+	using base_type::apply_updates;
+
+
 public:
 
 	BTreeParetoQueue()
-		: min_label(std::numeric_limits<weight_type>::min(), std::numeric_limits<weight_type>::max())
+		: min_label(std::numeric_limits<Label::weight_type>::min(), std::numeric_limits<Label::weight_type>::max())
 	{}
 
 	void init(const NodeLabel& data) {
 		std::vector<Operation<NodeLabel>> upds;
 		upds.emplace_back(Operation<NodeLabel>::INSERT, data);
-		labels.apply_updates(upds, INSERTS_ONLY);
+		apply_updates(upds, INSERTS_ONLY);
+	}
+
+	void applyUpdates(const std::vector<Operation<NodeLabel>>& updates) {
+		apply_updates(updates, INSERTS_AND_DELETES);
 	}
 
     template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
 	void findParetoMinima(upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {
-		labels.find_pareto_minima(min_label, updates, candidates, graph);
+		find_pareto_minima(min_label, updates, candidates, graph);
 	}
 
-	void applyUpdates(const std::vector<Operation<NodeLabel>>& updates) {
-		labels.apply_updates(updates, INSERTS_AND_DELETES);
-	}
+private:
 
-	bool empty() {
-		return labels.empty();
-	}
+	template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+    inline void find_pareto_minima(const min_key_type& prefix_minima, upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {    
+        find_pareto_minima(root, prefix_minima, updates, candidates, graph);
+    }
 
-	size_t size() {
-		return labels.size();
-	}
+	template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {
+        if (node->isleafnode()) {
+            const leaf_node* const leaf = (leaf_node*) node;
+            const width_type slotuse = leaf->slotuse;
 
-	void printStatistics() {
-		std::cout << "# " << QueueType::name() << ": " << std::endl;
-		std::cout << "#  inner slots size [" << QueueType::innerslotmin << ", " << QueueType::innerslotmax << "]" << std::endl;
-		std::cout << "#  leaf slots size [" << QueueType::leafslotmin << ", " << QueueType::leafslotmax << "]" << std::endl;
-	}
+            const min_key_type* min = &prefix_minima;
+            for (width_type i = 0; i<slotuse; ++i) {
+                const auto& l = leaf->slotkey[i]; 
+
+                if (l.second_weight < min->second_weight ||
+                        (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
+
+                    // Generate Update that will delete the minima
+                    updates.emplace_back(Operation<key_type>::DELETE, l);
+                    // Derive all candidate labels 
+                    FORALL_EDGES(graph, l.node, eid) {
+                        const auto& edge = graph.getEdge(eid);
+                        candidates.emplace_back(edge.target, l.first_weight + edge.first_weight, 
+                                                             l.second_weight + edge.second_weight);
+                    }
+                   	min = &l;
+                }
+            }
+        } else {
+            const inner_node* const inner = (inner_node*) node;
+            const width_type slotuse = inner->slotuse;
+
+            const min_key_type* min = &prefix_minima;
+            for (width_type i = 0; i<slotuse; ++i) {
+                const auto& l = inner->slot[i].minimum; 
+
+                if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
+                    find_pareto_minima(inner->slot[i].childid, *min, updates, candidates, graph);
+                    min = &l;
+                }
+            }
+        }
+    }
 };
 
 class ParetoQueue : public PARETO_QUEUE {

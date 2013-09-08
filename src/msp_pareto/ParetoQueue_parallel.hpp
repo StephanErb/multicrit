@@ -107,8 +107,50 @@ public:
 
 	inline void findParetoMinima(const node* const in_node, const Label& prefix_minima) {
 		auto& tl = tls_data.local();
-		base_type::find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
+		find_pareto_minima(in_node, prefix_minima, tl.updates, tl.candidates, graph);
 	}
+
+private:
+
+	template<typename upd_sequence_type, typename cand_sequence_type, typename graph_type>
+    inline void find_pareto_minima(const node* const node, const min_key_type& prefix_minima, upd_sequence_type& updates, cand_sequence_type& candidates, const graph_type& graph) const {
+        if (node->isleafnode()) {
+            const leaf_node* const leaf = (leaf_node*) node;
+            const width_type slotuse = leaf->slotuse;
+
+            const min_key_type* min = &prefix_minima;
+            for (width_type i = 0; i<slotuse; ++i) {
+                const auto& l = leaf->slotkey[i]; 
+
+                if (l.second_weight < min->second_weight ||
+                        (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
+
+                    // Generate Update that will delete the minima
+                    updates.emplace_back(Operation<key_type>::DELETE, l);
+                    // Derive all candidate labels 
+                    FORALL_EDGES(graph, l.node, eid) {
+                        const auto& edge = graph.getEdge(eid);
+                        candidates.emplace_back(edge.target, l.first_weight + edge.first_weight, 
+                                                             l.second_weight + edge.second_weight);
+                    }
+                   	min = &l;
+                }
+            }
+        } else {
+            const inner_node* const inner = (inner_node*) node;
+            const width_type slotuse = inner->slotuse;
+
+            const min_key_type* min = &prefix_minima;
+            for (width_type i = 0; i<slotuse; ++i) {
+                const auto& l = inner->slot[i].minimum; 
+
+                if (l.second_weight < min->second_weight || (l.first_weight == min->first_weight && l.second_weight == min->second_weight)) {
+                    find_pareto_minima(inner->slot[i].childid, *min, updates, candidates, graph);
+                    min = &l;
+                }
+            }
+        }
+    }
 
     class FindParetMinTask : public tbb::task {
        	const inner_node_data& slot;
