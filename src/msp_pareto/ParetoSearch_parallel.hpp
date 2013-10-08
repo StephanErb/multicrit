@@ -100,8 +100,8 @@ private:
 
 public:
 	ParetoSearch(const Graph& graph_, const unsigned short num_threads):
-		updates((Updates*) malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(Updates))),
-		candidates((NodeLabel*) malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(NodeLabel))),
+		updates((Updates*) scalable_malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(Updates))),
+		candidates((NodeLabel*) scalable_malloc(LARGE_ENOUGH_FOR_EVERYTHING * sizeof(NodeLabel))),
 		labelsets(graph_.numberOfNodes()),
 		tls_data([this](){ return this; }),
 		pq(graph_, num_threads, tls_data),
@@ -112,8 +112,8 @@ public:
 	{ }
 
 	~ParetoSearch() {
-		free(updates);
-		free(candidates);
+		scalable_free(updates);
+		scalable_free(candidates);
 	}
 
 	void run(const NodeID node) {
