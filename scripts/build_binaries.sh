@@ -8,79 +8,79 @@ make clean
 #########################################################
 echo "Pareto Search..."
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_grid_instances1 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_grid_instances1 > /dev/null
 mv ./bin/time_grid_instances1 ./bin/time_grid_instances1_paretosearch_ls_vec
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_grid_instances1.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_grid_instances1.par > /dev/null
 mv ./bin/time_grid_instances1.par ./bin/time_grid_instances1_paretosearch_ls_vec.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_grid_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_grid_instances2 > /dev/null
 mv ./bin/time_grid_instances2 ./bin/time_grid_instances2_paretosearch_ls_vec
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_grid_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_grid_instances2.par > /dev/null
 mv ./bin/time_grid_instances2.par ./bin/time_grid_instances2_paretosearch_ls_vec.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_road_instances1 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_road_instances1 > /dev/null
 mv ./bin/time_road_instances1 ./bin/time_road_instances1_paretosearch_ls_vec
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_road_instances1.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_road_instances1.par > /dev/null
 mv ./bin/time_road_instances1.par ./bin/time_road_instances1_paretosearch_ls_vec.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_road_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_road_instances2 > /dev/null
 mv ./bin/time_road_instances2 ./bin/time_road_instances2_paretosearch_ls_vec
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_road_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_road_instances2.par > /dev/null
 mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_vec.par 
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_sensor_instances > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_sensor_instances > /dev/null
 mv ./bin/time_sensor_instances ./bin/time_sensor_instances_paretosearch_ls_vec
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch" time_sensor_instances.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\>" time_sensor_instances.par > /dev/null
 mv ./bin/time_sensor_instances.par ./bin/time_sensor_instances_paretosearch_ls_vec.par
 
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_grid_instances1 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_grid_instances1 > /dev/null
 mv ./bin/time_grid_instances1 ./bin/time_grid_instances1_paretosearch_ls_btree
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_grid_instances1.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_grid_instances1.par > /dev/null
 mv ./bin/time_grid_instances1.par ./bin/time_grid_instances1_paretosearch_ls_btree.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_grid_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_grid_instances2 > /dev/null
 mv ./bin/time_grid_instances2 ./bin/time_grid_instances2_paretosearch_ls_btree
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_grid_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_grid_instances2.par > /dev/null
 mv ./bin/time_grid_instances2.par ./bin/time_grid_instances2_paretosearch_ls_btree.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances1 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_road_instances1 > /dev/null
 mv ./bin/time_road_instances1 ./bin/time_road_instances1_paretosearch_ls_btree
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances1.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_road_instances1.par > /dev/null
 mv ./bin/time_road_instances1.par ./bin/time_road_instances1_paretosearch_ls_btree.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_road_instances2 > /dev/null
 mv ./bin/time_road_instances2 ./bin/time_road_instances2_paretosearch_ls_btree
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_road_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_road_instances2.par > /dev/null
 mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_btree.par 
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_sensor_instances > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_sensor_instances > /dev/null
 mv ./bin/time_sensor_instances ./bin/time_sensor_instances_paretosearch_ls_btree
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET" time_sensor_instances.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET" time_sensor_instances.par > /dev/null
 mv ./bin/time_sensor_instances.par ./bin/time_sensor_instances_paretosearch_ls_btree.par
 
 
 # With Timings:
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_grid_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_grid_instances2 > /dev/null
 mv ./bin/time_grid_instances2 ./bin/time_grid_instances2_paretosearch_ls_btree_with_subtime
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_grid_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_grid_instances2.par > /dev/null
 mv ./bin/time_grid_instances2.par ./bin/time_grid_instances2_paretosearch_ls_btree_with_subtime.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_road_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_road_instances2 > /dev/null
 mv ./bin/time_road_instances2 ./bin/time_road_instances2_paretosearch_ls_btree_with_subtime
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_road_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING" time_road_instances2.par > /dev/null
 mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_btree_with_subtime.par 
 
 
 # With Stats:
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_grid_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_grid_instances2 > /dev/null
 mv ./bin/time_grid_instances2 ./bin/time_grid_instances2_paretosearch_ls_btree_with_stats
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_grid_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_grid_instances2.par > /dev/null
 mv ./bin/time_grid_instances2.par ./bin/time_grid_instances2_paretosearch_ls_btree_with_stats.par
 
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_road_instances2 > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_road_instances2 > /dev/null
 mv ./bin/time_road_instances2 ./bin/time_road_instances2_paretosearch_ls_btree_with_stats
-make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_road_instances2.par > /dev/null
+make -B CPPFLAGS="-DLABEL_SETTING_ALGORITHM=ParetoSearch\<\> -DBTREE_PARETO_LABELSET -DGATHER_SUBCOMPNENT_TIMING -DGATHER_STATS" time_road_instances2.par > /dev/null
 mv ./bin/time_road_instances2.par ./bin/time_road_instances2_paretosearch_ls_btree_with_stats.par 
 
 
