@@ -27,16 +27,16 @@
 # the GNU General Public License.
 
 
-function get_library_directory(){
+get_library_directory(){
     gcc_version_full=`gcc --version | grep "gcc"| egrep -o " [0-9]+\.[0-9]+\.[0-9]+.*" | sed -e s/^\ //`
     if [ $? -eq 0 ]; then
         gcc_version=`echo "$gcc_version_full" | egrep -o "^[0-9]+\.[0-9]+\.[0-9]+"`
     fi
     case "${gcc_version}" in
-	4.[4-9]* )
-	    lib_dir="gcc4.4";;
-	* )
-	    lib_dir="gcc4.1";;
+    4.[4-9]* )
+        lib_dir="gcc4.4";;
+    * )
+        lib_dir="gcc4.1";;
     esac
     echo $lib_dir
 }
@@ -44,7 +44,12 @@ function get_library_directory(){
 tbbdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export TBBROOT=$tbbdir/..
 
-if [[ "$1" != "ia32" && "$1" != "intel64" && "$1" != "android" ]]; then
+if [[ "`which gcc`" == "" ]]; then
+    echo "ERROR: 'gcc' was not found"
+    return 1;
+fi
+
+if [ "$1" != "ia32" ] && [ "$1" != "intel64" ] && [ "$1" != "android" ]; then
    echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, android"
    return 1;
 fi
@@ -59,6 +64,12 @@ if [ -z "${MIC_LD_LIBRARY_PATH}" ] ; then
    MIC_LD_LIBRARY_PATH="$TBBROOT/lib/mic"; export MIC_LD_LIBRARY_PATH
 else
    MIC_LD_LIBRARY_PATH="$TBBROOT/lib/mic:${MIC_LD_LIBRARY_PATH}"; export MIC_LD_LIBRARY_PATH
+fi
+
+if [ -z "${MIC_LIBRARY_PATH}" ] ; then
+   MIC_LIBRARY_PATH="$TBBROOT/lib/mic"; export MIC_LIBRARY_PATH
+else
+   MIC_LIBRARY_PATH="$TBBROOT/lib/mic:${MIC_LIBRARY_PATH}"; export MIC_LIBRARY_PATH
 fi
 
 if [ -z "${LD_LIBRARY_PATH}" ] ; then

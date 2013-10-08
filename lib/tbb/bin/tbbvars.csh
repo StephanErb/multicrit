@@ -27,7 +27,13 @@
 # the GNU General Public License.
 
 
-setenv TBBROOT "SUBSTITUTE_INSTALL_DIR_HERE" 
+setenv TBBROOT "SUBSTITUTE_INSTALL_DIR_HERE"
+
+if ( "`which gcc`" == "" ) then
+    echo "ERROR: 'gcc' was not found"
+    exit 1
+endif
+
 if ( "$1" != "ia32" && "$1" != "intel64" && "$1" != "android" ) then
   echo "ERROR: Unknown switch '$1'. Accepted values: ia32, intel64, android"
   exit 1
@@ -36,41 +42,47 @@ endif
 if ( "$1" != "android" ) then
     set gcc_version_full=`gcc --version | grep "gcc"| egrep -o " [0-9]+\.[0-9]+\.[0-9]+.*" | sed -e s/^\ //`
     if ( $? == 0 ) then
-	set gcc_version=`echo "$gcc_version_full" | egrep -o "^[0-9]+\.[0-9]+\.[0-9]+"`
+        set gcc_version=`echo "$gcc_version_full" | egrep -o "^[0-9]+\.[0-9]+\.[0-9]+"`
     endif
 
     switch ("$gcc_version")
-	case 4.[4-9]*:
-	    set library_directory="gcc4.4"
-	    breaksw
-	default:
-	    set library_directory="gcc4.1"
-	    breaksw
+    case 4.[4-9]*:
+        set library_directory="gcc4.4"
+        breaksw
+    default:
+        set library_directory="gcc4.1"
+        breaksw
     endsw
 else
     set library_directory=""
 endif
 
-if (! $?MIC_LD_LIBRARY_PATH) then 
-    setenv MIC_LD_LIBRARY_PATH "${TBBROOT}/lib/mic" 
-else 
-    setenv MIC_LD_LIBRARY_PATH "${TBBROOT}/lib/mic:$MIC_LD_LIBRARY_PATH" 
-endif 
+if (! $?MIC_LD_LIBRARY_PATH) then
+    setenv MIC_LD_LIBRARY_PATH "${TBBROOT}/lib/mic"
+else
+    setenv MIC_LD_LIBRARY_PATH "${TBBROOT}/lib/mic:$MIC_LD_LIBRARY_PATH"
+endif
 
-if (! $?LD_LIBRARY_PATH) then 
-    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}" 
-else 
-    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}:$LD_LIBRARY_PATH" 
-endif 
+if (! $?MIC_LIBRARY_PATH) then
+    setenv MIC_LIBRARY_PATH "${TBBROOT}/lib/mic"
+else
+    setenv MIC_LIBRARY_PATH "${TBBROOT}/lib/mic:$MIC_LIBRARY_PATH"
+endif
 
-if (! $?LIBRARY_PATH) then 
-    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}" 
-else 
-    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}:$LIBRARY_PATH" 
-endif 
+if (! $?LD_LIBRARY_PATH) then
+    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}"
+else
+    setenv LD_LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}:$LD_LIBRARY_PATH"
+endif
 
-if (! $?CPATH) then 
-    setenv CPATH "${TBBROOT}/include" 
-else 
-    setenv CPATH "${TBBROOT}/include:$CPATH" 
-endif 
+if (! $?LIBRARY_PATH) then
+    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}"
+else
+    setenv LIBRARY_PATH "${TBBROOT}/lib/${1}/${library_directory}:$LIBRARY_PATH"
+endif
+
+if (! $?CPATH) then
+    setenv CPATH "${TBBROOT}/include"
+else
+    setenv CPATH "${TBBROOT}/include:$CPATH"
+endif

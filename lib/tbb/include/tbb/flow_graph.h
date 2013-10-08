@@ -39,6 +39,12 @@
 #include "concurrent_vector.h"
 #include "internal/_aggregator_impl.h"
 
+#if TBB_DEPRECATED_FLOW_ENQUEUE 
+#define FLOW_SPAWN(a) tbb::task::enqueue((a))
+#else
+#define FLOW_SPAWN(a) tbb::task::spawn((a))
+#endif
+
 // use the VC10 or gcc version of tuple if it is available.
 #if __TBB_CPP11_TUPLE_PRESENT
     #include <tuple>
@@ -134,7 +140,7 @@ static inline tbb::task *combine_tasks( tbb::task * left, tbb::task * right) {
     // left contains a task
     if(right != SUCCESSFULLY_ENQUEUED) {
         // both are valid tasks
-        tbb::task::enqueue(*left);
+        FLOW_SPAWN(*left);
         return right;
     }
     return left;
@@ -157,7 +163,7 @@ public:
     bool try_put( const T& t ) {
             task *res = try_put_task(t);
             if(!res) return false;
-            if (res != SUCCESSFULLY_ENQUEUED) task::enqueue(*res);
+            if (res != SUCCESSFULLY_ENQUEUED) FLOW_SPAWN(*res);
             return true;
         }
 
@@ -421,8 +427,8 @@ public:
         that need to block a wait_for_all() on the graph.  For example a one-off source. */
     template< typename Receiver, typename Body >
         void run( Receiver &r, Body body ) {
-       task::enqueue( * new ( task::allocate_additional_child_of( *my_root_task ) )
-           run_and_put_task< Receiver, Body >( r, body ) );
+       FLOW_SPAWN( (* new ( task::allocate_additional_child_of( *my_root_task ) ) 
+                   run_and_put_task< Receiver, Body >( r, body )) );
     }
 
     //! Spawns a task that runs a function object
@@ -430,8 +436,7 @@ public:
         that need to block a wait_for_all() on the graph. For example a one-off source. */
     template< typename Body >
     void run( Body body ) {
-       task::enqueue( * new ( task::allocate_additional_child_of( *my_root_task ) )
-           run_task< Body >( body ) );
+       FLOW_SPAWN( * new ( task::allocate_additional_child_of( *my_root_task ) ) run_task< Body >( body ) );
     }
 
     //! Wait until graph is idle and decrement_wait_count calls equals increment_wait_count calls.
@@ -753,8 +758,8 @@ private:
 
     //! Spawns a task that applies the body
     /* override */ void spawn_put( ) {
-        task::enqueue( * new ( task::allocate_additional_child_of( *my_root_task ) )
-           internal:: source_task_bypass < source_node< output_type > >( *this ) );
+        FLOW_SPAWN( (* new ( task::allocate_additional_child_of( *my_root_task ) ) 
+                    internal:: source_task_bypass < source_node< output_type > >( *this ) ) );
     }
 
     friend class internal::source_task_bypass< source_node< output_type > >;
@@ -1224,7 +1229,7 @@ protected:
     inline bool enqueue_forwarding_task(buffer_operation &op_data) {
         task *ft = grab_forwarding_task(op_data);
         if(ft) {
-            task::enqueue(*ft);
+            FLOW_SPAWN(*ft);
             return true;
         }
         return false;
@@ -1804,7 +1809,7 @@ private:
                 return;
         }
         task * rtask = decrement_counter();
-        if(rtask) task::enqueue(*rtask);
+        if(rtask) FLOW_SPAWN(*rtask);
     }
 
     task *forward_task() {
@@ -1862,10 +1867,8 @@ public:
         spin_mutex::scoped_lock lock(my_mutex);
         my_predecessors.add( src );
         if ( my_count < my_threshold && !my_successors.empty() ) {
-            task::enqueue( * new ( task::allocate_additional_child_of( *my_root_task ) )
-                           internal::
-                           forward_task_bypass
-                           < limiter_node<T> >( *this ) );
+            FLOW_SPAWN( (* new ( task::allocate_additional_child_of( *my_root_task ) ) 
+                        internal::forward_task_bypass < limiter_node<T> >( *this ) ) );
         }
         return true;
     }
@@ -1958,33 +1961,44 @@ private:
 public:
     typedef OutputTuple output_type;
     typedef typename unfolded_type::input_ports_type input_ports_type;
-    template<typename B0, typename B1>
-    join_node(graph &g, B0 b0, B1 b1) : unfolded_type(g, b0, b1) { }
-    template<typename B0, typename B1, typename B2>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2) : unfolded_type(g, b0, b1, b2) { }
-    template<typename B0, typename B1, typename B2, typename B3>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3) : unfolded_type(g, b0, b1, b2, b3) { }
-    template<typename B0, typename B1, typename B2, typename B3, typename B4>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3, B4 b4) : unfolded_type(g, b0, b1, b2, b3, b4) { }
+    template<typename __TBB_B0, typename __TBB_B1>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1) : unfolded_type(g, b0, b1) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2) : unfolded_type(g, b0, b1, b2) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3) : unfolded_type(g, b0, b1, b2, b3) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3, typename __TBB_B4>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3, __TBB_B4 b4) :
+            unfolded_type(g, b0, b1, b2, b3, b4) { }
 #if __TBB_VARIADIC_MAX >= 6
-    template<typename B0, typename B1, typename B2, typename B3, typename B4, typename B5>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3, B4 b4, B5 b5) : unfolded_type(g, b0, b1, b2, b3, b4, b5) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3, typename __TBB_B4,
+        typename __TBB_B5>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3, __TBB_B4 b4, __TBB_B5 b5) :
+            unfolded_type(g, b0, b1, b2, b3, b4, b5) { }
 #endif
 #if __TBB_VARIADIC_MAX >= 7
-    template<typename B0, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3, B4 b4, B5 b5, B6 b6) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3, typename __TBB_B4,
+        typename __TBB_B5, typename __TBB_B6>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3, __TBB_B4 b4, __TBB_B5 b5, __TBB_B6 b6) :
+            unfolded_type(g, b0, b1, b2, b3, b4, b5, b6) { }
 #endif
 #if __TBB_VARIADIC_MAX >= 8
-    template<typename B0, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3, B4 b4, B5 b5, B6 b6, B7 b7) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6, b7) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3, typename __TBB_B4,
+        typename __TBB_B5, typename __TBB_B6, typename __TBB_B7>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3, __TBB_B4 b4, __TBB_B5 b5, __TBB_B6 b6,
+            __TBB_B7 b7) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6, b7) { }
 #endif
 #if __TBB_VARIADIC_MAX >= 9
-    template<typename B0, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7, typename B8>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3, B4 b4, B5 b5, B6 b6, B7 b7, B8 b8) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6, b7, b8) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3, typename __TBB_B4,
+        typename __TBB_B5, typename __TBB_B6, typename __TBB_B7, typename __TBB_B8>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3, __TBB_B4 b4, __TBB_B5 b5, __TBB_B6 b6,
+            __TBB_B7 b7, __TBB_B8 b8) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6, b7, b8) { }
 #endif
 #if __TBB_VARIADIC_MAX >= 10
-    template<typename B0, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7, typename B8, typename B9>
-    join_node(graph &g, B0 b0, B1 b1, B2 b2, B3 b3, B4 b4, B5 b5, B6 b6, B7 b7, B8 b8, B9 b9) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9) { }
+    template<typename __TBB_B0, typename __TBB_B1, typename __TBB_B2, typename __TBB_B3, typename __TBB_B4,
+        typename __TBB_B5, typename __TBB_B6, typename __TBB_B7, typename __TBB_B8, typename __TBB_B9>
+    join_node(graph &g, __TBB_B0 b0, __TBB_B1 b1, __TBB_B2 b2, __TBB_B3 b3, __TBB_B4 b4, __TBB_B5 b5, __TBB_B6 b6,
+            __TBB_B7 b7, __TBB_B8 b8, __TBB_B9 b9) : unfolded_type(g, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9) { }
 #endif
     join_node(const join_node &other) : unfolded_type(other) {}
 };

@@ -271,7 +271,7 @@ namespace internal {
             task *new_task = apply_body_bypass(i);
             if(!new_task) return;
             if(new_task == SUCCESSFULLY_ENQUEUED) return;
-            task::enqueue(*new_task);
+            FLOW_SPAWN(*new_task);
             return;
         }
         
@@ -296,7 +296,7 @@ namespace internal {
 
        //! Spawns a task that calls apply_body( input )
        inline void spawn_body_task( const input_type &input ) {
-           task::enqueue(*create_body_task(input));
+           FLOW_SPAWN(*create_body_task(input));
        }
         
        //! This is executed by an enqueued task, the "forwarder"
@@ -321,7 +321,7 @@ namespace internal {
 
        //! Spawns a task that calls forward()
        inline void spawn_forward_task() {
-           task::enqueue(*create_forward_task());
+           FLOW_SPAWN(*create_forward_task());
        }
     };  // function_input_base
 
@@ -484,6 +484,10 @@ namespace internal {
         continue_input( const continue_input& src ) : continue_receiver(src), 
             my_root_task(src.my_root_task), my_body( src.my_body->clone() ) {}
 
+        ~continue_input() {
+            delete my_body;
+        }
+
         template< typename Body >
         Body copy_function_object() {
             internal::function_body<input_type, output_type> &body_ref = *my_body;
@@ -565,7 +569,7 @@ namespace internal {
         bool try_put(const output_type &i) {
             task *res = my_successors.try_put_task(i);
             if(!res) return false;
-            if(res != SUCCESSFULLY_ENQUEUED) task::enqueue(*res);
+            if(res != SUCCESSFULLY_ENQUEUED) FLOW_SPAWN(*res);
             return true;
         }
     };

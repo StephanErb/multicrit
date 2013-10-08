@@ -53,6 +53,9 @@
 #include "tbb_exception.h"
 #include "tbb_profiling.h"
 #include "internal/_concurrent_unordered_impl.h" // Need tbb_hasher
+#if __TBB_INITIALIZER_LISTS_PRESENT
+#include <initializer_list>
+#endif
 #if TBB_USE_PERFORMANCE_WARNINGS || __TBB_STATISTICS
 #include <typeinfo>
 #endif
@@ -76,6 +79,7 @@ namespace interface5 {
 
     //! @cond INTERNAL
     namespace internal {
+    using namespace tbb::internal;
 
 
     //! Type of a hash code.
@@ -285,8 +289,9 @@ namespace interface5 {
             if( sz >= mask ) { // TODO: add custom load_factor
                 segment_index_t new_seg = __TBB_Log2( mask+1 ); //optimized segment_index_of
                 __TBB_ASSERT( is_valid(my_table[new_seg-1]), "new allocations must not publish new mask until segment has allocated");
+                static const segment_ptr_t is_allocating = (segment_ptr_t)2;
                 if( !itt_hide_load_word(my_table[new_seg])
-                  && __TBB_CompareAndSwapW(&my_table[new_seg], 2, 0) == 0 )
+                  && as_atomic(my_table[new_seg]).compare_and_swap(is_allocating, NULL) == NULL )
                     return new_seg; // The value must be processed
             }
             return 0;
@@ -760,6 +765,17 @@ public:
         internal_copy(first, last);
     }
 
+#if __TBB_INITIALIZER_LISTS_PRESENT
+    //! Construct empty table with n preallocated buckets. This number serves also as initial concurrency level.
+    concurrent_hash_map(const std::initializer_list<value_type> &il, const allocator_type &a = allocator_type())
+        : my_allocator(a)
+    {
+        reserve(il.size());
+        internal_copy(il.begin(), il.end());
+    }
+
+#endif //__TBB_INITIALIZER_LISTS_PRESENT
+
     //! Assignment
     concurrent_hash_map& operator=( const concurrent_hash_map& table ) {
         if( this!=&table ) {
@@ -768,6 +784,16 @@ public:
         }
         return *this;
     }
+
+#if __TBB_INITIALIZER_LISTS_PRESENT
+    //! Assignment
+    concurrent_hash_map& operator=( const std::initializer_list<value_type> &il ) {
+        clear();
+        reserve(il.size());
+        internal_copy(il.begin(), il.end());
+        return *this;
+    }
+#endif //__TBB_INITIALIZER_LISTS_PRESENT
 
 
     //! Rehashes and optionally resizes the whole table.
@@ -1004,10 +1030,9 @@ bool concurrent_hash_map<Key,T,HashCompare,A>::lookup( bool op_insert, const Key
         // TODO: the following seems as generic/regular operation
         // acquire the item
         if( !result->try_acquire( n->mutex, write ) ) {
-            // we are unlucky, prepare for longer wait
-            tbb::internal::atomic_backoff trials;
-            do {
-                if( !trials.bounded_pause() ) {
+            for( tbb::internal::atomic_backoff backoff(true);; ) {
+                if( result->try_acquire( n->mutex, write ) ) break;
+                if( !backoff.bounded_pause() ) {
                     // the wait takes really long, restart the operation
                     b.release();
                     __TBB_ASSERT( !op_insert || !return_value, "Can't acquire new item in locked bucket?" );
@@ -1015,7 +1040,7 @@ bool concurrent_hash_map<Key,T,HashCompare,A>::lookup( bool op_insert, const Key
                     m = (hashcode_t) itt_load_word_with_acquire( my_mask );
                     goto restart;
                 }
-            } while( !result->try_acquire( n->mutex, write ) );
+            }
         }
     }//lock scope
     result->my_node = n;
