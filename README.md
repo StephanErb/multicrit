@@ -13,7 +13,7 @@
 
 Within a bash shell:
 
-    `source ../lib/tbb/bin/tbbvars.sh intel64`
+    source ../lib/tbb/bin/tbbvars.sh intel64
 
 Modify `src/options.hpp` to configure the algorithm / data structures. Parallel versions of the different algorithm and timing programs end in `.par`, e.g., `./bin/time_road_instances1.par`.
   
@@ -61,3 +61,6 @@ Common options of the BTree / Pareto Queue benchmarks  (e.g., `time_pq_btree.cpp
 * __Failing tests__: Tests have not been adapted to work with all different implementation options. For example, the tests are know to fail for the `SplittedNaiveLabelSet`.
 
 * __Inconsistent Parameter Locations__: When updating the B-tree parameters, not only the code but also the build script has to be updated.
+
+* __Inconsitent Results__:  Concerning the NY road map, we got slightly different results than Enrique Machucha and Lawrance Mandow in their publications (NY7 274 =/= 272, NY8 7397 =/= 7391, NY12 1571 =/= 1573, NY14 2871 =/= 2957). A discussion is ongoing (latest sync on Wed, 09 Oct 2013).
+                         
