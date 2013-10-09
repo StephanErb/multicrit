@@ -18,7 +18,7 @@ private:
 
 	inline void init_new_bucket(const size_t start) {
 		for (unsigned short i = 0; i < BATCH_SIZE; ++i) {
-				shared_data[start+i] = default_value;
+			shared_data[start+i] = default_value;
 		}
 	}
 

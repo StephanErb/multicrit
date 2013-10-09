@@ -4,10 +4,9 @@
 
 `BiCritShortestPathAlgorithm.hpp` is the shortest path algorithm interface to be used by test and benchmarking clients. The actual algorithm is set and configured in `options.hpp`.
 
-1. `SeqLabelSetting.hpp`: Sequential state-of the art label setting algorithm. It stores labels in label sets implemented in `SeqLabelSet.hpp`.
-2. `ParetoSearch_sequential.hpp`: Implementation of the PaPaSearch algorithm of Sanders and Mandow [2013], i.e., a sequential label setting algorithm that is based on the novel idea to process all non-domianted labels within a single iteration. Depends on `ParetoQueue_sequential.hpp`.
-3. `ParetoSearch_parallel.hpp`: Parallel Implementation of the PaPaSearch algorithm of Sanders and Mandow [2013]. Depends on `ParetoQueue_parallel.hpp`.
-4. `datastructures\BTree.hpp`: In-memory B-tree with parallel and sequential bulk updates (insertions and deletions). 
+* `msp_classic/`: Various versions of a sequential state-of the art label setting algorithm.
+* `msp_pareto/`: Sequential and parallel implementation of the PaPaSearch algorithm of Sanders and Mandow [2013], i.e., a label setting algorithm that is based on the novel idea to process all non-domianted labels within a single iteration. The algorithm depends on the corresponding `ParetoQueue` implementation.
+* `datastructures/btree/`: In-memory B-tree with parallel and sequential bulk updates (insertions and deletions). The B-tree is central to our `ParetoQueue` implementation. 
 
 
 ## Build 
@@ -28,7 +27,7 @@ Modify `src/options.hpp` to configure the algorithm / data structures. Parallel 
 
 ## Running benchmarks
 
-Within `scripts/` run `build_binaries.sh` to configure & generate all binaries used for benchmarking. To run benchmarks, execute the corresponding scripts within the `scripts/` folder. Benchmarking scripts write their timing values to  `timings/`. To produce new graphs, run the makefiles in the different subdirectories of the `gnuplot/` folder.
+Within `scripts/` run `build_binaries.sh` to configure &andgenerate all binaries used for benchmarking. To run benchmarks, execute the corresponding scripts within the `scripts/` folder. Benchmarking scripts write their timing values to  `timings/`. To produce new graphs, run the makefiles in the different subdirectories of the `gnuplot/` folder.
 
 The benchmarking scripts execute the different benchmarks `src/time_*.cpp`:
 
@@ -57,6 +56,8 @@ Common options of the BTree / Pareto Queue benchmarks  (e.g., `time_pq_btree.cpp
 
 * __BTree Code Duplication__: The `BTree_base` class is duplicated. One copy is used as the basis of label sets the other one used by pareto queue. We should probably make the slight implementation differences configurable via template parameters (e.g., to only have the COMPUTE_PARETO_MIN macro dependency if needed).
 
-* __Outdated code__: Certain experimental implementations and options turned out not to be competitive (e.g., specific label sets in `SeqLabelSet.hpp`). They have been abandoned long ago and might no longer work or even compile. 
+* __Outdated code__: Certain experimental implementations and options turned out not to be competitive (e.g., to use an std::set as a label set implementation). They have been abandoned long ago and might no longer work or even compile. 
 
 * __Failing tests__: Tests have not been adapted to work with all different implementation options. For example, the tests are know to fail for the `SplittedNaiveLabelSet`.
+
+* __Inconsistent Parameter Locations__: When updating the B-tree parameters, not only the code but also the build script has to be updated.

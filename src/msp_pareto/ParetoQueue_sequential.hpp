@@ -17,7 +17,6 @@
 /**
  * Queue storing all temporary labels of all nodes.
  */
-
 class VectorParetoQueue {
 private:
 
