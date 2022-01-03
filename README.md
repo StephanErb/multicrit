@@ -1,5 +1,16 @@
 # Engineering Parallel Biobjective Shortest Path Search
 
+## Abstract
+
+The multi-criteria shortest path problem is concerned with the minimization of multiple, possibly conflicting objectives such as travel time and highway tolls. Sanders and Mandow present a parallel algorithm for this problem. They generalize Dijkstra’s single-criterion shortest path algorithm to multiple criteria, while parallelizing all additional work induced by this generalization. For the bi-criteria case they even show that their algorithm performs less work than classic bi-criteria algorithms.
+
+We discuss in how far these theoretical results translate into an efficient implementation for modern shared-memory multiprocessors. In particular, we focus on a cache-efficient implementation of the bi-criteria case and present an extensive evaluation of the algorithm and its underlying data structures.
+
+The evaluation indicates that parallel bi-criteria shortest path search is feasible in practice. Our implementation exhibits significant speedups when solving difficult problem instances in parallel. In addition, even a sequential implementation is competitive to classic bi-criteria shortest path algorithms.
+
+As an additional contribution of independent interest, we present parallel bulk updates for weight-balanced B-trees. We use this technique to implement the Pareto queue, a multi-dimensional generalization of a priority queue proposed by Sanders and Mandow and required by their algorithm.
+
+
 ## Code Overview
 
 `BiCritShortestPathAlgorithm.hpp` is the shortest path algorithm interface to be used by test and benchmarking clients. The actual algorithm is set and configured in `options.hpp`.
